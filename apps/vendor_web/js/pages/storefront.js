@@ -9,26 +9,31 @@ import { ctx } from '../store.js';
 import { esc, icon, chip, loadingRows, errorState, toast, busy, copyText } from '../ui.js';
 import qrcode from '../lib/qrcode.js';
 
-// The Template Library: ten business templates, in library order. Ids,
+// The Template Library: five templates (Menu, Showcase, Basket, Service,
+// Spotlight), in library order. Ids,
 // names, categories and default colours match store/templates.js
 // (CEFFLO_TEMPLATE_ORDER) and the Vendor App registry.
 const TEMPLATES = [
-  { id: 'homefood', name: 'Dapur', cat: 'food', primary: '#C2410C', secondary: '#FFF7ED' },
-  { id: 'bakery', name: 'Patisserie', cat: 'sweet', primary: '#9D174D', secondary: '#FDF2F8' },
-  { id: 'eatery', name: 'Kedai Makan', cat: 'food', primary: '#B91C1C', secondary: '#FEF2F2' },
-  { id: 'cafe', name: 'Kafe', cat: 'sweet', primary: '#1F2937', secondary: '#F3F4F6' },
-  { id: 'catering', name: 'Katering', cat: 'food', primary: '#0F766E', secondary: '#F0FDFA' },
-  { id: 'frozen', name: 'Sejuk Beku', cat: 'food', primary: '#1D4ED8', secondary: '#EFF6FF' },
-  { id: 'florist', name: 'Florist', cat: 'gifts', primary: '#3F3F46', secondary: '#FAF7F2' },
-  { id: 'laundry', name: 'Dobi', cat: 'services', primary: '#0369A1', secondary: '#F0F9FF' },
-  { id: 'retail', name: 'Jenama', cat: 'retail', primary: '#111827', secondary: '#F59E0B' },
-  { id: 'outlets', name: 'Rangkaian', cat: 'retail', primary: '#4338CA', secondary: '#EEF2FF' },
+  { id: 'warung', name: 'Menu', cat: 'food', primary: '#169A49', secondary: '#E11D2E', hero: false },
+  { id: 'tailor', name: 'Showcase', cat: 'retail', primary: '#111111', secondary: '#F59E6B' },
+  { id: 'care', name: 'Basket', cat: 'retail', primary: '#1677D8', secondary: '#E8F2FD' },
+  { id: 'service', name: 'Service', cat: 'services', primary: '#5B7CF6', secondary: '#FACC15' },
+  { id: 'pour', name: 'Spotlight', cat: 'sweet', primary: '#111111', secondary: '#E6E7E9', hero: false },
 ];
-const CATS = ['food', 'sweet', 'retail', 'gifts', 'services'];
-// Earlier V1 templates (CEFFLO_TEMPLATE_LEGACY): not offered any more, but a
+const CATS = ['food', 'sweet', 'retail', 'services'];
+// Earlier templates (CEFFLO_TEMPLATE_LEGACY): not offered any more, but a
 // storefront saved on one still shows it as the active template.
 const LEGACY = [
-  { id: 'care', name: 'Care', primary: '#1677D8', secondary: '#E8F2FD' },
+  { id: 'homefood', name: 'Dapur', primary: '#C2410C', secondary: '#FFF7ED' },
+  { id: 'bakery', name: 'Patisserie', primary: '#9D174D', secondary: '#FDF2F8' },
+  { id: 'eatery', name: 'Kedai Makan', primary: '#B91C1C', secondary: '#FEF2F2' },
+  { id: 'cafe', name: 'Kafe', primary: '#1F2937', secondary: '#F3F4F6' },
+  { id: 'catering', name: 'Katering', primary: '#0F766E', secondary: '#F0FDFA' },
+  { id: 'frozen', name: 'Sejuk Beku', primary: '#1D4ED8', secondary: '#EFF6FF' },
+  { id: 'florist', name: 'Florist', primary: '#3F3F46', secondary: '#FAF7F2' },
+  { id: 'laundry', name: 'Dobi', primary: '#0369A1', secondary: '#F0F9FF' },
+  { id: 'retail', name: 'Jenama', primary: '#111827', secondary: '#F59E0B' },
+  { id: 'outlets', name: 'Rangkaian', primary: '#4338CA', secondary: '#EEF2FF' },
   { id: 'capsule', name: 'Capsule', primary: '#C8234F', secondary: '#F7C531' },
   { id: 'kit', name: 'Kit', primary: '#253D6B', secondary: '#E1293F' },
   { id: 'brew', name: 'Brew', primary: '#4B2A15', secondary: '#D3A06A' },
@@ -39,12 +44,8 @@ const LEGACY = [
   { id: 'combo', name: 'Combo', primary: '#F26B2C', secondary: '#8E9BF5', hero: false },
   { id: 'discover', name: 'Discover', primary: '#22C55E', secondary: '#16A34A' },
   { id: 'atelier', name: 'Atelier', primary: '#111111', secondary: '#E35B2C' },
-  { id: 'pour', name: 'Pour', primary: '#111111', secondary: '#E6E7E9', hero: false },
-  { id: 'tailor', name: 'Tailor', primary: '#111111', secondary: '#F59E6B' },
   { id: 'sprint', name: 'Sprint', primary: '#6B3BE0', secondary: '#FF7A1A' },
   { id: 'splash', name: 'Splash', primary: '#2563EB', secondary: '#FACC15' },
-  { id: 'service', name: 'Service', primary: '#5B7CF6', secondary: '#FACC15' },
-  { id: 'warung', name: 'Warung', primary: '#169A49', secondary: '#E11D2E', hero: false },
   { id: 'collector', name: 'Collector', primary: '#111111', secondary: '#F2F2F4', hero: false },
 ];
 const PREVIEW_SCREENS = [['', 'sf.pvHome'], ['p/first', 'sf.pvProduct'], ['cart', 'sf.pvCart']];
@@ -62,7 +63,7 @@ function qrSvg(text) {
 export default function storefront({ el, setHeader }) {
   setHeader(t('sf.title'));
   el.innerHTML = loadingRows(4);
-  let sf = null, tpl = 'homefood', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
+  let sf = null, tpl = 'warung', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
   let frame = null, frameReady = false;
   const def = () => TEMPLATES.find(x => x.id === tpl) || LEGACY.find(x => x.id === tpl) || TEMPLATES[0];
   const sfOrigin = () => new URL(base(), location.href).origin;
@@ -153,7 +154,7 @@ export default function storefront({ el, setHeader }) {
       ]);
       sf = Array.isArray(res) ? res[0] : res;
       pv = p && typeof p === 'object' ? p : null;
-      tpl = [...TEMPLATES, ...LEGACY].some(x => x.id === sf.template_key) ? sf.template_key : 'homefood';
+      tpl = [...TEMPLATES, ...LEGACY].some(x => x.id === sf.template_key) ? sf.template_key : 'warung';
       theme = { ...(sf.theme || {}) };
       paint();
     } catch (e) { el.innerHTML = errorState(e, 'storefront'); }

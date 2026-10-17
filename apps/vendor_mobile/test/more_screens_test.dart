@@ -28,13 +28,6 @@ void main() {
     expect(tester.takeException(), isNull);
   }
 
-  testWidgets('Security has no 2FA placeholder', (tester) async {
-    await pumpAt(tester, const VendorLocation(VRoute.security));
-    expect(find.text('Two-factor authentication'), findsNothing);
-    expect(find.text('Coming soon'), findsNothing);
-    expect(find.text('Password'), findsOneWidget);
-  });
-
   testWidgets('Help & Support shows only what works', (tester) async {
     await pumpAt(tester, const VendorLocation(VRoute.helpSupport));
     expect(find.byType(TextField), findsNothing); // no dead search

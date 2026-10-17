@@ -23,8 +23,12 @@ class PermanentLinkSection extends StatelessWidget {
     required this.shareText,
     required this.qrTitle,
     required this.qrBody,
+    this.showShare = true,
   });
   final String title, link, shareLabel, qrTitle, qrBody;
+
+  /// False when the screen pins Share in its bottom bar instead.
+  final bool showShare;
 
   /// The message without the link; the link is appended on its own line.
   final String shareText;
@@ -75,12 +79,14 @@ class PermanentLinkSection extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: Gap.xl),
-        CefButton(
-          shareLabel,
-          icon: LucideIcons.share2,
-          onTap: () => showShareTargets(context, link: link, text: shareText),
-        ),
+        if (showShare) ...[
+          const SizedBox(height: Gap.xl),
+          CefButton(
+            shareLabel,
+            icon: LucideIcons.share2,
+            onTap: () => showShareTargets(context, link: link, text: shareText),
+          ),
+        ],
       ],
     );
   }
@@ -236,7 +242,11 @@ void showShareTargets(
       () => _open(context, 'SMS', Uri.parse('sms:?body=$encodedMessage')),
     ),
     (
-      BrandTile.icon(c.subtle, LucideIcons.ellipsis, glyph: c.textPrimary),
+      BrandTile.icon(
+        c.subtle,
+        LucideIcons.ellipsisVertical,
+        glyph: c.textPrimary,
+      ),
       L.moreText,
       systemShare,
     ),

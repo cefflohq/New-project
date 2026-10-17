@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -223,6 +222,18 @@ class _Booking {
   final int start, end;
   final List<int> days;
 
+  _Booking withoutDays(Set<int> gone) => _Booking(
+    requestId: requestId,
+    approved: approved,
+    name: name,
+    start: start,
+    end: end,
+    days: [
+      for (final d in days)
+        if (!gone.contains(d)) d,
+    ],
+  );
+
   static _Booking fromRow(Map<String, dynamic> r) => _Booking(
     requestId: r['request_id'] as String,
     approved: r['status'] == 'approved',
@@ -255,6 +266,7 @@ class _Jobs {
   static final needsLocation = ValueNotifier<bool>(false);
   static final error = ValueNotifier<String?>(null);
   static final _demoRequested = <String>{};
+  static final _demoReleased = <String, Set<int>>{};
 
   /// [gps]: look up the current position again (first open, "Use my
   /// location"). A chosen town stays until the rider changes it.
@@ -267,17 +279,11 @@ class _Jobs {
             o.withStatus(_demoRequested.contains(o.id) ? 'pending' : null),
       ];
       bookings.value = [
-        ..._demoBookings,
-        for (final o in _examples)
-          if (_demoRequested.contains(o.id))
-            _Booking(
-              requestId: o.id,
-              approved: false,
-              name: o.name,
-              start: o.start,
-              end: o.end,
-              days: o.days,
-            ),
+        for (final b in [..._demoBookings, ..._demoAsked()])
+          if (b.days.any(
+            (d) => !(_demoReleased[b.requestId] ?? {}).contains(d),
+          ))
+            b.withoutDays(_demoReleased[b.requestId] ?? const {}),
       ];
       needsLocation.value = false;
       return;
@@ -344,12 +350,27 @@ class _Jobs {
     await load(app);
   }
 
-  static Future<void> withdraw(AppState app, _Booking b) async {
+  static List<_Booking> _demoAsked() => [
+    for (final o in _examples)
+      if (_demoRequested.contains(o.id))
+        _Booking(
+          requestId: o.id,
+          approved: false,
+          name: o.name,
+          start: o.start,
+          end: o.end,
+          days: o.days,
+        ),
+  ];
+
+  /// Releases one day of a booking; only that slot leaves the schedule
+  /// (release_job_day, Founder 2026-10-16).
+  static Future<void> releaseDay(AppState app, _Booking b, int day) async {
     if (app.repo.isDemo) {
-      _demoRequested.remove(b.requestId);
+      (_demoReleased[b.requestId] ??= {}).add(day);
       return load(app);
     }
-    await app.repo.withdrawJobRequest(b.requestId);
+    await app.repo.releaseJobDay(b.requestId, day);
     await load(app);
   }
 }
@@ -503,35 +524,40 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
       valueListenable: _Jobs.place,
       builder: (context, place, _) => ValueListenableBuilder<int>(
         valueListenable: _Jobs.radius,
-        builder: (context, radius, _) => CeffloNavySheetScaffold(
-          onRefresh: () => _Jobs.load(app),
-          header: CeffloScreenHeader(
-            title: L.findJobs,
-            onBell: () => app.go(DRoute.notifications),
-            // Location and My week sit on the navy (Founder 2026-10-13):
-            // the white sheet holds only the shift filter and the openings.
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _AreaRow(
-                  label: place == null
-                      ? L.chooseTown
-                      : '${place.label} · ${L.withinKm('$radius')}',
-                  onChange: () => _changeLocation(app),
-                ),
-                ValueListenableBuilder<List<_Booking>>(
-                  valueListenable: _Jobs.bookings,
-                  builder: (context, b, _) => b.isEmpty
-                      ? const SizedBox.shrink()
-                      : _HeaderWeek(
-                          bookings: b,
-                          onOpen: () => app.go(DRoute.mySchedule),
-                        ),
-                ),
-              ],
+        builder: (context, radius, _) => ValueListenableBuilder<List<_Opening>?>(
+          valueListenable: _Jobs.openings,
+          builder: (context, all, _) => CeffloNavySheetScaffold(
+            // First load: one centred loader in the sheet.
+            loading: all == null,
+            onRefresh: () => _Jobs.load(app),
+            header: CeffloScreenHeader(
+              title: L.findJobs,
+              onBell: () => app.go(DRoute.notifications),
+              // Location and My week sit on the navy (Founder 2026-10-13):
+              // the white sheet holds only the shift filter and the openings.
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _AreaRow(
+                    label: place == null
+                        ? L.chooseTown
+                        : '${place.label} · ${L.withinKm('$radius')}',
+                    onChange: () => _changeLocation(app),
+                  ),
+                  ValueListenableBuilder<List<_Booking>>(
+                    valueListenable: _Jobs.bookings,
+                    builder: (context, b, _) => b.isEmpty
+                        ? const SizedBox.shrink()
+                        : _HeaderWeek(
+                            bookings: b,
+                            onOpen: () => app.go(DRoute.mySchedule),
+                          ),
+                  ),
+                ],
+              ),
             ),
+            body: _body(context, app, place, radius),
           ),
-          body: _body(context, app, place, radius),
         ),
       ),
     );
@@ -541,12 +567,8 @@ class _FindJobsScreenState extends State<FindJobsScreen> {
       ValueListenableBuilder<List<_Opening>?>(
         valueListenable: _Jobs.openings,
         builder: (context, all, _) {
-          if (all == null) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 48),
-              child: CefPageLoader(),
-            );
-          }
+          // The scaffold shows the centred loader meanwhile.
+          if (all == null) return const SizedBox.shrink();
           final shown = [
             for (final o in all)
               if (_shift == null || o.shift == _shift) o,
@@ -1159,7 +1181,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       await _Jobs.request(app, o);
     } on RepositoryError catch (e) {
       if (!mounted) return;
-      if (e.message.contains('marketplace verification required')) {
+      if (e.raw.contains('marketplace verification required')) {
         showCefToast(context, L.mvRequiredToApply, error: true);
         AppScope.read(context).go(DRoute.documents);
       } else {
@@ -1393,7 +1415,11 @@ class _MyScheduleScreenState extends State<MyScheduleScreen> {
   }
 
   Future<void> _release(AppState app, List<_Booking> bookings) async {
-    final picked = await showCefSheet<_Booking>(
+    final slots = [
+      for (final b in bookings)
+        for (final d in [...b.days]..sort()) (b, d),
+    ]..sort((x, y) => x.$2 != y.$2 ? x.$2 - y.$2 : x.$1.start - y.$1.start);
+    final picked = await showCefSheet<(_Booking, int)>(
       context: context,
       showDragHandle: true,
       builder: (sheet) => SafeArea(
@@ -1405,19 +1431,27 @@ class _MyScheduleScreenState extends State<MyScheduleScreen> {
             children: [
               Text(L.releaseSlot, style: sheet.t.titleMedium),
               const SizedBox(height: Gap.md),
-              for (final b in bookings)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(b.name),
-                  subtitle: Text(
-                    '${_daysLabel(b.days)} · ${_span(b.start, b.end)}'
-                    '${b.approved ? '' : ' · ${L.slotRequested}'}',
-                  ),
-                  trailing: TextButton(
-                    onPressed: () => Navigator.of(sheet).pop(b),
-                    child: Text(L.withdrawBooking),
-                  ),
+              // One row per slot (day): the driver releases just that one.
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final (b, d) in slots)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text('${_dayNames[d - 1]} · ${b.name}'),
+                        subtitle: Text(
+                          '${_span(b.start, b.end)}'
+                          '${b.approved ? '' : ' · ${L.slotRequested}'}',
+                        ),
+                        trailing: TextButton(
+                          onPressed: () => Navigator.of(sheet).pop((b, d)),
+                          child: Text(L.withdrawBooking),
+                        ),
+                      ),
+                  ],
                 ),
+              ),
             ],
           ),
         ),
@@ -1425,7 +1459,7 @@ class _MyScheduleScreenState extends State<MyScheduleScreen> {
     );
     if (picked == null || !mounted) return;
     try {
-      await _Jobs.withdraw(app, picked);
+      await _Jobs.releaseDay(app, picked.$1, picked.$2);
       if (mounted) showCefToast(context, L.bookingWithdrawn);
     } on RepositoryError catch (e) {
       if (mounted) showCefToast(context, e.message, error: true);

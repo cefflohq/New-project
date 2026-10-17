@@ -6,7 +6,7 @@
 import { t, fmtDate } from './i18n.js';
 import { api } from './api.js';
 import { ctx } from './store.js';
-import { esc, icon, toast, busy, modal, avatar } from './ui.js';
+import { esc, icon, toast, busy, modal, avatar, confirmDecision } from './ui.js';
 import { fetchBusiness } from './data.js';
 
 const hhmm = v => {
@@ -81,7 +81,7 @@ export function mountHiring(host, { onChange } = {}) {
         ${tab === 'det' ? `<div class="sub-card">${kv(t('hire.area'), post.area_label)}${kv(t('hire.days'), [...post.days].sort().map(d => t(`hire.d${d}`)).join(', '))}${kv(t('hr.pickupTime'), hhmm(post.shift_start))}${kv(t('hire.vehicle'), t(`veh.${post.vehicle_type}`))}${kv(t('hr.payPerDrop'), payLabel(post))}${kv(t('hire.needed'), String(post.riders_needed))}${post.drops_per_run ? kv(t('hr.dropsPerRun'), String(post.drops_per_run)) : ''}${kv(t('hr.reach'), `${num(post.radius_km)} km`)}</div>`
           : rows.length ? rows.map(r => { const d = r.riders || {}; const can = r.status === 'pending' && d.status === 'pending';
               return `<div class="list-row" style="cursor:default">${avatar(d.name || '?')}<div class="grow"><b>${esc(d.name || '')}</b><small>${esc([d.vehicle_type && t(`veh.${d.vehicle_type}`), d.vehicle_plate].filter(Boolean).join(' · '))}</small><small>${esc(t('hr.appliedVia', { d: fmt(r.created_at) }))}</small></div>${chipFor(r)}
-              ${can ? `<button class="btn sm" data-dec="${esc(r.rider_id)}" data-ok="0">${esc(t('hr.reject'))}</button><button class="btn sm primary" data-dec="${esc(r.rider_id)}" data-ok="1">${esc(t('hr.approve'))}</button>` : ''}</div>`; }).join('')
+              ${can ? `<button class="btn sm" data-dec="${esc(r.rider_id)}" data-name="${esc(d.name || '')}" data-ok="0">${esc(t('hr.reject'))}</button><button class="btn sm primary" data-dec="${esc(r.rider_id)}" data-name="${esc(d.name || '')}" data-ok="1">${esc(t('hr.approve'))}</button>` : ''}</div>`; }).join('')
           : `<div class="hint" style="padding:12px 0">${esc(t('hr.none'))}</div>`}`;
     };
     const loadPost = async () => {
@@ -93,6 +93,7 @@ export function mountHiring(host, { onChange } = {}) {
       const tb = e.target.closest('[data-ptab]'); if (tb) { tab = tb.dataset.ptab; paintPost(); return; }
       const d = e.target.closest('[data-dec]'); if (!d) return;
       const approve = d.dataset.ok === '1';
+      if (!await confirmDecision(approve, d.dataset.name || '')) return;
       try {
         await busy(d, () => api.rpc(approve ? 'approve_pending_rider' : 'deactivate_rider', { p_rider_id: d.dataset.dec }));
         toast(t(approve ? 'hr.approvedToast' : 'hr.rejectedToast')); await loadPost(); load();

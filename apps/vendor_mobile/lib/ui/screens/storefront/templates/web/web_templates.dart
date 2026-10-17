@@ -50,10 +50,87 @@ StorefrontTemplateDef _t(
 
 const _legacy = _t;
 
-/// Template Library order (same as `window.CEFFLO_TEMPLATE_ORDER`): one
-/// template per type of business.
+/// Template Library order (same as `window.CEFFLO_TEMPLATE_ORDER`): the five
+/// templates, each following one Founder UI reference (2026-10-17).
 final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
   _t(
+    'warung',
+    'Menu',
+    'Food & Drinks',
+    'A friendly menu: greeting, category chips, dish rows with round plates and an Order button; the dish page ends in a Total + Order footer.',
+    const [
+      'Greeting header',
+      'Round dish rows',
+      'Total + Order',
+    ],
+    const ['Food'],
+    const Color(0xFF169A49),
+    const Color(0xFFE11D2E),
+    hero: false,
+  ),
+  _t(
+    'tailor',
+    'Showcase',
+    'Fashion & Beauty',
+    'Photo-first: a black collection banner, two-up product cards with hearts, and a product page with size circles, Qty, Total price and Add to Bag.',
+    const [
+      'Collection banner',
+      'Two-up photo cards',
+      'Sizes + Add to Bag',
+    ],
+    const ['Retail'],
+    const Color(0xFF111111),
+    const Color(0xFFF59E6B),
+  ),
+  _t(
+    'care',
+    'Basket',
+    'Groceries & Everyday',
+    'Buy many items fast: a hero banner, category icons, a quick list with quantity keys and a View Cart bar, and a product page with Add to Cart + Buy Now.',
+    const [
+      'Shop by Category icons',
+      'Quick list with quantity',
+      'Add to Cart + Buy Now',
+    ],
+    const ['Retail'],
+    const Color(0xFF1677D8),
+    const Color(0xFFE8F2FD),
+  ),
+  _t(
+    'service',
+    'Service',
+    'Services & Bookings',
+    'For services: a blue location header, offer cards, round service icons and a provider-style page with Book Service Now.',
+    const [
+      'Offer cards',
+      'Round service icons',
+      'Book Service Now',
+    ],
+    const ['Services'],
+    const Color(0xFF5B7CF6),
+    const Color(0xFFFACC15),
+  ),
+  _t(
+    'pour',
+    'Spotlight',
+    'Cakes, Coffee & Pre-orders',
+    'One item at a time: a full photo fading into grey, name and price centred, a size switch beside Add to Order, and You may also like.',
+    const [
+      'Full-photo product',
+      'Size switch',
+      'Add to Order',
+    ],
+    const ['Desserts & Drinks'],
+    const Color(0xFF111111),
+    const Color(0xFFE6E7E9),
+    hero: false,
+  ),
+];
+
+/// Earlier templates (`window.CEFFLO_TEMPLATE_LEGACY`): still rendered for
+/// storefronts saved on them, no longer offered in the Template Library.
+final List<StorefrontTemplateDef> kLegacyWebStorefrontTemplates = [
+  _legacy(
     'homefood',
     'Dapur',
     'Home-Based Food',
@@ -67,7 +144,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFFC2410C),
     const Color(0xFFFFF7ED),
   ),
-  _t(
+  _legacy(
     'bakery',
     'Patisserie',
     'Bakery & Dessert',
@@ -81,7 +158,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF9D174D),
     const Color(0xFFFDF2F8),
   ),
-  _t(
+  _legacy(
     'eatery',
     'Kedai Makan',
     'Restaurant & Outlet',
@@ -95,7 +172,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFFB91C1C),
     const Color(0xFFFEF2F2),
   ),
-  _t(
+  _legacy(
     'cafe',
     'Kafe',
     'Cafe & Beverage',
@@ -109,7 +186,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF1F2937),
     const Color(0xFFF3F4F6),
   ),
-  _t(
+  _legacy(
     'catering',
     'Katering',
     'Catering & Corporate',
@@ -123,7 +200,7 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF0F766E),
     const Color(0xFFF0FDFA),
   ),
-  _t(
+  _legacy(
     'frozen',
     'Sejuk Beku',
     'Frozen & Ready-to-Cook',
@@ -137,21 +214,17 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF1D4ED8),
     const Color(0xFFEFF6FF),
   ),
-  _t(
+  _legacy(
     'florist',
     'Florist',
     'Florist & Gift',
     'Editorial full-bleed hero, occasions as photo tiles and one large photo per gift.',
-    const [
-      'Full-bleed hero',
-      'Shop by occasion',
-      'Large gift photos',
-    ],
+    const ['Full-bleed hero', 'Shop by occasion', 'Large gift photos'],
     const ['Gifts'],
     const Color(0xFF3F3F46),
     const Color(0xFFFAF7F2),
   ),
-  _t(
+  _legacy(
     'laundry',
     'Dobi',
     'Laundry & Services',
@@ -165,53 +238,25 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
     const Color(0xFF0369A1),
     const Color(0xFFF0F9FF),
   ),
-  _t(
+  _legacy(
     'retail',
     'Jenama',
     'Retail & Local Products',
     'Brand first: centred logo, banner, numbered bestsellers, collection tabs and a clean square grid.',
-    const [
-      'Centred brand',
-      'Numbered bestsellers',
-      'Square product grid',
-    ],
+    const ['Centred brand', 'Numbered bestsellers', 'Square product grid'],
     const ['Retail'],
     const Color(0xFF111827),
     const Color(0xFFF59E0B),
   ),
-  _t(
+  _legacy(
     'outlets',
     'Rangkaian',
     'Multi-Outlet SME',
     'A brand band, the area you serve and an organised catalogue with a category rail on wide screens.',
-    const [
-      'Brand band',
-      'Service area and hours',
-      'Category rail and grid',
-    ],
+    const ['Brand band', 'Service area and hours', 'Category rail and grid'],
     const ['Retail'],
     const Color(0xFF4338CA),
     const Color(0xFFEEF2FF),
-  ),
-];
-
-/// Earlier V1 templates (`window.CEFFLO_TEMPLATE_LEGACY`): still rendered for
-/// storefronts saved on them, no longer offered in the Template Library.
-final List<StorefrontTemplateDef> kLegacyWebStorefrontTemplates = [
-  _legacy(
-    'care',
-    'Care',
-    'Everyday Store',
-    'A clear everyday store: brand header, a hero banner, category icons, featured products, a quick list with quantity steppers and a full product page.',
-    const [
-      'Hero banner with Shop Now',
-      'Shop by Category icons',
-      'Quick list with quantity',
-      'Add to Cart + Buy Now',
-    ],
-    const ['Health', 'Retail'],
-    const Color(0xFF1677D8),
-    const Color(0xFFE8F2FD),
   ),
   _legacy(
     'capsule',
@@ -328,27 +373,6 @@ final List<StorefrontTemplateDef> kLegacyWebStorefrontTemplates = [
     const Color(0xFFE35B2C),
   ),
   _legacy(
-    'pour',
-    'Pour',
-    'Café Spotlight',
-    'One item at a time: a full photo fading into the page, name and price, a black Add to Order pill and "You may also like".',
-    const ['Full-bleed photo', 'Add to Order', 'You may also like'],
-    const ['Food'],
-    const Color(0xFF111111),
-    const Color(0xFFE6E7E9),
-    hero: false,
-  ),
-  _legacy(
-    'tailor',
-    'Tailor',
-    'Menswear',
-    'A tailored store: two-line wordmark, dark collection banner, grey cards with hearts and a detail page with a thumbnail column.',
-    const ['Collection banner', 'Thumbnail column', 'Qty + total price'],
-    const ['Fashion'],
-    const Color(0xFF111111),
-    const Color(0xFFF59E6B),
-  ),
-  _legacy(
     'sprint',
     'Sprint',
     'Performance',
@@ -367,27 +391,6 @@ final List<StorefrontTemplateDef> kLegacyWebStorefrontTemplates = [
     const ['Retail'],
     const Color(0xFF2563EB),
     const Color(0xFFFACC15),
-  ),
-  _legacy(
-    'service',
-    'Service',
-    'Services',
-    'For services: blue location header, offer cards, round category icons and a provider-style detail page.',
-    const ['Offer cards', 'Round categories', 'Order Now'],
-    const ['Services'],
-    const Color(0xFF5B7CF6),
-    const Color(0xFFFACC15),
-  ),
-  _legacy(
-    'warung',
-    'Warung',
-    'Local Eatery',
-    'A friendly eatery: greeting, outlined chips, list rows with round dishes and a Total + Order footer.',
-    const ['Greeting header', 'Dish list rows', 'Total + Order'],
-    const ['Food'],
-    const Color(0xFF169A49),
-    const Color(0xFFE11D2E),
-    hero: false,
   ),
   _legacy(
     'collector',

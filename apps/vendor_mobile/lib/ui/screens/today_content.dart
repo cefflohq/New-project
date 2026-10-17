@@ -89,6 +89,7 @@ class TodayContent extends StatelessWidget {
     return PageBody(
       onRefresh: reload,
       children: [
+        const VerificationBanner(),
         KpiStrip(
           items: [
             KpiItem('${counts[0]}', L.totalOrders2),
@@ -172,4 +173,73 @@ class TodayContent extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Until Cefflo verifies the business, every new order is refused by the
+/// server (orders_require_verified_business). This says why, and sends the
+/// owner to Business verification.
+class VerificationBanner extends StatefulWidget {
+  const VerificationBanner({super.key});
+
+  @override
+  State<VerificationBanner> createState() => _VerificationBannerState();
+}
+
+class _VerificationBannerState extends State<VerificationBanner> {
+  Future<Map<String, dynamic>?>? _load;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final app = AppScope.read(context);
+    final id = app.business?.id;
+    _load ??= id == null
+        ? Future.value(const {'status': 'verified'})
+        : app.repo.businessVerification(id).catchError((_) => null);
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<Map<String, dynamic>?>(
+    future: _load,
+    builder: (context, snap) {
+      if (snap.connectionState != ConnectionState.done) {
+        return const SizedBox.shrink();
+      }
+      final status = snap.data?['status'] as String?;
+      if (status == 'verified') return const SizedBox.shrink();
+      final app = AppScope.of(context);
+      final owner = app.business?.isOwner ?? false;
+      final text = Theme.of(context).textTheme;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: Gap.md),
+        child: CefCard(
+          onTap: owner ? () => app.go(VRoute.businessVerification) : null,
+          child: Row(
+            children: [
+              Icon(LucideIcons.badgeAlert, color: context.c.attention),
+              const SizedBox(width: Gap.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(L.bvBannerTitle, style: text.titleSmall),
+                    const SizedBox(height: 2),
+                    Text(
+                      status == 'pending'
+                          ? L.bvBannerPending
+                          : owner
+                          ? L.bvBannerBody
+                          : L.bvBannerStaff,
+                      style: text.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (owner) const Icon(LucideIcons.chevronRight, size: 18),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

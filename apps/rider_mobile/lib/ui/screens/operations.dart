@@ -671,6 +671,11 @@ class _PickupChecklist extends StatelessWidget {
     final done = pickedUp
         ? open.length
         : open.where((s) => app.pickupTicks.contains(s.id)).length;
+    if (!pickedUp && !app.atPickupChecked) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => app.refreshAtPickup(),
+      );
+    }
     return CeffloCard(
       shadow: false,
       child: Column(
@@ -696,15 +701,24 @@ class _PickupChecklist extends StatelessWidget {
               ),
             ],
           ),
+          // Opens at the pickup point once everything is packed (Founder
+          // 2026-10-16).
           if (!pickedUp && !app.pickupWindowOpen) ...[
             const SizedBox(height: Gap.sm),
             CeffloNote(
               icon: LucideIcons.lock,
-              body: L.pickupOpensAt(
-                _clockOfMinutes(app.pickupOpensAt!),
-                AppState.pickupWindowMinutes,
-              ),
+              body: !app.atPickup
+                  ? L.pickupLockArrive(run.pickupBusinessName)
+                  : L.pickupLockPacking(run.pickupBusinessName),
             ),
+            if (!app.atPickup)
+              Align(
+                alignment: Alignment.centerRight,
+                child: CeffloTextLink(
+                  L.pickupCheckAgain,
+                  onTap: app.refreshAtPickup,
+                ),
+              ),
           ],
           const SizedBox(height: Gap.xs),
           for (final s in run.stops)
@@ -813,12 +827,6 @@ class _PickupRow extends StatelessWidget {
     );
     return locked ? Opacity(opacity: .45, child: row) : row;
   }
-}
-
-String _clockOfMinutes(int m) {
-  final h = (m ~/ 60) % 24, min = m % 60;
-  final h12 = h % 12 == 0 ? 12 : h % 12;
-  return '$h12:${min.toString().padLeft(2, '0')} ${h < 12 ? 'AM' : 'PM'}';
 }
 
 /// Report a problem with one order at pickup (R-11): not ready at the store

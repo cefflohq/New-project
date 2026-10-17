@@ -1240,7 +1240,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your order has been updated successfully.';
 
   @override
-  String get reviewCreate => 'Review & Create';
+  String get reviewCreate => 'Create';
 
   @override
   String get updateOrder => 'Update Order';
@@ -3818,7 +3818,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openingClosed => 'Opening closed';
 
   @override
-  String get newOpening => 'New opening';
+  String get newOpening => 'Hiring';
 
   @override
   String get openingFixFields =>
@@ -4357,4 +4357,543 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hrProfileDone => 'Done';
+
+  @override
+  String get loaderDefault => 'Loading…';
+
+  @override
+  String get loaderSlow => 'Still loading, please wait a moment';
+
+  @override
+  String get itemNameLabel => 'Item name';
+
+  @override
+  String get quantityLabel => 'Quantity';
+
+  @override
+  String get unitPriceOptional => 'Price per unit (RM, optional)';
+
+  @override
+  String get itemNameRequired => 'Enter the item name.';
+
+  @override
+  String get quantityInvalid => 'Enter a quantity of 1 or more.';
+
+  @override
+  String get priceInvalid => 'Enter a valid price.';
+
+  @override
+  String get addItem => 'Add item';
+
+  @override
+  String get editItem => 'Edit item';
+
+  @override
+  String get receipt => 'Receipt';
+
+  @override
+  String get receiptNoPrices => 'No prices were entered for these items.';
+
+  @override
+  String get fullScreen => 'Full screen';
+
+  @override
+  String get exitFullScreen => 'Exit full screen';
+
+  @override
+  String get zonesSelect => 'Select';
+
+  @override
+  String get zonesSelectAll => 'Select all';
+
+  @override
+  String get zonesDeselectAll => 'Deselect all';
+
+  @override
+  String zonesSelected(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String zonesDeleteSelected(int count) {
+    return 'Delete ($count)';
+  }
+
+  @override
+  String zonesDeleteSelectedTitle(int count) {
+    return 'Delete $count zones?';
+  }
+
+  @override
+  String get zonesDeleteSelectedBody =>
+      'They will be removed from your delivery setup. Past orders keep their zone.';
+
+  @override
+  String zonesDeleted(int count) {
+    return '$count zones deleted';
+  }
+
+  @override
+  String zonesNotDeleted(int count) {
+    return '$count zones still have orders in progress and were kept';
+  }
+
+  @override
+  String get countryCodeTitle => 'Country code';
+
+  @override
+  String get searchCountryOrCode => 'Search country or code';
+
+  @override
+  String get issueCustomerRescheduled => 'Customer asked to reschedule';
+
+  @override
+  String get issueOther => 'Other';
+
+  @override
+  String ntDriverSupport(String name) {
+    return 'Support request from $name';
+  }
+
+  @override
+  String get noFaqResults => 'No matching questions.';
+
+  @override
+  String get sheetLinkHint =>
+      'Paste the link of your Google Sheet. Share it first as \"Anyone with the link can view\".';
+
+  @override
+  String get sheetLinkInvalid => 'That isn\'t a Google Sheets link.';
+
+  @override
+  String get sheetNotShared =>
+      'Couldn\'t open that sheet. Share it as \"Anyone with the link can view\" and try again.';
+
+  @override
+  String get legalLastUpdated => 'Last updated';
+
+  @override
+  String get legalPrivacyPolicy => 'Privacy Policy';
+
+  @override
+  String get legalTerms => 'Terms of Service';
+
+  @override
+  String get legalConsentLead => 'By creating an account, you agree to the ';
+
+  @override
+  String get legalConsentAnd => ' and ';
+
+  @override
+  String get legalAgreeLead => 'I agree to the ';
+
+  @override
+  String get legalAgreeRequired =>
+      'Tick the box to agree to the Terms of Service and Privacy Policy first.';
+
+  @override
+  String get legalWelcomeTitle => 'Welcome to Cefflo';
+
+  @override
+  String get legalWelcomeBody =>
+      'Before you continue, please agree to how Cefflo works and how we handle your data.';
+
+  @override
+  String get legalAgreeContinue => 'Agree and continue';
+
+  @override
+  String get legalDecline => 'Not now';
+
+  @override
+  String confirmApproveTitle(String name) {
+    return 'Approve $name?';
+  }
+
+  @override
+  String confirmRejectTitle(String name) {
+    return 'Reject $name?';
+  }
+
+  @override
+  String get confirmApproveBody =>
+      'They will get access to your business and be told by email.';
+
+  @override
+  String get confirmRejectBody =>
+      'Their request will be declined. This can\'t be undone.';
+
+  @override
+  String get confirmApproveYes => 'Yes, approve';
+
+  @override
+  String get confirmRejectYes => 'Yes, reject';
+
+  @override
+  String get licenceSubmittedPrivate => 'Submitted and kept private by Cefflo';
+
+  @override
+  String get icNumber => 'IC number';
+
+  @override
+  String get reportIncident => 'Report an incident';
+
+  @override
+  String get reportIncidentLead =>
+      'Theft, fraud or a safety issue with this driver';
+
+  @override
+  String get reportIncidentBody =>
+      'Cefflo reviews the report. Only for a real incident can Cefflo open this driver\'s private documents, and the driver is told.';
+
+  @override
+  String get reportIncidentHint =>
+      'What happened, when, and the order involved';
+
+  @override
+  String get reportIncidentSend => 'Send report';
+
+  @override
+  String get reportIncidentTooShort => 'Describe what happened first.';
+
+  @override
+  String get reportIncidentSent => 'Report sent to Cefflo';
+
+  @override
+  String get cmpReportProblem => 'Report a problem';
+
+  @override
+  String get cmpReportLead =>
+      'Damage, conduct or safety. Cefflo hears both sides.';
+
+  @override
+  String get cmpWhatHappened => 'What happened?';
+
+  @override
+  String get cmpDescribe => 'Describe what happened';
+
+  @override
+  String get cmpDescribeHint => 'What happened, when, and which order';
+
+  @override
+  String get cmpPhotos => 'Photos (up to 5)';
+
+  @override
+  String get cmpAddPhoto => 'Add photo';
+
+  @override
+  String get cmpSend => 'Send report';
+
+  @override
+  String get cmpTooShort => 'Tell us a little more (at least 10 characters).';
+
+  @override
+  String cmpSent(String ref) {
+    return 'Report sent. Case $ref.';
+  }
+
+  @override
+  String get cmpCatDamaged => 'Item damaged or lost';
+
+  @override
+  String get cmpCatConduct => 'Behaviour';
+
+  @override
+  String get cmpCatSafety => 'Safety';
+
+  @override
+  String get cmpCatUnpaid => 'Not paid';
+
+  @override
+  String get cmpCatFraud => 'Fraud or scam';
+
+  @override
+  String get cmpCatOther => 'Something else';
+
+  @override
+  String get cmpTitle => 'Complaints';
+
+  @override
+  String get cmpLead => 'Reports you made and reports about your business.';
+
+  @override
+  String get cmpEmpty =>
+      'No complaints. Reports you make or receive appear here.';
+
+  @override
+  String get cmpTabOpen => 'Open';
+
+  @override
+  String get cmpTabResolved => 'Resolved';
+
+  @override
+  String get cmpYouReported => 'You reported';
+
+  @override
+  String get cmpAboutYou => 'About your business';
+
+  @override
+  String get cmpStatusAwaiting => 'Waiting for reply';
+
+  @override
+  String get cmpStatusReview => 'Cefflo is reviewing';
+
+  @override
+  String get cmpStatusResolved => 'Resolved';
+
+  @override
+  String cmpReplyBy(String date) {
+    return 'Reply by $date';
+  }
+
+  @override
+  String get cmpTheirSide => 'Their side';
+
+  @override
+  String get cmpYourSide => 'Your side';
+
+  @override
+  String get cmpCefflo => 'Cefflo';
+
+  @override
+  String get cmpNoReplyYet => 'No reply yet.';
+
+  @override
+  String get cmpGiveYourSide => 'Give your side';
+
+  @override
+  String get cmpReplyHint => 'Explain what happened from your side';
+
+  @override
+  String get cmpSendReply => 'Send reply';
+
+  @override
+  String get cmpReplySent => 'Reply sent to Cefflo';
+
+  @override
+  String get cmpOutcome => 'Outcome';
+
+  @override
+  String get cmpDecSettled => 'Settled between both sides';
+
+  @override
+  String get cmpDecNoFault => 'No fault found';
+
+  @override
+  String get cmpDecWarning => 'A warning was given';
+
+  @override
+  String get cmpDecDriver => 'The driver was at fault';
+
+  @override
+  String get cmpDecVendor => 'The business was at fault';
+
+  @override
+  String get cmpDecCustomer => 'The customer was at fault';
+
+  @override
+  String get cmpDecFalse => 'The report was found to be false';
+
+  @override
+  String get cmpFromCustomer => 'Customer';
+
+  @override
+  String get cmpFromDriver => 'Driver';
+
+  @override
+  String get cmpFromBusiness => 'Business';
+
+  @override
+  String cmpOrder(String ref) {
+    return 'Order $ref';
+  }
+
+  @override
+  String get bvTitle => 'Business verification';
+
+  @override
+  String get bvLead =>
+      'Cefflo checks your SSM registration and the owner\'s IC. Documents stay sealed after review.';
+
+  @override
+  String get bvSsm => 'SSM registration number';
+
+  @override
+  String get bvSsmHint => 'e.g. 202301012345 (1234567-X)';
+
+  @override
+  String get bvOwner => 'Owner\'s full name (as on IC)';
+
+  @override
+  String get bvIc => 'Owner\'s IC number';
+
+  @override
+  String get bvIcHint => 'Only the last 4 digits are kept';
+
+  @override
+  String get bvSsmDoc => 'SSM certificate (photo or PDF)';
+
+  @override
+  String get bvIcFront => 'Owner\'s IC (front)';
+
+  @override
+  String get bvIcBack => 'Owner\'s IC (back)';
+
+  @override
+  String get bvChoose => 'Choose file';
+
+  @override
+  String get bvChosen => 'Added';
+
+  @override
+  String get bvSubmit => 'Submit for review';
+
+  @override
+  String get bvMissing => 'Fill in every field and add all three documents.';
+
+  @override
+  String get bvIcInvalid => 'Enter the full 12-digit IC number.';
+
+  @override
+  String get bvSent => 'Sent. Cefflo reviews it within 2 working days.';
+
+  @override
+  String get bvPending => 'Under review';
+
+  @override
+  String get bvVerified => 'Verified';
+
+  @override
+  String get bvRejected => 'Not approved';
+
+  @override
+  String get bvNone => 'Not verified';
+
+  @override
+  String bvRejectedBecause(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get bvPendingBody => 'Cefflo is checking your documents.';
+
+  @override
+  String get bvVerifiedBody => 'Your business is verified.';
+
+  @override
+  String get bvOwnerOnly => 'Only the business owner can submit verification.';
+
+  @override
+  String get bvBannerTitle => 'Verify your business to receive orders';
+
+  @override
+  String get bvBannerBody =>
+      'Orders are blocked until Cefflo verifies your SSM and owner IC.';
+
+  @override
+  String get bvBannerPending =>
+      'Verification under review. Orders open once approved.';
+
+  @override
+  String get bvBannerStaff =>
+      'Ask the business owner to complete verification.';
+
+  @override
+  String get bvSsmOptional => 'SSM certificate (optional)';
+
+  @override
+  String get bvSnap => 'Take photo';
+
+  @override
+  String get bvRetake => 'Retake';
+
+  @override
+  String get bvAddFile => 'Add';
+
+  @override
+  String get bvAutoRead =>
+      'Take photos of both sides of the owner\'s IC with the camera. The name and IC number are read from the photo.';
+
+  @override
+  String bvReadResult(String name, String last4) {
+    return 'Read from IC: $name · IC ••••$last4';
+  }
+
+  @override
+  String get bvReadLater => 'Cefflo will read the IC details during review.';
+
+  @override
+  String get bvIcMissing => 'Take photos of both sides of the IC.';
+
+  @override
+  String get idCamTipFrame => 'Fit the whole IC inside the yellow frame';
+
+  @override
+  String get idCamTipLight => 'Use bright, even light; avoid shadows';
+
+  @override
+  String get idCamTipGlare => 'Tilt slightly if there is glare on the card';
+
+  @override
+  String get idCamCheck => 'Is the text sharp and readable?';
+
+  @override
+  String get idCamUse => 'Use this photo';
+
+  @override
+  String get idCamUnavailable =>
+      'The camera is not available. Allow camera access in your phone settings.';
+
+  @override
+  String get idCamFailed => 'Could not take the photo. Try again.';
+
+  @override
+  String get idCamFindCard => 'Place the IC inside the frame';
+
+  @override
+  String get idCamHold => 'Hold still…';
+
+  @override
+  String get idCamTaking => 'Taking the photo…';
+
+  @override
+  String get delTitle => 'Delete account';
+
+  @override
+  String get delLink => 'Delete account';
+
+  @override
+  String get delBody =>
+      'Your account closes now: you are signed out and cannot sign in again. After 30 days your name, phone, email and documents are erased. Order records stay for 7 years without your name, as the Privacy Policy says.';
+
+  @override
+  String get delOwner => 'If you own a business, its team loses access too.';
+
+  @override
+  String get delReasonHint => 'Why are you leaving? (optional)';
+
+  @override
+  String get delConfirm => 'Delete my account';
+
+  @override
+  String get delDone => 'Your account is closed.';
+
+  @override
+  String get dsLead =>
+      'How many orders Cefflo puts in one run when it plans deliveries for a driver.';
+
+  @override
+  String get dsRunSize => 'Orders per run';
+
+  @override
+  String get dsMin => 'At least';
+
+  @override
+  String get dsMax => 'At most';
+
+  @override
+  String get dsHint =>
+      'Smaller runs finish sooner; bigger runs use fewer drivers. 1 to 50.';
+
+  @override
+  String get dsSaved => 'Delivery settings saved';
 }

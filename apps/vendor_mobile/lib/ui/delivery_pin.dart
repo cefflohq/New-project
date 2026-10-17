@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/env.dart';
 import '../data/models.dart';
+import 'google_tiles.dart';
+import 'map_pin.dart';
 import 'widgets.dart' show CefButton;
 import '../core/theme.dart';
 
@@ -20,8 +23,11 @@ import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 bool get _mapbox => Env.mapboxPublicToken.startsWith('pk.');
 
 /// Mapbox Streets raster tiles when the build carries a public pk. token
-/// (Founder 2026-10-12); CARTO Positron otherwise (the 2026-10-08 fallback).
-Widget _tileLayer(BuildContext context) => _mapbox
+/// (Founder 2026-10-12); OpenStreetMap otherwise.
+Widget _tileLayer(BuildContext context) =>
+    GoogleTileLayer(fallback: _fallbackTiles);
+
+Widget _fallbackTiles(BuildContext context) => _mapbox
     ? TileLayer(
         urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}{r}?access_token={token}',
         additionalOptions: const {'token': Env.mapboxPublicToken},
@@ -30,9 +36,9 @@ Widget _tileLayer(BuildContext context) => _mapbox
       )
     : TileLayer(
         urlTemplate:
-            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        subdomains: const ['a', 'b', 'c', 'd'],
-        retinaMode: RetinaMode.isHighDensity(context),
+            // CARTO's free tiles now need a key; OpenStreetMap is the keyless
+            // fallback (Google is the real map).
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         userAgentPackageName: 'my.cefflo.vendor',
       );
 
@@ -41,16 +47,18 @@ Widget cefTileLayer(BuildContext context) => _tileLayer(context);
 
 String get cefMapCredit => _credit;
 
-String get _credit =>
-    _mapbox ? '© Mapbox © OpenStreetMap' : '© OpenStreetMap © CARTO';
+String get _credit => googleTiles
+    ? googleCredit
+    : _mapbox
+    ? '© Mapbox © OpenStreetMap'
+    : '© OpenStreetMap';
 
 const _malaysia = LatLng(4.2, 101.9);
 const _pinDone = Color(0xFF16A34A);
 
 Widget get _attribution => MapCredit(_credit);
 
-Widget _pinIcon() =>
-    const Icon(LucideIcons.mapPin, size: 40, color: CefColors.navy);
+Widget _pinIcon() => const CefPin(size: 40);
 
 /// Read-only mini map with the customer's pin. Pan-only, no zoom or rotate.
 class DeliveryPinView extends StatelessWidget {
@@ -115,10 +123,15 @@ class DeliveryPinPicker extends StatefulWidget {
     required this.initial,
     required this.onChanged,
     this.height = 340,
+    this.fullscreen = false,
   });
   final PinPoint? initial;
   final ValueChanged<PinPoint> onChanged;
   final double height;
+
+  /// The same picker filling the screen (Founder 2026-10-15: a corner
+  /// button maximises the map); its corner button closes it.
+  final bool fullscreen;
 
   @override
   State<DeliveryPinPicker> createState() => _DeliveryPinPickerState();
@@ -176,6 +189,43 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
     }
   }
 
+  Future<void> _toggleFullscreen() async {
+    if (widget.fullscreen) {
+      Navigator.of(context).pop();
+      return;
+    }
+    PinPoint? moved;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => Scaffold(
+          body: DeliveryPinPicker(
+            initial: _pin ?? _centre,
+            height: double.infinity,
+            fullscreen: true,
+            onChanged: (p) => moved = p,
+          ),
+        ),
+      ),
+    );
+    final p = moved;
+    if (p == null || !mounted) return;
+    setState(() => _set(p.lat, p.lng));
+    _controller.move(LatLng(p.lat, p.lng), 17);
+  }
+
+  /// Where the map looks now, so the full-screen map opens on the same spot.
+  PinPoint? get _centre {
+    try {
+      final c = _controller.camera.center;
+      return _controller.camera.zoom >= 14
+          ? (lat: c.latitude, lng: c.longitude)
+          : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _zoom(double d) => _controller.move(
     _controller.camera.center,
     (_controller.camera.zoom + d).clamp(3, 19),
@@ -185,13 +235,16 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
   Widget build(BuildContext context) {
     final c = context.c;
     final start = _pin;
+    final radius = BorderRadius.circular(
+      widget.fullscreen ? 0 : Sizes.cardRadius,
+    );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      borderRadius: radius,
       child: Container(
         height: widget.height,
         decoration: BoxDecoration(
-          border: Border.all(color: c.border),
-          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+          border: widget.fullscreen ? null : Border.all(color: c.border),
+          borderRadius: radius,
         ),
         child: Stack(
           children: [
@@ -244,8 +297,32 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
               ),
             ),
             Positioned(
+              left: 10,
+              top: widget.fullscreen
+                  ? MediaQuery.paddingOf(context).top + 10
+                  : 10,
+              child: Material(
+                color: c.card,
+                elevation: 2,
+                borderRadius: BorderRadius.circular(12),
+                clipBehavior: Clip.antiAlias,
+                child: IconButton(
+                  tooltip: widget.fullscreen ? L.exitFullScreen : L.fullScreen,
+                  icon: Icon(
+                    widget.fullscreen
+                        ? LucideIcons.minimize2
+                        : LucideIcons.maximize2,
+                    size: 18,
+                  ),
+                  onPressed: _toggleFullscreen,
+                ),
+              ),
+            ),
+            Positioned(
               right: 10,
-              top: 10,
+              top: widget.fullscreen
+                  ? MediaQuery.paddingOf(context).top + 10
+                  : 10,
               child: Material(
                 color: c.card,
                 elevation: 2,
@@ -270,7 +347,9 @@ class _DeliveryPinPickerState extends State<DeliveryPinPicker> {
             ),
             Positioned(
               right: 10,
-              bottom: 22,
+              bottom: widget.fullscreen
+                  ? MediaQuery.paddingOf(context).bottom + 22
+                  : 22,
               child: Material(
                 color: c.card,
                 elevation: 3,
@@ -325,23 +404,59 @@ Color zoneColor(Zone z) =>
 
 /// Read-only map with several customer pins (run stops, zone orders). Fits
 /// all pins; Malaysia overview when none. Pins only -- no rider location.
-class PinsMap extends StatelessWidget {
+class PinsMap extends StatefulWidget {
   const PinsMap({
     super.key,
     required this.drops,
     this.height = 300,
     this.emptyLabel,
     this.zones = const [],
+    this.onZoneTap,
+    this.selectedZoneIds,
   });
   final List<MapDrop> drops;
-  final double height;
+
+  /// Null fills the space the parent gives (Zones tab, full map).
+  final double? height;
   final String? emptyLabel;
 
   /// Zones with a drawn boundary are drawn under the pins.
   final List<Zone> zones;
 
+  /// Tapping inside a zone's area reports it (Founder 2026-10-16).
+  final ValueChanged<Zone>? onZoneTap;
+
+  /// While selecting zones: these draw strongly, the rest faded.
+  final Set<String>? selectedZoneIds;
+
+  @override
+  State<PinsMap> createState() => _PinsMapState();
+}
+
+class _PinsMapState extends State<PinsMap> {
+  final _hits = LayerHitNotifier<String>(null);
+
+  @override
+  void dispose() {
+    _hits.dispose();
+    super.dispose();
+  }
+
+  void _onTap() {
+    final ids = _hits.value?.hitValues;
+    if (ids == null || ids.isEmpty || widget.onZoneTap == null) return;
+    // Smallest zone on top wins: hit values come topmost first.
+    final zone = widget.zones.where((z) => z.id == ids.first).firstOrNull;
+    if (zone != null) widget.onZoneTap!(zone);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final drops = widget.drops;
+    final zones = widget.zones;
+    final height = widget.height;
+    final emptyLabel = widget.emptyLabel;
+    final selected = widget.selectedZoneIds;
     final c = context.c;
     final shapes = zones.where((z) => z.boundary != null).toList();
     final points = [
@@ -370,30 +485,15 @@ class PinsMap extends StatelessWidget {
         ),
       );
     }
-    Widget dot(MapDrop d) => Container(
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        // Cefflo map pins, same on every surface: stop #01265E, next
-        // #FFC93C, done #16A34A with a check.
-        color: d.done
-            ? _pinDone
-            : d.next
-            ? CefColors.ceffloMustard
-            : CefColors.anchorBlue,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 4)],
-      ),
-      child: d.done
-          ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
-          : Text(
-              d.label ?? '',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: d.next ? CefColors.anchorBlue : Colors.white,
-              ),
-            ),
+    // Cefflo map pins, same on every surface: blue stop, mustard next,
+    // green done with a check; sized by zoom (Founder 2026-10-16).
+    Widget dot(MapDrop d) => ZoomPin(
+      color: d.done
+          ? _pinDone
+          : d.next
+          ? CefColors.ceffloMustard
+          : CefPin.pinBlue,
+      label: d.done ? '✓' : d.label,
     );
     return ClipRRect(
       borderRadius: BorderRadius.circular(Sizes.cardRadius),
@@ -413,24 +513,42 @@ class PinsMap extends StatelessWidget {
               children: [
                 _tileLayer(context),
                 if (shapes.isNotEmpty)
-                  PolygonLayer(
-                    polygons: [
-                      for (final z in shapes)
-                        Polygon(
-                          points: [
-                            for (final (lat, lng) in z.boundary!)
-                              LatLng(lat, lng),
-                          ],
-                          holePointsList: [
-                            for (final h in z.holes)
-                              [for (final (lat, lng) in h) LatLng(lat, lng)],
-                          ],
-                          // Soft zones: light tint, thin translucent edge.
-                          color: zoneColor(z).withValues(alpha: .12),
-                          borderColor: zoneColor(z).withValues(alpha: .55),
-                          borderStrokeWidth: 1.5,
-                        ),
-                    ],
+                  GestureDetector(
+                    onTap: widget.onZoneTap == null ? null : _onTap,
+                    child: PolygonLayer<String>(
+                      hitNotifier: _hits,
+                      polygons: [
+                        for (final z in shapes)
+                          Polygon<String>(
+                            hitValue: z.id,
+                            points: [
+                              for (final (lat, lng) in z.boundary!)
+                                LatLng(lat, lng),
+                            ],
+                            holePointsList: [
+                              for (final h in z.holes)
+                                [for (final (lat, lng) in h) LatLng(lat, lng)],
+                            ],
+                            // Soft zones: light tint, thin translucent edge;
+                            // a picked zone (selecting) stands out.
+                            color: zoneColor(z).withValues(
+                              alpha: selected == null
+                                  ? .12
+                                  : selected.contains(z.id)
+                                  ? .45
+                                  : .06,
+                            ),
+                            borderColor: zoneColor(z).withValues(
+                              alpha: selected?.contains(z.id) ?? false
+                                  ? 1
+                                  : .55,
+                            ),
+                            borderStrokeWidth: selected?.contains(z.id) ?? false
+                                ? 3
+                                : 1.5,
+                          ),
+                      ],
+                    ),
                   ),
                 MarkerLayer(
                   markers: [
@@ -441,8 +559,9 @@ class PinsMap extends StatelessWidget {
                     ])
                       Marker(
                         point: LatLng(d.lat, d.lng),
-                        width: d.next ? 34 : 28,
-                        height: d.next ? 34 : 28,
+                        width: ZoomPin.pinBox,
+                        height: ZoomPin.pinBox,
+                        alignment: Alignment.topCenter,
                         child: dot(d),
                       ),
                   ],
@@ -468,7 +587,7 @@ class PinsMap extends StatelessWidget {
                       border: Border.all(color: c.border),
                     ),
                     child: Text(
-                      emptyLabel!,
+                      emptyLabel,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),

@@ -134,9 +134,11 @@ void main() {
       'Notifications',
       'Language',
       'Privacy',
+      'Terms of service',
       'About Cefflo',
       'Sign out',
     ]) {
+      await tester.scrollUntilVisible(find.text(t), 120);
       expect(find.text(t), findsOneWidget, reason: t);
     }
     await tester.tap(find.text('Notifications'));

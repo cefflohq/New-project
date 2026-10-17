@@ -19,34 +19,19 @@ void main() {
     applyUiLocale(const Locale('en'));
   });
 
-  group('first launch follows a supported device language', () {
-    test('Bahasa Melayu device → BM', () {
-      expect(
-        resolveDeviceLocale([const Locale('ms', 'MY')]),
-        const Locale('ms'),
-      );
-    });
-    test('English device → English', () {
+  group('first launch is English', () {
+    test('whatever the device language', () {
+      firstLaunchLocale = defaultUiLocale;
+      addTearDown(() => firstLaunchLocale = const Locale('en'));
       expect(
         resolveDeviceLocale([const Locale('en', 'US')]),
         const Locale('en'),
       );
-    });
-    test('unsupported device language → English', () {
       expect(
-        resolveDeviceLocale([const Locale('fr'), const Locale('ja')]),
+        resolveDeviceLocale([const Locale('ms', 'MY')]),
         const Locale('en'),
       );
-    });
-    test('first supported language in the device list wins', () {
-      expect(
-        resolveDeviceLocale([
-          const Locale('fr'),
-          const Locale('ms'),
-          const Locale('en'),
-        ]),
-        const Locale('ms'),
-      );
+      expect(resolveDeviceLocale([const Locale('fr')]), const Locale('en'));
     });
   });
 

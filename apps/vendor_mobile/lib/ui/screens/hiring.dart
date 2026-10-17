@@ -1,7 +1,7 @@
-import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../address_suggest.dart';
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
@@ -342,37 +342,15 @@ class _OpeningsListState extends State<OpeningsList> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.c;
     return ValueListenableBuilder(
       valueListenable: openOpenings,
       builder: (context, list, _) {
         if (list == null) return const StateBlock.loading();
         if (list.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: Gap.xl),
-            child: Column(
-              children: [
-                Text(
-                  L.noOpenOpenings,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: c.textSecondary),
-                ),
-                const SizedBox(height: Gap.lg),
-                SizedBox(
-                  height: 44,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: CefColors.standardBrand,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () => openNewOpening(context),
-                    child: Text(L.newOpening),
-                  ),
-                ),
-              ],
-            ),
+          return StateBlock.empty(
+            L.noOpenOpenings,
+            actionLabel: L.newOpening,
+            onAction: () => openNewOpening(context),
           );
         }
         return Column(
@@ -652,10 +630,17 @@ class _OpeningFormState extends State<_OpeningForm> {
               _FormSection(
                 label: L.openingArea,
                 first: true,
-                child: _OutlinedInput(
-                  controller: _area,
-                  hint: L.openingAreaHint,
-                  icon: LucideIcons.mapPin,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _OutlinedInput(
+                      controller: _area,
+                      hint: L.openingAreaHint,
+                      icon: LucideIcons.mapPin,
+                    ),
+                    const SizedBox(height: Gap.sm),
+                    AddressSuggestions(controller: _area, regions: true),
+                  ],
                 ),
               ),
               _FormSection(
@@ -840,26 +825,7 @@ class _OpeningFormState extends State<_OpeningForm> {
                 ),
               ],
               const SizedBox(height: Gap.lg),
-              SizedBox(
-                height: 52,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: CefColors.standardBrand,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  onPressed: _busy ? null : _save,
-                  child: _busy
-                      ? const CefDots(onBlue: true)
-                      : Text(L.hrPublish),
-                ),
-              ),
+              CefButton(L.hrPublish, busy: _busy, onTap: _busy ? null : _save),
               SizedBox(height: Gap.md + media.viewPadding.bottom),
             ],
           ),
@@ -976,7 +942,7 @@ class _OutlinedInput extends StatelessWidget {
           vertical: 14,
         ),
         enabledBorder: _outline(c.border),
-        focusedBorder: _outline(CefColors.standardBrand, 1.5),
+        focusedBorder: _outline(CefColors.focusGrey, 1.5),
         border: _outline(c.border),
       ),
     );
@@ -1155,6 +1121,11 @@ class _HiringPostScreenState extends State<HiringPostScreen> {
   ) async {
     final app = AppScope.read(context);
     final riderId = r['rider_id'] as String;
+    final name = ((r['riders'] as Map?)?['name'] as String?) ?? L.rider;
+    if (!await confirmDecision(context, approve: approve, name: name)) {
+      return;
+    }
+    if (!mounted) return;
     setState(() => _busy = riderId);
     try {
       approve

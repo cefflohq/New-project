@@ -137,10 +137,15 @@ class VendorOrder {
     this.orderDate,
     this.latitude,
     this.longitude,
+    this.placeId,
   });
 
   final String id;
   final DeliveryStatus status;
+
+  /// Google place the geocoder matched; lets directions open a typed address
+  /// that maps search alone can't route to.
+  final String? placeId;
 
   /// The customer's (or vendor's) pinned drop point; null when never pinned.
   final double? latitude, longitude;
@@ -186,6 +191,7 @@ class VendorOrder {
     orderDate: r['order_date'] as String?,
     latitude: (r['latitude'] as num?)?.toDouble(),
     longitude: (r['longitude'] as num?)?.toDouble(),
+    placeId: r['place_id'] as String?,
   );
 
   /// Short human reference. Falls back to the id when the backend has not

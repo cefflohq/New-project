@@ -1620,3 +1620,62 @@ h1, h2, h3, h4, p { margin: 0; }
   .mo-loc { margin: 16px 32px 0; } .mo-band { padding: 18px 32px; }
   .mo-pwrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 0 16px; } .mo-pwrap .mo-photo { margin: 0; }
 }
+
+/* ===== Five-template set (2026-10-17): Menu = warung, 1:1 with the Harbani
+   reference prototype. Round dish on a white rim overhanging a grey card. */
+.sf .wr-list { display: grid; gap: 44px; padding: 26px 28px 0 0; }
+.sf .wr-row { display: block; position: relative; margin-left: 96px; padding: 20px 16px 14px 90px; min-height: 132px; border-radius: 24px; background: #F2F2F2; overflow: visible; box-sizing: border-box; }
+.sf .wr-dish { position: absolute; left: -90px; top: -18px; transform: none; width: 168px; height: 168px; min-height: 0; border-radius: 50%; overflow: hidden; border: 6px solid #fff; box-sizing: border-box; box-shadow: 0 10px 22px rgba(0,0,0,.2); background: #fff; }
+.sf .wr-dish img, .sf .wr-dish .sf-ph { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.sf .wr-tx { padding: 0; display: flex; flex-direction: column; min-height: 98px; }
+.sf .wr-tx h3 { font-size: 11px; font-weight: 600; }
+.sf .wr-tx p { font-size: 8.5px; color: #555; margin: 3px 0 0; -webkit-line-clamp: 2; }
+.sf .wr-foot { margin-top: auto; align-items: flex-end; }
+.sf .wr-foot b { font-size: 11px; }
+.sf .wr-btn { font-size: 9.5px; padding: 3px 18px; border-radius: 7px; }
+.sf .wr-chip { width: 78px; padding: 5px 0; text-align: center; border-width: 1px; }
+.sf .wr-big { margin: 16px 0 0 26px; padding: 0; width: 340px; max-width: calc(100% - 26px); }
+.sf .wr-big img:not(.sf-cut), .sf .wr-big .sf-ph { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 8px solid #fff; box-sizing: border-box; box-shadow: 0 14px 30px rgba(0,0,0,.18); object-fit: cover; }
+.sf .wr-desc { font-size: 14px; color: #A8A8A8; }
+
+/* Showcase = tailor (Pashaya): size circles, Qty + Total price row, full-width black Add to Bag. */
+.tl-szh { display: flex; justify-content: space-between; margin: 22px 0 8px; font-size: 12px; }
+.tl-szh b { font-weight: 500; }
+.tl-sizes { display: flex; gap: 8px; flex-wrap: wrap; }
+.tl-sizes button { width: 36px; height: 36px; border-radius: 50%; background: #EEEEEE; color: #111; font-size: 12px; font-weight: 500; }
+.tl-sizes button.on { background: #111; color: #fff; }
+.sf-dock-tailor { flex-direction: column; align-items: stretch !important; gap: 14px; background: #fff; }
+.tl-dk { display: flex; justify-content: space-between; align-items: flex-end; }
+.tl-dk small { display: block; font-size: 12px; font-weight: 500; margin-bottom: 6px; color: #111; }
+.tl-qty { background: #EEEEEE; border-radius: 999px; padding: 4px 6px; gap: 14px; }
+.tl-qty button { background: none !important; }
+.tl-tot { text-align: right; }
+.tl-tot b { font-size: 22px; font-weight: 700; }
+.sf-dock-tailor .tl-cta { display: flex; justify-content: center; align-items: center; gap: 10px; height: 56px; border-radius: 999px; background: #111; color: #fff; font-size: 17px; font-weight: 500; width: 100%; }
+
+/* Basket = care (pharmacy reference): larger thumbs, separate rounded −/+ keys. */
+.ca-row { grid-template-columns: 72px minmax(0, 1fr) auto; padding: 10px 0; }
+.ca-row .ca-rimg img, .ca-row .ca-rimg .sf-ph { width: 72px; height: 62px; border-radius: 8px; object-fit: cover; }
+.ca-row b { font-size: 14.5px; }
+.ca-row small { font-size: 11.5px; }
+.ca-rows .ca-step { border: 0; gap: 6px; }
+.ca-rows .ca-step button { width: 30px; height: 30px; border-radius: 8px; background: #EEF4FB; color: var(--accent); }
+.ca-rows .ca-step button:last-child { background: var(--accent); color: #fff; }
+.ca-rows .ca-step span { min-width: 16px; text-align: center; font-weight: 500; }
+.sf-dock-care { flex-direction: column; align-items: stretch !important; gap: 12px; background: #fff; }
+.ca-dq { display: flex; justify-content: flex-end; }
+.ca-dq .ca-step { border: 0; gap: 6px; }
+.ca-dq .ca-step button { width: 32px; height: 32px; border-radius: 8px; background: #EEF4FB; color: var(--accent); }
+.ca-dq .ca-step button:last-child { background: var(--accent); color: #fff; }
+.ca-db { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ca-add, .ca-buy { height: 54px; border-radius: 12px; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.ca-add { border: 1.5px solid var(--accent); color: var(--accent); background: #fff; }
+.ca-buy { background: var(--accent); color: #fff; }
+.ca-add .ic { width: 19px; height: 19px; }
+.sf-dock-service { background: #fff; }
+.sv-book { width: 100%; height: 54px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 16px; font-weight: 500; }
+.sf-dock-pour { gap: 10px; background: #E9E9E7; }
+.po-seg { display: flex; background: rgba(0,0,0,.06); border-radius: 999px; padding: 4px; flex: none; }
+.po-seg button { padding: 10px 16px; border-radius: 999px; font-size: 14px; color: #111; }
+.po-seg button.on { background: #fff; }
+.po-cta { flex: 1; height: 50px; border-radius: 999px; background: #111; color: #fff; font-size: 15px; }

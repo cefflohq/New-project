@@ -107,8 +107,8 @@ Part A.
   address format, availability and regional commercial configuration. It
   never sets the UI language.
 - **Language** is per user, not per business.
-  - First launch uses the device language if Cefflo supports it, otherwise
-    English.
+  - First launch is Bahasa Melayu, whatever the device language (Founder
+    2026-10-15; previously the device language, otherwise English).
   - An explicit user choice persists and overrides device detection until it
     is reset.
   - Language never changes operational data or business logic.

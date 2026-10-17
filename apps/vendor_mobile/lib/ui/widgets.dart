@@ -7,6 +7,7 @@ import 'toast.dart';
 
 import 'dart:ui';
 
+import 'package:cefflo_phone/cefflo_phone.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -184,7 +185,9 @@ class SectionHeading extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: text.titleMedium),
+                // Section titles sit a step below page titles (Founder
+                // 2026-10-16: 20 read too big).
+                Text(title, style: text.titleMedium?.copyWith(fontSize: 17)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(subtitle!, style: text.bodySmall),
@@ -234,12 +237,19 @@ class HeroSurface extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
 
+  // The header gradient squeezed into a small card shows its bright end;
+  // the card takes the header's own colour instead (Founder 2026-10-16).
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: double.infinity,
-    child: BrandBackdrop(
-      borderRadius: BorderRadius.circular(Sizes.cardRadius),
-      child: Padding(padding: padding, child: child),
+  Widget build(BuildContext context) => ValueListenableBuilder<Appearance>(
+    valueListenable: liveAppearance,
+    builder: (context, look, _) => Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: look.backdrop.colors.first,
+        borderRadius: BorderRadius.circular(Sizes.cardRadius),
+      ),
+      padding: padding,
+      child: child,
     ),
   );
 }
@@ -359,65 +369,42 @@ class CefButton extends StatelessWidget {
         : outlined
         ? (compact ? CefColors.brand : c.textPrimary)
         : CefColors.onAccent;
-    return CefPageLoaderWhile(
-      active: busy,
-      label: busyLabel,
-      child: SizedBox(
-        width: compact ? null : double.infinity,
-        height: compact ? 40 : Sizes.buttonHeight,
-        child: FilledButton(
-          onPressed: busy ? null : onTap,
-          style: FilledButton.styleFrom(
-            backgroundColor: outlined ? c.card : CefColors.ceffloMustard,
-            foregroundColor: foreground,
-            disabledBackgroundColor: outlined
-                ? c.card
-                : CefColors.ceffloMustard.withValues(alpha: .5),
-            disabledForegroundColor: foreground.withValues(alpha: .5),
-            side: outlined
-                ? BorderSide(
-                    color: destructive
-                        ? c.attention.withValues(alpha: .45)
-                        : compact
-                        ? CefColors.brand
-                        : c.border,
-                  )
-                : null,
-            padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-            ),
-          ),
-          child: busy
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CefDots(onBlue: foreground.computeLuminance() > .5),
-                    if (busyLabel != null) ...[
-                      const SizedBox(width: Gap.sm),
-                      Flexible(
-                        child: Text(
-                          busyLabel!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(color: foreground),
-                        ),
-                      ),
-                    ],
-                  ],
+    return SizedBox(
+      width: compact ? null : double.infinity,
+      height: compact ? 40 : Sizes.buttonHeight,
+      child: FilledButton(
+        onPressed: busy ? null : onTap,
+        style: FilledButton.styleFrom(
+          backgroundColor: outlined ? c.card : CefColors.ceffloMustard,
+          foregroundColor: foreground,
+          disabledBackgroundColor: outlined
+              ? c.card
+              : CefColors.ceffloMustard.withValues(alpha: .5),
+          disabledForegroundColor: foreground.withValues(alpha: .5),
+          side: outlined
+              ? BorderSide(
+                  color: destructive
+                      ? c.attention.withValues(alpha: .45)
+                      : compact
+                      ? CefColors.brand
+                      : c.border,
                 )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (icon != null) ...[
-                      Icon(icon, size: 18),
-                      const SizedBox(width: Gap.sm),
-                    ],
+              : null,
+          padding: const EdgeInsets.symmetric(horizontal: Gap.lg),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+          ),
+        ),
+        child: busy
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CefDots(onBlue: foreground.computeLuminance() > .5),
+                  if (busyLabel != null) ...[
+                    const SizedBox(width: Gap.sm),
                     Flexible(
                       child: Text(
-                        label,
+                        busyLabel!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleSmall
@@ -425,8 +412,27 @@ class CefButton extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
-        ),
+                ],
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 18),
+                    const SizedBox(width: Gap.sm),
+                  ],
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(color: foreground),
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -445,6 +451,7 @@ class CefField extends StatefulWidget {
     this.hint,
     this.keyboardType,
     this.maxLines = 1,
+    this.minLines,
     this.errorText,
     this.helperText,
     this.onChanged,
@@ -462,6 +469,9 @@ class CefField extends StatefulWidget {
   final String? initialValue, hint, errorText, helperText;
   final TextInputType? keyboardType;
   final int maxLines;
+
+  /// Grows from [minLines] up to [maxLines] as the text wraps.
+  final int? minLines;
   final ValueChanged<String>? onChanged;
   final IconData? prefixIcon, suffixIcon;
   final bool enabled, obscureText;
@@ -504,6 +514,7 @@ class _CefFieldState extends State<CefField> {
             initialValue: w.initialValue,
             keyboardType: w.keyboardType,
             maxLines: w.obscureText ? 1 : w.maxLines,
+            minLines: w.obscureText ? null : w.minLines,
             onChanged: w.onChanged,
             enabled: w.enabled,
             obscureText: _hidden,
@@ -517,7 +528,19 @@ class _CefFieldState extends State<CefField> {
               helperMaxLines: 2,
               errorMaxLines: 2,
               fillColor: w.enabled ? c.card : c.subtle,
-              prefixIcon: w.prefixIcon == null
+              // Every phone field leads with a country flag + dial code
+              // (Founder 2026-10-16).
+              prefixIcon:
+                  w.keyboardType == TextInputType.phone && w.controller != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: Gap.sm),
+                      child: PhoneCountryButton(
+                        controller: w.controller!,
+                        enabled: w.enabled,
+                        style: cefPhonePickerStyle(context),
+                      ),
+                    )
+                  : w.prefixIcon == null
                   ? null
                   : Icon(w.prefixIcon, size: 20),
               suffixIcon: suffix,
@@ -1445,11 +1468,18 @@ Future<void> launchSupportEmail(
 );
 
 /// Opens turn-by-turn directions to [address] in the maps app / Google Maps.
-Future<void> launchDirections(BuildContext context, String address) => _launch(
+/// [placeId] (the geocoder's Google place) routes even when the typed
+/// address alone doesn't.
+Future<void> launchDirections(
+  BuildContext context,
+  String address, {
+  String? placeId,
+}) => _launch(
   context,
   Uri.https('www.google.com', '/maps/dir/', {
     'api': '1',
     'destination': address,
+    'destination_place_id': ?placeId,
   }),
   'maps',
 );
@@ -1921,26 +1951,42 @@ class StateBlock extends StatelessWidget {
   const StateBlock.loading({super.key})
     : kind = StateKind.loading,
       message = null,
-      onRetry = null;
-  const StateBlock.empty(this.message, {super.key})
-    : kind = StateKind.empty,
-      onRetry = null;
+      onRetry = null,
+      actionLabel = null,
+      onAction = null;
+
+  /// [actionLabel]/[onAction]: an optional primary next step under the
+  /// message (e.g. "New opening"), the standard mustard button.
+  const StateBlock.empty(
+    this.message, {
+    super.key,
+    this.actionLabel,
+    this.onAction,
+  }) : kind = StateKind.empty,
+       onRetry = null;
   const StateBlock.error(this.message, {super.key, this.onRetry})
-    : kind = StateKind.error;
+    : kind = StateKind.error,
+      actionLabel = null,
+      onAction = null;
   const StateBlock.blocked(this.message, {super.key})
     : kind = StateKind.blocked,
-      onRetry = null;
+      onRetry = null,
+      actionLabel = null,
+      onAction = null;
 
   final StateKind kind;
   final String? message;
   final VoidCallback? onRetry;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
     if (kind == StateKind.loading) {
+      // Centred wherever it sits; pages centre a trailing one on screen.
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: Gap.xxxl),
+        padding: EdgeInsets.symmetric(vertical: Gap.xxl),
         child: CefPageLoader(),
       );
     }
@@ -1967,6 +2013,13 @@ class StateBlock extends StatelessWidget {
             SizedBox(
               width: 160,
               child: CefButton(L.tryAgain, secondary: true, onTap: onRetry),
+            ),
+          ],
+          if (actionLabel != null) ...[
+            const SizedBox(height: Gap.lg),
+            SizedBox(
+              width: 200,
+              child: CefButton(actionLabel!, onTap: onAction),
             ),
           ],
         ],
@@ -2427,4 +2480,85 @@ Future<T?> showCefSheet<T>({
       ),
     ),
   );
+}
+
+/// The country sheet in Cefflo colours (Draft 1, Founder 2026-10-16).
+PhonePickerStyle cefPhonePickerStyle(BuildContext context) {
+  final c = context.c;
+  return PhonePickerStyle(
+    surface: c.card,
+    text: c.textPrimary,
+    muted: c.textSecondary,
+    border: c.border,
+    selected: CefColors.standardBrand.withValues(alpha: .08),
+    accent: CefColors.standardBrand,
+    title: L.countryCodeTitle,
+    searchHint: L.searchCountryOrCode,
+  );
+}
+
+/// Approve / Reject double confirmation (Founder 2026-10-16): a sheet slides
+/// up so a mistaken tap can't decide a person's access. True = confirmed.
+Future<bool> confirmDecision(
+  BuildContext context, {
+  required bool approve,
+  required String name,
+}) async {
+  final ok = await showCefSheet<bool>(
+    context: context,
+    backgroundColor: context.c.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(Sizes.cardRadius),
+      ),
+    ),
+    builder: (sheet) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              approve
+                  ? L.confirmApproveTitle(name)
+                  : L.confirmRejectTitle(name),
+              style: Theme.of(sheet).textTheme.titleMedium,
+            ),
+            const SizedBox(height: Gap.xs),
+            Text(
+              approve ? L.confirmApproveBody : L.confirmRejectBody,
+              style: Theme.of(sheet).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: Gap.xl),
+            Row(
+              children: [
+                Expanded(
+                  child: CefButton(
+                    L.cancel,
+                    secondary: true,
+                    onTap: () => Navigator.of(sheet).pop(false),
+                  ),
+                ),
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  child: CefButton(
+                    approve ? L.confirmApproveYes : L.confirmRejectYes,
+                    destructive: !approve,
+                    onTap: () => Navigator.of(sheet).pop(true),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  return ok == true;
 }

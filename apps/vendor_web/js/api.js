@@ -62,6 +62,12 @@ async function call(fn) {
     // The server refused because this account's access changed (removed /
     // role changed): never show the raw word; the app re-checks the
     // membership (as the Vendor App's loadSession) and shows the right state.
+    // Orders are refused until Cefflo verifies the business (Founder 2026-10-17).
+    if (/^business not verified$/i.test(String(e.message).trim())) {
+      throw Object.assign(new Error(document.documentElement.lang === 'ms'
+        ? 'Bisnes ini boleh menerima order selepas disahkan oleh Cefflo. Pemilik: More → Pengesahan bisnes.'
+        : 'This business can take orders after Cefflo verifies it. Owners: More → Business verification.'), { status: e.status });
+    }
     if (/^forbidden$/i.test(String(e.message).trim())) {
       window.dispatchEvent(new Event('cefflo:forbidden'));
       throw Object.assign(new Error(forbiddenMessage()), { status: 403, forbidden: true });
@@ -185,6 +191,20 @@ export const api = {
         const data = await res.json().catch(() => null);
         throw Object.assign(new Error(data?.message || data?.error || `Upload failed (${res.status})`), { status: res.status });
       }
+    });
+  },
+  // Short-lived signed URL for a private object the caller may read.
+  async signedUrl(bucket, path, expiresIn = 600) {
+    if (!path || isDemo()) return '';
+    return call(async () => {
+      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/sign/${bucket}/${path}`, {
+        method: 'POST',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expiresIn }),
+      });
+      if (!res.ok) return '';
+      const data = await res.json();
+      return data?.signedURL ? `${cfg.supabaseUrl}/storage/v1${data.signedURL}` : '';
     });
   },
   publicUrl: (bucket, path) => `${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`,

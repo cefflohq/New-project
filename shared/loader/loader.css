@@ -34,7 +34,8 @@
 .cf-page-loader--global { position: fixed; inset: 0; z-index: 2147483000; background: var(--cf-loader-backdrop); }
 .cf-page-loader.is-visible { opacity: 1; }
 /* Inline (inside a page region): appears only after 300ms, without JS. */
-.cf-page-loader--inline { min-height: 160px; padding: 24px 0; animation: cf-loader-in var(--cf-loader-fade) ease var(--cf-loader-delay) forwards; }
+/* Centred in the screen, never parked at the top (Founder 2026-10-15). */
+.cf-page-loader--inline { min-height: 60vh; min-height: 60dvh; padding: 24px 0; animation: cf-loader-in var(--cf-loader-fade) ease var(--cf-loader-delay) forwards; }
 @keyframes cf-loader-in { to { opacity: 1; } }
 
 .cf-dots { display: flex; gap: var(--cf-dot-gap); height: calc(var(--cf-dot) * 2.2); align-items: flex-end; }
@@ -62,21 +63,20 @@
    tile, blue ring spinning around the Cefflo mark. */
 .cf-page-loader--ring { background: rgba(10, 14, 22, .18); }
 .cf-ring-box {
-  position: relative; display: grid; place-items: center; width: 112px; height: 112px; border-radius: 24px;
+  position: relative; display: grid; place-items: center; width: 88px; height: 88px; border-radius: 18px;
   background: rgba(16, 18, 24, .72); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 16px 40px rgba(0, 0, 0, .28);
+  border: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
   transform: scale(.94); transition: transform var(--cf-loader-fade) ease;
 }
 .cf-page-loader--ring.is-visible .cf-ring-box { transform: none; }
 .cf-ring {
-  position: absolute; width: 68px; height: 68px; border-radius: 50%; box-sizing: border-box;
-  border: 4px solid rgba(255, 255, 255, .14); border-top-color: #0060FE; border-right-color: #0592EB;
+  position: absolute; width: 54px; height: 54px; border-radius: 50%; box-sizing: border-box;
+  border: 3px solid rgba(255, 255, 255, .14); border-top-color: #0060FE; border-right-color: #0592EB;
   animation: cf-spin .8s linear infinite;
 }
-.cf-ring-logo { position: relative; width: 26px; height: 36px; object-fit: contain; }
-.cf-page-loader--inline .cf-ring-box { width: 88px; height: 88px; border-radius: 18px; box-shadow: 0 10px 28px rgba(0, 0, 0, .18); transform: none; }
-.cf-page-loader--inline .cf-ring { width: 54px; height: 54px; border-width: 3px; }
-.cf-page-loader--inline .cf-ring-logo { width: 20px; height: 28px; }
+.cf-ring-logo { position: relative; width: 20px; height: 28px; object-fit: contain; }
+/* One size everywhere (Founder 2026-10-15): global and inline share the 88px tile. */
+.cf-page-loader--inline .cf-ring-box { transform: none; }
 /* Small ring (buttons, sheets): replaces the old three dots everywhere. */
 .cf-spin { display: inline-block; width: 20px; height: 20px; border-radius: 50%; box-sizing: border-box; border: 2.5px solid rgba(0, 96, 254, .14); border-top-color: #0060FE; border-right-color: #0592EB; animation: cf-spin .8s linear infinite; }
 .cf-on-blue .cf-spin { border-color: rgba(255, 255, 255, .25); border-top-color: #fff; border-right-color: #fff; }

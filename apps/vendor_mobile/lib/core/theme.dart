@@ -8,7 +8,7 @@ const kFontFamily = 'Inter';
 /// Chinese and Tamil glyphs render from bundled fonts (also declared in
 /// pubspec.yaml) instead of tofu boxes or a CanvasKit network font fetch.
 /// Malay/English text is Latin and is covered by Inter itself.
-const kFontFamilyFallback = ['Noto Sans SC', 'Noto Sans Tamil'];
+const kFontFamilyFallback = ['Noto Sans Tamil'];
 
 /// Spacing scale: 4 / 8 / 12 / 16 / 20 / 24 / 32. Every gap in the app is one
 /// of these steps; the named roles below are aliases onto the scale, never
@@ -124,9 +124,16 @@ class CefColors extends ThemeExtension<CefColors> {
   static Color brand = standardBrand;
   static const standardBrand = Color(0xFF0060FE);
 
+  /// Outline of the field being typed in: light grey (Founder 2026-10-16).
+  static const focusGrey = Color(0xFFCBD2DA);
+
   /// [brand] at 10% on white: tinted action rows and info notes.
   static Color brandTint = standardBrandTint;
   static const standardBrandTint = Color(0xFFE6EFFF);
+
+  /// Active bottom-navigation tone: the deep Anchor Blue of the standard
+  /// backdrop, or the chosen Appearance colour so the bar matches the header.
+  static Color get navActive => brand == standardBrand ? anchorBlue : brand;
 
   static void applyAccent(Color? accent) {
     brand = accent ?? standardBrand;
@@ -233,7 +240,7 @@ ThemeData buildVendorTheme(Brightness brightness) {
       border: _inputBorder(c.border),
       enabledBorder: _inputBorder(c.border),
       disabledBorder: _inputBorder(c.border),
-      focusedBorder: _inputBorder(CefColors.ceffloMustard, width: 1.6),
+      focusedBorder: _inputBorder(CefColors.focusGrey, width: 1.6),
       errorBorder: _inputBorder(c.attention),
       focusedErrorBorder: _inputBorder(c.attention, width: 1.6),
     ),

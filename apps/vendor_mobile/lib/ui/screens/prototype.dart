@@ -4,6 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../address_suggest.dart';
+import 'faq_content.dart';
+import '../../core/legal_content.dart';
 import '../../core/app_state.dart';
 import '../../core/appearance.dart';
 import '../../core/env.dart';
@@ -16,6 +19,7 @@ import '../share_link.dart';
 import '../shell.dart';
 import 'auth.dart' show VerifyEmailCodeScreen, otpFailureFrom;
 import 'hiring.dart' show TeamTab, teamTab;
+import 'import_flow.dart' show ImportOrdersScreen;
 import '../widgets.dart';
 
 import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
@@ -33,12 +37,7 @@ class UiPrototypeScreen extends StatelessWidget {
     VRoute.businessInformation => const _BusinessInformationScreen(),
     VRoute.businessAddress => const _BusinessAddressScreen(),
     VRoute.businessHours => const _BusinessHoursScreen(),
-    VRoute.deliverySettings => _ComingSoonScreen(
-      title: L.deliverySettings,
-      message: L.reservedLaterApprovedDeliverySettingsPass,
-    ),
     VRoute.editProfile => const _EditProfileScreen(),
-    VRoute.security => const _SecurityScreen(),
     VRoute.changePassword => const _ChangePasswordScreen(),
     VRoute.notificationSettings => const _NotificationPreferencesScreen(),
     VRoute.appearance => const _AppearanceScreen(),
@@ -100,43 +99,6 @@ class _HeroPanel extends StatelessWidget {
   }
 }
 
-/// Compact intro at the top of a grouped settings page: a CEFFLO Blue
-/// [IconTile] beside a section title and its supporting line.
-class _GroupedIntro extends StatelessWidget {
-  const _GroupedIntro({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.xs, 0, 0, Gap.xl),
-      child: Row(
-        children: [
-          IconTile(icon),
-          const SizedBox(width: Gap.lg),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: text.titleMedium),
-                const SizedBox(height: 2),
-                Text(subtitle, style: text.bodySmall),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Business
 // ---------------------------------------------------------------------------
@@ -180,27 +142,53 @@ class _BusinessProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: Gap.sm),
-                  CefButton(
-                    L.edit,
-                    secondary: true,
-                    compact: true,
-                    icon: LucideIcons.pencil,
-                    onTap: () => app.go(VRoute.businessInformation),
+                  // A bare pencil, no outlined button (Founder 2026-10-16).
+                  IconButton(
+                    tooltip: L.edit,
+                    icon: Icon(
+                      LucideIcons.pencil,
+                      size: Sizes.icon,
+                      color: CefColors.standardBrand,
+                    ),
+                    onPressed: () => app.go(VRoute.businessInformation),
                   ),
                 ],
               ),
-              // Business stats have no backend yet; only the demo shows them.
-              if (demo) ...[
-                const SizedBox(height: Gap.md),
-                Divider(height: 1, color: context.c.border),
-                KpiStrip(
-                  items: [
-                    KpiItem('24', L.products, icon: LucideIcons.package),
-                    KpiItem('128', L.orders, icon: LucideIcons.shoppingCart),
-                    KpiItem('4.8', L.rating, icon: LucideIcons.star),
-                  ],
+              // Live figures (business_stats); rating comes from customers'
+              // tracking-page ratings, "—" until the first one.
+              if (app.business != null || demo)
+                FutureBuilder(
+                  future: app.repo.businessStats(app.business?.id ?? ''),
+                  builder: (context, snap) {
+                    final s = snap.data;
+                    if (s == null) return const SizedBox.shrink();
+                    return Column(
+                      children: [
+                        const SizedBox(height: Gap.md),
+                        Divider(height: 1, color: context.c.border),
+                        KpiStrip(
+                          items: [
+                            KpiItem(
+                              '${s.products}',
+                              L.products,
+                              icon: LucideIcons.package,
+                            ),
+                            KpiItem(
+                              '${s.orders}',
+                              L.orders,
+                              icon: LucideIcons.shoppingCart,
+                            ),
+                            KpiItem(
+                              s.rating?.toStringAsFixed(1) ?? '—',
+                              L.rating,
+                              icon: LucideIcons.star,
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              ],
             ],
           ),
         ),
@@ -392,7 +380,7 @@ class _BusinessFieldsFormState extends State<_BusinessFieldsForm> {
           icon: widget.icon,
           subtitle: widget.subtitle,
         ),
-        for (final f in widget.fields)
+        for (final f in widget.fields) ...[
           CefField(
             label: f.label,
             controller: _c[f.key],
@@ -402,6 +390,12 @@ class _BusinessFieldsFormState extends State<_BusinessFieldsForm> {
             hint: f.hint,
             enabled: !_saving,
           ),
+          if (f.key == 'address' || f.key == 'operating_area')
+            AddressSuggestions(
+              controller: _c[f.key]!,
+              regions: f.key == 'operating_area',
+            ),
+        ],
         if (_error != null)
           Padding(
             padding: const EdgeInsets.only(top: Gap.md),
@@ -529,6 +523,7 @@ class _BusinessHoursSectionState extends State<_BusinessHoursSection> {
       ]);
       if (!mounted) return;
       showCefToast(context, L.hoursSaved);
+      app.back();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
@@ -717,7 +712,9 @@ class _EditProfileScreenState extends State<_EditProfileScreen> {
       _savedName = name;
       _savedPhone = phone;
       app.dataChanged();
-      if (mounted) showCefToast(context, L.profileSaved);
+      if (!mounted) return;
+      showCefToast(context, L.profileSaved);
+      app.back();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
@@ -1053,37 +1050,6 @@ class _NewEmailDialogState extends State<_NewEmailDialog> {
   }
 }
 
-class _SecurityScreen extends StatelessWidget {
-  const _SecurityScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    return PageBody(
-      grouped: true,
-      children: [
-        _GroupedIntro(
-          icon: LucideIcons.shield,
-          title: L.keepAccountSafe,
-          subtitle: L.manageHowSignBusinessAccount,
-        ),
-        CefListGroup(
-          label: L.signAccess,
-          children: [
-            CefListRow(
-              title: L.password,
-              subtitle: L.changePassword2,
-              subtitleMaxLines: 2,
-              icon: LucideIcons.lock,
-              onTap: () => app.go(VRoute.changePassword),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
 class _ChangePasswordScreen extends StatefulWidget {
   const _ChangePasswordScreen();
 
@@ -1379,6 +1345,7 @@ class _AppearanceScreenState extends State<_AppearanceScreen> {
     if (!mounted) return;
     setState(() => _saving = false);
     showCefToast(context, L.appearanceSaved);
+    _app.back();
   }
 
   Future<void> _pickCustom() async {
@@ -1598,6 +1565,13 @@ class _HelpSupportScreen extends StatelessWidget {
         _HeroPanel(kicker: L.wereHereHelp, title: L.howCanWeHelp),
         const SizedBox(height: Gap.md),
         _SupportTile(
+          icon: LucideIcons.circleHelp,
+          title: L.findAnswers,
+          subtitle: L.searchOurHelpCentreBrowseTopics,
+          onTap: () => app.go(VRoute.faq),
+        ),
+        const SizedBox(height: Gap.sm),
+        _SupportTile(
           icon: LucideIcons.mail,
           title: L.contactSupport2,
           subtitle: L.emailSupportTeam,
@@ -1608,73 +1582,106 @@ class _HelpSupportScreen extends StatelessWidget {
   }
 }
 
-class _FaqScreen extends StatelessWidget {
+class _FaqScreen extends StatefulWidget {
   const _FaqScreen();
 
   @override
-  Widget build(BuildContext context) => PageBody(
-    // Archetype F, same language as Help & Support.
-    grouped: true,
-    children: [
-      _HeroPanel(
-        kicker: L.howCanWeHelp,
-        title: L.findAnswers,
-        subtitle: L.searchOurHelpCentreBrowseTopics,
-      ),
-      const SizedBox(height: Gap.md),
-      CefSearchField(hint: L.searchHelpEGZonesRiders, onFilter: () {}),
-      const SizedBox(height: Gap.xl),
-      CefListGroup(
-        label: L.browseTopics,
-        children: [
-          CefListRow(
-            title: L.gettingStarted,
-            subtitle: L.setUpAccountBusiness,
-            icon: LucideIcons.bookOpen,
-          ),
-          CefListRow(
-            title: L.ordersDelivery,
-            subtitle: L.manageOrdersRunsZones,
-            icon: LucideIcons.truck,
-          ),
-          CefListRow(
-            title: L.zonesRiders,
-            subtitle: L.coverageRidersDispatch,
-            icon: LucideIcons.users,
-          ),
-          CefListRow(
-            title: L.account,
-            subtitle: L.profileSecuritySettings,
-            icon: LucideIcons.bookOpen,
-          ),
-          CefListRow(
-            title: L.subscriptionBilling,
-            subtitle: L.plansPaymentsInvoices2,
-            icon: LucideIcons.calendarDays,
-          ),
-        ],
-      ),
-      CefListGroup(
-        label: L.popularQuestions,
-        children: [
-          for (final question in [
-            L.howDoICreateDeliveryZone,
-            L.howDoIAddRider,
-            L.canIChangeMyPlanLater,
-            L.howDoesRouteOptimizationWork,
-            L.whereCanMyCustomersTrackTheir,
-          ])
-            CefListRow(title: question, icon: LucideIcons.circleHelp),
-          CefListRow(
-            title: L.viewAll,
-            icon: LucideIcons.list,
-            onTap: () =>
-                showNotWiredYetSnackBar(context, L.viewingAllQuestions),
-          ),
-        ],
-      ),
-    ],
-  );
+  State<_FaqScreen> createState() => _FaqScreenState();
+}
+
+/// Help Centre (Founder 2026-10-16): search, topics and answers that open
+/// in place. Popular questions first; View all lists every question.
+class _FaqScreenState extends State<_FaqScreen> {
+  String _q = '';
+  FaqTopic? _topic;
+  bool _all = false;
+  final Set<String> _open = {};
+
+  String _topicLabel(FaqTopic t) => switch (t) {
+    FaqTopic.gettingStarted => L.gettingStarted,
+    FaqTopic.orders => L.ordersDelivery,
+    FaqTopic.zonesDrivers => L.zonesRiders,
+    FaqTopic.account => L.account,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final q = _q.trim().toLowerCase();
+    final all = faqs(L.localeName);
+    final shown = all.where((f) {
+      if (_topic != null && f.topic != _topic) return false;
+      if (q.isNotEmpty) {
+        return f.q.toLowerCase().contains(q) || f.a.toLowerCase().contains(q);
+      }
+      return _all || _topic != null || f.popular;
+    }).toList();
+    return PageBody(
+      grouped: true,
+      children: [
+        _HeroPanel(
+          kicker: L.howCanWeHelp,
+          title: L.findAnswers,
+          subtitle: L.searchOurHelpCentreBrowseTopics,
+        ),
+        const SizedBox(height: Gap.md),
+        CefSearchField(
+          hint: L.searchHelpEGZonesRiders,
+          onChanged: (v) => setState(() => _q = v),
+        ),
+        const SizedBox(height: Gap.md),
+        Wrap(
+          spacing: Gap.sm,
+          runSpacing: Gap.sm,
+          children: [
+            for (final t in FaqTopic.values)
+              CefChoiceChip(
+                label: _topicLabel(t),
+                selected: _topic == t,
+                onTap: () => setState(() => _topic = _topic == t ? null : t),
+              ),
+          ],
+        ),
+        const SizedBox(height: Gap.lg),
+        CefListGroup(
+          label: q.isNotEmpty || _topic != null || _all
+              ? null
+              : L.popularQuestions,
+          children: [
+            for (final f in shown)
+              CefListRow(
+                title: f.q,
+                subtitle: _open.contains(f.q) ? f.a : null,
+                subtitleMaxLines: 8,
+                icon: LucideIcons.circleHelp,
+                showChevron: false,
+                trailing: Icon(
+                  _open.contains(f.q)
+                      ? LucideIcons.chevronUp
+                      : LucideIcons.chevronDown,
+                  size: 18,
+                ),
+                onTap: () => setState(
+                  () =>
+                      _open.contains(f.q) ? _open.remove(f.q) : _open.add(f.q),
+                ),
+              ),
+            if (shown.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(Gap.lg),
+                child: Text(L.noFaqResults, style: text.bodySmall),
+              ),
+            if (!_all && q.isEmpty && _topic == null)
+              CefListRow(
+                title: L.viewAll,
+                icon: LucideIcons.list,
+                onTap: () => setState(() => _all = true),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 /// V-57 Contact Support (FG-4): hands the request to the real support
@@ -1766,45 +1773,27 @@ class _PolicyScreen extends StatelessWidget {
   const _PolicyScreen({required this.privacy});
   final bool privacy;
 
+  /// The one Privacy Policy / Terms text every Cefflo surface shows
+  /// (shared/legal, Founder 2026-10-16).
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    // Document on the white surface.
+    final lang = L.localeName == 'ms' ? 'ms' : 'en';
+    final sections = (privacy ? legalPrivacy : legalTerms)[lang]!;
     return PageBody(
       children: [
         SectionHeading(
-          L.trustTransparency,
+          privacy ? L.privacyPolicy : L.termsService,
           icon: privacy ? LucideIcons.shieldCheck : LucideIcons.fileText,
-          subtitle: privacy
-              ? L.wereCommittedProtectingDataPrivacy
-              : L.termsThatGuideUseCefflo,
+          subtitle: '${L.legalLastUpdated}: ${legalUpdated[lang]}',
         ),
-        Text(L.lastUpdated12Sep2026, style: text.bodySmall),
-        const SizedBox(height: Gap.lg),
-        Divider(height: 1, color: context.c.border),
-        SectionHeading(L.page),
-        Text(
-          privacy
-              ? L.t1Introduction2InformationWeCollect
-              : L.t1AcceptanceTerms2AccountResponsibilities,
-          style: text.bodyMedium?.copyWith(height: 1.6),
-        ),
-        SectionHeading(privacy ? L.t1Introduction : L.t1AcceptanceTerms),
-        Text(
-          privacy
-              ? L.ceffloWeUsOurValuesPrivacy
-              : L.byAccessingUsingCeffloAgreeThese,
-          style: text.bodyMedium,
-        ),
-        SectionHeading(
-          privacy ? L.t2InformationWeCollect : L.t2AccountResponsibilities,
-        ),
-        Text(
-          privacy
-              ? L.weCollectInformationThatProvideDirectly
-              : L.responsibleMaintainingAccurateAccountInformationProtecting,
-          style: text.bodyMedium,
-        ),
+        for (final (i, s) in sections.indexed) ...[
+          const SizedBox(height: Gap.md),
+          Text('${i + 1}. ${s.h}', style: text.titleSmall),
+          const SizedBox(height: Gap.xs),
+          Text(s.p, style: text.bodyMedium?.copyWith(height: 1.6)),
+        ],
+        const SizedBox(height: Gap.xl),
       ],
     );
   }
@@ -2051,7 +2040,7 @@ class _NotificationInboxScreen extends StatelessWidget {
               ),
               emphasis: !n.read,
               trailing: IconAction(
-                icon: LucideIcons.ellipsis,
+                icon: LucideIcons.ellipsisVertical,
                 tooltip: L.notificationOptions,
                 onTap: () => _showRowOptions(context, n),
               ),
@@ -2135,90 +2124,113 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final link = this.link;
-    // Centred in the white surface: identity, link, one Share action.
-    return LayoutBuilder(
-      builder: (context, box) => SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: Gap.gutter,
-          vertical: Gap.xl,
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: (box.maxHeight - Gap.xl * 2).clamp(0, double.infinity),
-          ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: PageBody.maxContentWidth,
+    // Centred in the white surface: identity and link; Share is pinned at
+    // the bottom like every action (Founder 2026-10-16).
+    final business = AppScope.read(context).business?.name ?? 'Cefflo';
+    return Column(
+      children: [
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, box) => SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Gap.gutter,
+                vertical: Gap.xl,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Center(child: IconTile(LucideIcons.userPlus)),
-                  const SizedBox(height: Gap.md),
-                  Text(
-                    rider ? L.inviteRidersBusiness : L.inviteTeamMember2,
-                    textAlign: TextAlign.center,
-                    style: text.titleMedium,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: (box.maxHeight - Gap.xl * 2).clamp(
+                    0,
+                    double.infinity,
                   ),
-                  const SizedBox(height: Gap.xs),
-                  Text(
-                    L.inviteLinkPermanent,
-                    textAlign: TextAlign.center,
-                    style: text.bodySmall,
-                  ),
-                  const SizedBox(height: Gap.lg),
-                  if (!rider && _ownerInvites) ...[
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: Gap.sm,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: PageBody.maxContentWidth,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        for (final (value, label) in [
-                          ('operator', L.operatorText),
-                          ('helper', L.helperText),
-                        ])
-                          CefChoiceChip(
-                            label: label,
-                            selected: role == value,
-                            onTap: () {
-                              setState(() => role = value);
-                              _load();
-                            },
+                        const Center(child: IconTile(LucideIcons.userPlus)),
+                        const SizedBox(height: Gap.md),
+                        Text(
+                          rider ? L.inviteRidersBusiness : L.inviteTeamMember2,
+                          textAlign: TextAlign.center,
+                          style: text.titleMedium,
+                        ),
+                        const SizedBox(height: Gap.xs),
+                        Text(
+                          L.inviteLinkPermanent,
+                          textAlign: TextAlign.center,
+                          style: text.bodySmall,
+                        ),
+                        const SizedBox(height: Gap.lg),
+                        if (!rider && _ownerInvites) ...[
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: Gap.sm,
+                            children: [
+                              for (final (value, label) in [
+                                ('operator', L.operatorText),
+                                ('helper', L.helperText),
+                              ])
+                                CefChoiceChip(
+                                  label: label,
+                                  selected: role == value,
+                                  onTap: () {
+                                    setState(() => role = value);
+                                    _load();
+                                  },
+                                ),
+                            ],
                           ),
+                          const SizedBox(height: Gap.sm),
+                          Text(
+                            role == 'helper'
+                                ? L.helperRoleDescription
+                                : L.operatorRoleDescription,
+                            textAlign: TextAlign.center,
+                            style: text.bodySmall,
+                          ),
+                          const SizedBox(height: Gap.lg),
+                        ],
+                        if (link == null && error == null)
+                          const SkeletonPulse(child: SkeletonBox(height: 52))
+                        else if (link != null)
+                          ..._linkSection(text, link),
+                        if (error != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: Gap.md),
+                            child: Text(
+                              error!,
+                              style: text.bodySmall?.copyWith(
+                                color: context.c.attention,
+                              ),
+                            ),
+                          ),
+                        if (_loading && link != null) const CefPageLoader(),
                       ],
                     ),
-                    const SizedBox(height: Gap.sm),
-                    Text(
-                      role == 'helper'
-                          ? L.helperRoleDescription
-                          : L.operatorRoleDescription,
-                      textAlign: TextAlign.center,
-                      style: text.bodySmall,
-                    ),
-                    const SizedBox(height: Gap.lg),
-                  ],
-                  if (link == null && error == null)
-                    const SkeletonPulse(child: SkeletonBox(height: 52))
-                  else if (link != null)
-                    ..._linkSection(text, link),
-                  if (error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: Gap.md),
-                      child: Text(
-                        error!,
-                        style: text.bodySmall?.copyWith(
-                          color: context.c.attention,
-                        ),
-                      ),
-                    ),
-                  if (_loading && link != null) const CefPageLoader(),
-                ],
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
+        if (link != null)
+          StickyActionBar(
+            child: CefButton(
+              L.shareInviteLink,
+              icon: LucideIcons.share2,
+              onTap: () => showShareTargets(
+                context,
+                link: link,
+                text: L.inviteShareMessage(business),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -2232,6 +2244,7 @@ class _InviteLinkScreenState extends State<_InviteLinkScreen> {
         shareText: L.inviteShareMessage(business),
         qrTitle: L.scanJoin,
         qrBody: L.scanToJoinBody,
+        showShare: false,
       ),
     ];
   }
@@ -2754,68 +2767,65 @@ class _IntegrationsScreenState extends State<_IntegrationsScreen> {
       trailing: chip(connected),
       onTap: onTap,
     );
+    // Cardless (Founder 2026-10-15): rows sit straight on the surface.
     return PageBody(
-      grouped: true,
       onRefresh: _load,
       children: [
         Text(L.integrationsLead, style: Theme.of(context).textTheme.bodyMedium),
-        const SizedBox(height: Gap.lg),
-        CefListGroup(
-          label: L.available,
-          children: [
-            live(
-              'CSV & Excel',
-              'assets/brand/microsoft-excel-logo.png',
-              () => app.go(VRoute.importOrders),
-            ),
-            live(
-              L.manualEntry,
-              LucideIcons.pencil,
-              () => app.go(VRoute.newOrderManual),
-            ),
-            live(
-              L.storefront,
-              'assets/brand/cefflo-logo-mark.png',
-              () => app.go(VRoute.storefront),
-            ),
-            live(
-              'Shopify',
-              'assets/brand/shopify-logo.png',
-              () => _openWebhook('shopify', 'Shopify'),
-              connected: _conn('shopify') != null,
-            ),
-            live(
-              'WooCommerce',
-              'assets/brand/woocommerce-logo.png',
-              () => _openWebhook('woocommerce', 'WooCommerce'),
-              connected: _conn('woocommerce') != null,
-            ),
-            live(
-              'Wix',
-              'assets/brand/wix-logo.png',
-              _openWix,
-              connected: _conn('wix') != null,
-            ),
-            live(
-              'Google Sheets',
-              'assets/brand/google-sheets-logo.png',
-              () => _openGoogle('sheets', 'Google Sheets'),
-              connected: _conn('google_sheets') != null,
-            ),
-            live(
-              'Google Drive',
-              'assets/brand/google-drive-logo.png',
-              () => _openGoogle('drive', 'Google Drive'),
-              connected: _conn('google_drive') != null,
-            ),
-            live(
-              'API / Webhooks',
-              LucideIcons.code,
-              _openApi,
-              connected: (data?['api_keys'] as List? ?? []).isNotEmpty,
-            ),
-          ],
-        ),
+        SectionHeading(L.available),
+        ...[
+          live(
+            'CSV & Excel',
+            'assets/brand/microsoft-excel-logo.png',
+            () => ImportOrdersScreen.pickAndOpen(app),
+          ),
+          live(
+            L.manualEntry,
+            LucideIcons.pencil,
+            () => app.go(VRoute.newOrderManual),
+          ),
+          live(
+            L.storefront,
+            'assets/brand/cefflo-logo-mark.png',
+            () => app.go(VRoute.storefront),
+          ),
+          live(
+            'Shopify',
+            'assets/brand/shopify-logo.png',
+            () => _openWebhook('shopify', 'Shopify'),
+            connected: _conn('shopify') != null,
+          ),
+          live(
+            'WooCommerce',
+            'assets/brand/woocommerce-logo.png',
+            () => _openWebhook('woocommerce', 'WooCommerce'),
+            connected: _conn('woocommerce') != null,
+          ),
+          live(
+            'Wix',
+            'assets/brand/wix-logo.png',
+            _openWix,
+            connected: _conn('wix') != null,
+          ),
+          live(
+            'Google Sheets',
+            'assets/brand/google-sheets-logo.png',
+            () => _openGoogle('sheets', 'Google Sheets'),
+            connected: _conn('google_sheets') != null,
+          ),
+          live(
+            'Google Drive',
+            'assets/brand/google-drive-logo.png',
+            () => _openGoogle('drive', 'Google Drive'),
+            connected: _conn('google_drive') != null,
+          ),
+          live(
+            'API / Webhooks',
+            LucideIcons.code,
+            _openApi,
+            connected: (data?['api_keys'] as List? ?? []).isNotEmpty,
+          ),
+        ],
       ],
     );
   }

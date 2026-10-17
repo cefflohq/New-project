@@ -7,6 +7,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
+import '../address_suggest.dart';
 import '../invite_qr_scanner.dart';
 import '../../data/rider_repository.dart' show RepositoryError;
 import '../brand.dart';
@@ -238,7 +239,13 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             L.continueText2,
-            onTap: () => app.go(DRoute.personalDetails),
+            onTap: () {
+              app
+                ..draftName = _name.text.trim()
+                ..draftPhone = _phone.text.trim()
+                ..registrationPlate = _plate.text.trim();
+              app.go(DRoute.personalDetails);
+            },
           ),
         ],
       ),
@@ -338,10 +345,14 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
   late final _demo = _app.repo.isDemo;
   // The real build seeds from the Driver's own relationship, never demo data.
   late final _name = TextEditingController(
-    text: _demo ? DemoData.profile.fullName : _app.profile.fullName,
+    text: _demo
+        ? DemoData.profile.fullName
+        : (_app.draftName.isNotEmpty ? _app.draftName : _app.profile.fullName),
   );
   late final _phone = TextEditingController(
-    text: _demo ? '12 345 6789' : _app.profile.phone,
+    text: _demo
+        ? '12 345 6789'
+        : (_app.draftPhone.isNotEmpty ? _app.draftPhone : _app.profile.phone),
   );
   late final _dob = TextEditingController(
     text: _demo ? DemoData.profile.dateOfBirth : '',
@@ -411,18 +422,26 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
             controller: _address,
             icon: LucideIcons.mapPin,
           ),
+          const SizedBox(height: Gap.sm),
+          AddressSuggestions(controller: _address),
           const SizedBox(height: Gap.md),
-          CeffloTextField(
+          CeffloPhoneField(
             label: L.emergencyContactOptional,
             controller: _emergency,
             hint: 'e.g. 16 123 4567',
-            icon: LucideIcons.phone,
-            keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: Gap.lg),
           CeffloPrimaryButton(
             L.next,
-            onTap: () => app.go(DRoute.vehicleAndDocuments),
+            onTap: () {
+              app
+                ..draftName = _name.text.trim()
+                ..draftPhone = _phone.text.trim()
+                ..draftDob = _dob.text.trim()
+                ..draftAddress = _address.text.trim()
+                ..draftEmergency = _emergency.text.trim();
+              app.go(DRoute.vehicleAndDocuments);
+            },
           ),
         ],
       ),
@@ -459,6 +478,17 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
 
   Future<void> _submit() async {
     final app = AppScope.read(context);
+    if (!app.repo.isDemo) {
+      // Live: saved on the account; Home then shows Find Jobs / Join.
+      app.registrationPlate = _plate.text.trim();
+      try {
+        await app.submitOnboarding();
+        if (mounted) showCefToast(context, L.detailsSaved);
+      } on RepositoryError catch (e) {
+        if (mounted) showCefToast(context, e.message, error: true);
+      }
+      return;
+    }
     final navigator = Navigator.of(context, rootNavigator: true);
     showCeffloModal(context, const SubmittingDetailsModal());
     await Future<void>.delayed(const Duration(milliseconds: 1600));
@@ -510,11 +540,12 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
           const SizedBox(height: Gap.section),
           Divider(height: 1, color: context.c.border),
           const SizedBox(height: Gap.section),
-          if (app.onboardingDocuments.isNotEmpty) ...[
+          if (app.repo.isDemo && app.onboardingDocuments.isNotEmpty) ...[
             SectionRow(icon: LucideIcons.fileText, label: L.requiredDocuments),
             const SizedBox(height: Gap.sm),
           ],
-          for (final doc in app.onboardingDocuments)
+          for (final doc
+              in app.repo.isDemo ? app.onboardingDocuments : const [])
             CeffloDocumentRow(
               icon: doc.id == 'licence' ? LucideIcons.idCard : LucideIcons.bike,
               title: doc.title,
@@ -525,10 +556,9 @@ class _VehicleAndDocumentsScreenState extends State<VehicleAndDocumentsScreen> {
                     ? LucideIcons.idCard
                     : LucideIcons.fileText,
               ),
-              onRemove: () {},
             ),
           const SizedBox(height: Gap.lg),
-          CeffloPrimaryButton(L.submitReview, onTap: _submit),
+          CeffloPrimaryButton(L.submit, onTap: _submit),
           const SizedBox(height: Gap.md),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -737,13 +767,54 @@ class PendingReviewScreen extends StatelessWidget {
             tone: CeffloNoteTone.warning,
           ),
           const SizedBox(height: Gap.md),
-          ChecklistBlock(
-            rows: [
-              (L.personalDetails, L.submitted, LucideIcons.user),
-              (L.vehicleDetails, L.submitted, LucideIcons.bike),
-              (L.documents, L.submitted, LucideIcons.fileText),
-            ],
-          ),
+          // Invited drivers upload every document before the business can
+          // approve them (Founder 2026-10-16, option B).
+          if (app.repo.isDemo)
+            ChecklistBlock(
+              rows: [
+                (L.personalDetails, L.submitted, LucideIcons.user),
+                (L.vehicleDetails, L.submitted, LucideIcons.bike),
+                (L.documents, L.submitted, LucideIcons.fileText),
+              ],
+            )
+          else
+            FutureBuilder<Map<String, dynamic>>(
+              future: app.repo.myMarketplaceVerification(),
+              builder: (context, snap) {
+                final v = snap.data ?? const {};
+                final docs =
+                    v['licence_submitted'] == true &&
+                    v['vehicle_submitted'] == true;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ChecklistBlock(
+                      rows: [
+                        (L.personalDetails, L.submitted, LucideIcons.user),
+                        (
+                          L.documents,
+                          docs ? L.submitted : L.docsRequiredShort,
+                          LucideIcons.fileText,
+                        ),
+                      ],
+                    ),
+                    if (snap.hasData && !docs) ...[
+                      const SizedBox(height: Gap.md),
+                      CeffloNote(
+                        icon: LucideIcons.triangleAlert,
+                        tone: CeffloNoteTone.warning,
+                        body: L.docsRequiredBody,
+                      ),
+                      const SizedBox(height: Gap.md),
+                      CeffloPrimaryButton(
+                        L.uploadDocuments,
+                        onTap: () => app.go(DRoute.documents),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
           const SizedBox(height: Gap.md),
           CeffloNote(
             icon: LucideIcons.info,
@@ -1496,12 +1567,7 @@ class _JoinBusinessScreenState extends State<JoinBusinessScreen> {
                     icon: LucideIcons.user,
                   ),
                   const SizedBox(height: Gap.md),
-                  CeffloTextField(
-                    label: L.phoneNumber,
-                    controller: _phone,
-                    icon: LucideIcons.phone,
-                    keyboardType: TextInputType.phone,
-                  ),
+                  CeffloPhoneField(label: L.phoneNumber, controller: _phone),
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: Gap.sm),
@@ -1624,11 +1690,8 @@ class BusinessJoinedScreen extends StatelessWidget {
                   horizontal: 14,
                   vertical: 10,
                 ),
-                child: BusinessIdentityRow(
-                  business: business,
-                  compact: true,
-                  onTap: () {},
-                ),
+                // Display only: no chevron for a row that goes nowhere.
+                child: BusinessIdentityRow(business: business, compact: true),
               ),
             ],
           ),
@@ -1765,7 +1828,10 @@ class _ChooseVehicleScreenState extends State<ChooseVehicleScreen> {
           L.next,
           onTap: () {
             app.registrationVehicle = _selected;
-            app.go(DRoute.yourDriverDetails);
+            // Live: the D12 onboarding forms (Founder 2026-10-16).
+            app.go(
+              app.repo.isDemo ? DRoute.yourDriverDetails : DRoute.driverDetails,
+            );
           },
         ),
       ],

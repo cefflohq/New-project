@@ -4,13 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 
 import '../core/env.dart';
+import 'google_tiles.dart';
 
 /// True when the build carries a public Mapbox token (pk.*).
 bool get mapboxTiles => Env.mapboxPublicToken.startsWith('pk.');
 
 /// Mapbox Streets raster tiles (Founder 2026-10-12); CARTO Positron when the
 /// build has no token.
-Widget cefTileLayer(BuildContext context) => mapboxTiles
+Widget cefTileLayer(BuildContext context) =>
+    GoogleTileLayer(fallback: _fallbackTiles);
+
+Widget _fallbackTiles(BuildContext context) => mapboxTiles
     ? TileLayer(
         urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}{r}?access_token={token}',
         additionalOptions: const {'token': Env.mapboxPublicToken},
@@ -19,14 +23,17 @@ Widget cefTileLayer(BuildContext context) => mapboxTiles
       )
     : TileLayer(
         urlTemplate:
-            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        subdomains: const ['a', 'b', 'c', 'd'],
-        retinaMode: RetinaMode.isHighDensity(context),
+            // CARTO's free tiles now need a key; OpenStreetMap is the keyless
+            // fallback (Google is the real map).
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         userAgentPackageName: 'my.cefflo.driver',
       );
 
-String get mapCredit =>
-    mapboxTiles ? '© Mapbox © OpenStreetMap' : '© OpenStreetMap © CARTO';
+String get mapCredit => googleTiles
+    ? googleCredit
+    : mapboxTiles
+    ? '© Mapbox © OpenStreetMap'
+    : '© OpenStreetMap';
 
 /// Map data credit behind a small ⓘ (Founder 2026-10-13): the licences
 /// (Mapbox, OpenStreetMap ODbL, geoBoundaries CC BY) require the credit to

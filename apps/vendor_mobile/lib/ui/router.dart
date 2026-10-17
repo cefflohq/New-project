@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import '../core/routes.dart';
 import 'screens/directory.dart';
+import 'screens/business_verification.dart';
+import 'screens/complaints.dart';
+import 'screens/delivery_settings.dart';
 import 'screens/hiring.dart' show HiringScreen, HiringPostScreen;
 import 'screens/import_flow.dart';
 import 'screens/operations.dart';
@@ -49,6 +52,10 @@ Widget buildScreen(BuildContext context, VendorLocation loc) {
     VRoute.riderDetail => RiderDetailScreen(riderId: id!),
     VRoute.team => const TeamScreen(),
     VRoute.hiring => const HiringScreen(),
+    VRoute.complaints => const ComplaintsScreen(),
+    VRoute.deliverySettings => const DeliverySettingsScreen(),
+    VRoute.businessVerification => const BusinessVerificationScreen(),
+    VRoute.complaintDetail => ComplaintDetailScreen(complaintId: id!),
     VRoute.hiringPost => HiringPostScreen(openingId: id!),
     VRoute.teamMemberDetail => TeamMemberDetailScreen(memberId: id!),
     VRoute.products => const ProductsScreen(),

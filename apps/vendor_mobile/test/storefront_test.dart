@@ -143,7 +143,10 @@ void main() {
   ) async {
     await _pumpAt(
       tester,
-      const VendorLocation(VRoute.storefrontTemplatePreview, entityId: 'bakery'),
+      const VendorLocation(
+        VRoute.storefrontTemplatePreview,
+        entityId: 'bakery',
+      ),
     );
     final app = _app(tester);
     final before = await app.repo.products(app.business!.id);

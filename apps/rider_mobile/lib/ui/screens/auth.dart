@@ -11,6 +11,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/rider_repository.dart';
 import '../brand.dart';
+import '../legal_consent.dart';
 import '../bottom_surface.dart';
 import '../widgets.dart';
 
@@ -133,6 +134,7 @@ class _AuthFlowState extends State<AuthFlow> {
     }
     try {
       await app.repo.signInWithGoogle();
+      await ConsentStore.mark();
     } on RepositoryError catch (e) {
       if (mounted) showCefToast(context, driverAuthErrorText(e), error: true);
     }
@@ -457,7 +459,7 @@ Future<Locale?> showLanguageSheet(BuildContext context, Locale current) {
 /// Height of D02's top row (language control).
 const double _welcomeTopRow = 48;
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({
     super.key,
     required this.onGoogle,
@@ -467,6 +469,16 @@ class WelcomeScreen extends StatelessWidget {
   final VoidCallback onGoogle;
   final VoidCallback onEmail;
   final VoidCallback onInvite;
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  VoidCallback get onEmail => widget.onEmail;
+  VoidCallback get onInvite => widget.onInvite;
+
+  void onGoogle() => widget.onGoogle();
 
   @override
   Widget build(BuildContext context) => CefBottomSurface(
@@ -684,7 +696,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _busy = false;
-  bool _keep = true;
+  bool _keep = false; // The user ticks it themselves (Founder 2026-10-16).
+
   String? _error;
 
   @override
@@ -707,6 +720,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     try {
       await app.repo.signInWithPassword(_email.text, _password.text);
       await saveKeepSignedIn(_keep);
+      await ConsentStore.mark();
       await app.loadSession();
       if (mounted) widget.onSignIn();
     } on RepositoryError catch (error) {
@@ -837,9 +851,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     super.dispose();
   }
 
+  bool _agree = false;
+  bool _agreeError = false;
+
   Future<void> _create() async {
     final app = AppScope.read(context);
+    // Sign-up always ticks the agreement (PDPA notice, 2026-10-16).
+    if (!_agree) {
+      setState(() => _agreeError = true);
+      return;
+    }
     if (app.repo.isDemo) {
+      await ConsentStore.mark();
       widget.onCreated();
       return;
     }
@@ -854,6 +877,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         fullName: _name.text,
         phone: _phone.text,
       );
+      await ConsentStore.mark();
       if (!mounted) return;
       if (needsVerification) {
         widget.onVerify(_email.text.trim());
@@ -943,6 +967,23 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           ),
         ],
         const SizedBox(height: Gap.lg),
+        ConsentCheck(
+          value: _agree,
+          error: _agreeError,
+          onChanged: (v) => setState(() {
+            _agree = v;
+            _agreeError = false;
+          }),
+        ),
+        if (_agreeError)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.xs),
+            child: Text(
+              L.legalAgreeRequired,
+              style: TextStyle(fontSize: 13, color: context.c.attention),
+            ),
+          ),
+        const SizedBox(height: Gap.md),
         CeffloPrimaryButton(
           _busy ? L.creatingAccount : L.createAccount3,
           busy: _busy,
@@ -1964,6 +2005,7 @@ class _LinkExpiredScreenState extends State<LinkExpiredScreen> {
   Widget build(BuildContext context) => CeffloAuthScaffold(
     title: L.linkNoLongerValid,
     subtitle: L.linkExpiredOrUsedRequestNew,
+    centerSheet: true,
     sheet: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,

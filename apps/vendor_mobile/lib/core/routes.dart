@@ -59,7 +59,6 @@ enum VRoute {
   businessHours,
   deliverySettings,
   editProfile,
-  security,
   changePassword,
   settings,
   notificationSettings,
@@ -79,6 +78,9 @@ enum VRoute {
   notificationInbox,
   hiring,
   hiringPost,
+  complaints,
+  complaintDetail,
+  businessVerification,
 }
 
 class RouteSpec {
@@ -402,7 +404,7 @@ Map<VRoute, RouteSpec> get routeSpecs => <VRoute, RouteSpec>{
     route: VRoute.deliverySettings,
     id: 'V-41',
     title: L.deliverySettings,
-    parent: VRoute.businessProfile,
+    parent: VRoute.settings,
     tab: NavTab.more,
   ),
 
@@ -416,18 +418,11 @@ Map<VRoute, RouteSpec> get routeSpecs => <VRoute, RouteSpec>{
     parent: VRoute.settings,
     tab: NavTab.more,
   ),
-  VRoute.security: RouteSpec(
-    route: VRoute.security,
-    id: 'V-44',
-    title: L.security,
-    parent: VRoute.settings,
-    tab: NavTab.more,
-  ),
   VRoute.changePassword: RouteSpec(
     route: VRoute.changePassword,
     id: 'V-45',
     title: L.changePassword,
-    parent: VRoute.security,
+    parent: VRoute.settings,
     tab: NavTab.more,
   ),
   VRoute.settings: RouteSpec(
@@ -489,6 +484,28 @@ Map<VRoute, RouteSpec> get routeSpecs => <VRoute, RouteSpec>{
     title: L.helpSupport,
     parent: VRoute.settings,
     tab: NavTab.more,
+  ),
+  VRoute.businessVerification: RouteSpec(
+    route: VRoute.businessVerification,
+    id: 'X-22',
+    title: L.bvTitle,
+    parent: VRoute.settings,
+    tab: NavTab.more,
+  ),
+  VRoute.complaints: RouteSpec(
+    route: VRoute.complaints,
+    id: 'X-20',
+    title: L.cmpTitle,
+    parent: VRoute.settings,
+    tab: NavTab.more,
+  ),
+  VRoute.complaintDetail: RouteSpec(
+    route: VRoute.complaintDetail,
+    id: 'X-21',
+    title: L.cmpTitle,
+    parent: VRoute.complaints,
+    tab: NavTab.more,
+    requiresEntityId: true,
   ),
   VRoute.faq: RouteSpec(
     route: VRoute.faq,

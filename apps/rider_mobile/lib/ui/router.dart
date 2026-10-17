@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
 import '../core/routes.dart';
+import 'screens/complaints.dart';
 import 'screens/history.dart';
 import 'screens/jobs.dart';
 import 'screens/onboarding.dart';
@@ -20,13 +21,11 @@ Widget buildScreen(BuildContext context, RiderLocation loc) {
   // Live: invitation acceptance happens once, in the Invitation PWA; the
   // app claims it after sign-in (claim_my_rider_invitations). D17 Join
   // Business stays for an existing account joining by link. The designed
-  // D12 onboarding forms have no backend yet, so they are prototype-only.
+  // D12 onboarding is the live registration for a driver without an
+  // invitation (Founder 2026-10-16).
   final live = !AppScope.of(context).repo.isDemo;
   return switch (loc.route) {
     // --- Onboarding / business join -------------------------------------
-    DRoute.driverDetails ||
-    DRoute.personalDetails ||
-    DRoute.vehicleAndDocuments when live => const JoinBusinessScreen(),
     DRoute.businessJoined when live && AppScope.of(context).business == null =>
       const JoinBusinessScreen(),
     DRoute.chooseVehicle => const ChooseVehicleScreen(),
@@ -66,9 +65,14 @@ Widget buildScreen(BuildContext context, RiderLocation loc) {
     DRoute.vehicleDetails => const VehicleDetailsScreen(),
     DRoute.documents => const DocumentsScreen(),
     DRoute.settings => const SettingsScreen(),
+    DRoute.privacyPolicy => const LegalScreen(privacy: true),
+    DRoute.termsOfService => const LegalScreen(privacy: false),
     DRoute.helpSupport => const HelpSupportScreen(),
     DRoute.vendorSupport => const VendorSupportScreen(),
     DRoute.submitTicket => const SubmitTicketScreen(),
+    DRoute.complaints => const ComplaintsScreen(),
+    DRoute.complaintDetail => ComplaintDetailScreen(complaintId: id!),
+    DRoute.reportProblem => const ReportProblemScreen(),
 
     // D01–D09 never reach the signed-in graph; if one somehow does, land on
     // the Driver's real home rather than pretending an auth screen belongs

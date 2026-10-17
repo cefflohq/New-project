@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Release builds need network access (Supabase). -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Join a business by scanning its invite QR (mobile_scanner). -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <!-- Phase 2B.4: foreground rider location while a run is active (D-66). -->
@@ -34,11 +35,28 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="cefflo-driver" android:host="auth-callback"/>
             </intent-filter>
+            <!-- A driver invite opens the installed app straight at Join
+                 (cefflo-driver://join?join=<token>, Founder 2026-10-16). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="cefflo-driver" android:host="join"/>
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_cefflo" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/ic_launcher_background" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="cefflo_alerts" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

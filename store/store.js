@@ -412,6 +412,7 @@
   // A server refusal comes back as {error} (so failed attempts stay counted
   // by the rate limit); transport problems throw.
   const errorText = m => (/rate limited/.test(m) ? t('Too many attempts. Please wait a minute and try again.')
+    : /business not verified/.test(m) ? t('This store is not taking orders yet. Please check back soon.')
     : /store closed/.test(m) ? `${t('This store is closed right now.')} ${nextOpenText()}`.trim()
     : /phone/.test(m) ? t('Enter a valid phone number, for example +60 12-345 6789.')
     : /available|product|item|quantity/i.test(m) ? t('Some items are no longer available. Please review your order.')

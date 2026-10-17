@@ -1,4 +1,3 @@
-import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -8,6 +7,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/rider_repository.dart' show RepositoryError;
 import '../widgets.dart';
+import 'id_capture.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
@@ -123,11 +123,9 @@ class _LiveDocumentsScreenState extends State<LiveDocumentsScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Alone in the body, so the scaffold centres it on screen.
           if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(Gap.xl),
-              child: CefPageLoader(),
-            )
+            const StateBlock.loading()
           else ...[
             Row(
               children: [
@@ -241,10 +239,14 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
 
   /// Marketplace evidence must be freshly captured: camera only.
   Future<void> _capture(bool front) async {
-    final p = await liveCapture();
-    if (p != null && mounted) {
-      setState(() => front ? _front = p : _back = p);
-    }
+    // The card camera: frame, live detection and auto-capture.
+    final bytes = await captureIdCard(
+      context,
+      title: front ? L.licenceFront : L.licenceBack,
+    );
+    if (bytes == null || !mounted) return;
+    final p = XFile.fromData(bytes, mimeType: 'image/jpeg', name: 'licence.jpg');
+    setState(() => front ? _front = p : _back = p);
   }
 
   Future<void> _submit() async {
@@ -266,7 +268,7 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
     } on RepositoryError catch (e) {
       if (mounted) {
         setState(
-          () => _error = e.message.contains('already registered')
+          () => _error = e.raw.contains('already registered')
               ? L.icAlreadyRegistered
               : e.message,
         );
@@ -334,7 +336,7 @@ class _SubmitLicenceSheetState extends State<_SubmitLicenceSheet> {
         ],
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
-          L.continueLabel,
+          L.submit,
           busy: _busy,
           onTap: _busy || _front == null || _back == null ? null : _submit,
         ),
@@ -461,7 +463,7 @@ class _SubmitVehicleSheetState extends State<_SubmitVehicleSheet> {
         ],
         const SizedBox(height: Gap.lg),
         CeffloPrimaryButton(
-          L.submitReview,
+          L.submit,
           busy: _busy,
           onTap: _busy ? null : _submit,
         ),

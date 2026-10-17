@@ -30,6 +30,9 @@ void main() {
     // MPEG audio frame sync (no ID3 header from the encoder).
     expect(bytes[0], 0xFF);
     expect(bytes[1] & 0xE0, 0xE0);
-    expect(NotificationAlertEffects.signatureAsset, 'sounds/cefflo_signature.mp3');
+    expect(
+      NotificationAlertEffects.signatureAsset,
+      'sounds/cefflo_signature.mp3',
+    );
   });
 }

@@ -414,3 +414,31 @@ img { display: block; max-width: 100%; }
 
 /* Driver pin on the live map: same as every Cefflo map (#FEC819 + motorbike). */
 .cf-rider-pin { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #FEC819; color: #01265E; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+
+/* Report a problem (complaint.js) */
+.cmp-backdrop{position:fixed;inset:0;z-index:60;background:rgba(11,21,48,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity var(--modal) var(--ease)}
+.cmp-backdrop.is-open{opacity:1}
+.cmp-sheet{background:var(--surface);color:var(--ink);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(24px);transition:transform var(--modal) var(--ease)}
+.cmp-backdrop.is-open .cmp-sheet{transform:none}
+.cmp-grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.cmp-sheet h2{margin:0 0 4px;font-size:20px;color:var(--heading)}
+.cmp-sub{margin:0 0 14px;color:var(--ink-soft);font-size:14px;line-height:1.5}
+.cmp-cats{border:0;padding:0;margin:0 0 12px;display:grid;gap:8px}
+.cmp-cats legend{font-weight:700;font-size:14px;margin-bottom:6px}
+.cmp-cats label{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:15px}
+.cmp-cats label:has(input:checked){border-color:var(--cef-blue);background:var(--cef-tint)}
+.cmp-field{display:grid;gap:6px;font-size:14px;font-weight:600;margin-bottom:12px}
+.cmp-field textarea,.cmp-field input:not([type=file]){font:inherit;font-weight:400;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.cmp-thumbs{display:flex;flex-wrap:wrap;gap:6px;font-weight:400}
+.cmp-thumbs span{background:var(--surface-soft);border-radius:999px;padding:4px 6px 4px 10px;font-size:12px}
+.cmp-thumbs button{border:0;background:none;font-size:16px;cursor:pointer;color:var(--ink-soft)}
+.cmp-err{color:var(--err);font-size:14px;margin:0 0 10px}
+.cmp-actions{display:grid;grid-template-columns:1fr 2fr;gap:10px;padding-top:6px}
+.cmp-actions button{font:700 16px inherit;padding:14px;border-radius:999px;border:0;cursor:pointer}
+.cmp-cancel{background:var(--surface-soft);color:var(--ink)}
+.cmp-send{background:var(--cef-yellow);color:var(--cef-yellow-ink)}
+.cmp-actions:has(> :only-child){grid-template-columns:1fr}
+.cmp-status{margin:8px 16px 0;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--surface);color:var(--ink);font-size:14px}
+.cmp-status h3{margin:0 0 8px;font-size:15px;color:var(--heading)}
+.cmp-status__row+.cmp-status__row{margin-top:8px}
+.cmp-status__row p{margin:4px 0 0;color:var(--ink-soft)}

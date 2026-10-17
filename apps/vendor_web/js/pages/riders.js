@@ -7,7 +7,7 @@ import { ctx } from '../store.js';
 import { showInviteLink } from '../invite_link.js';
 import { mountHiring } from '../hiring.js';
 import { fetchRiders, fetchOrders, fetchRatings, orderNo } from '../data.js';
-import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, typedConfirmDialog, phoneDigits, orderStatus, gatedNote } from '../ui.js';
+import { esc, icon, chip, avatar, loadingRows, emptyState, errorState, toast, busy, modal, confirmDialog, confirmDecision, typedConfirmDialog, phoneDigits, orderStatus, gatedNote } from '../ui.js';
 
 export default function riders({ el, params, setHeader }) {
   setHeader(t('riders.title'));
@@ -133,10 +133,10 @@ export default function riders({ el, params, setHeader }) {
       const hl = e.target.closest('a.list-row');
       if (hl) { e.preventDefault(); const to = hl.getAttribute('href'); m.close(); location.hash = to; return; }
       const ap = e.target.closest('[data-approve]');
-      if (ap) { try { await busy(ap, () => api.rpc('approve_pending_rider', { p_rider_id: r.id })); toast(t('riders.approved')); m.close(); load(); } catch (ex) { toast(ex.message, 'error'); } return; }
+      if (ap) { if (!await confirmDecision(true, r.name)) return; try { await busy(ap, () => api.rpc('approve_pending_rider', { p_rider_id: r.id })); toast(t('riders.approved')); m.close(); load(); } catch (ex) { toast(ex.message, 'error'); } return; }
       // Rejecting a pending applicant: simple confirmation (never had access).
       if (e.target.closest('[data-reject]')) {
-        if (!await confirmDialog({ title: t('riders.reject'), body: r.name, confirmLabel: t('riders.reject'), danger: true })) return;
+        if (!await confirmDecision(false, r.name)) return;
         try { await api.rpc('deactivate_rider', { p_rider_id: r.id }); toast(t('riders.rejected')); m.close(); load(); } catch (ex) { toast(ex.message, 'error'); }
         return;
       }

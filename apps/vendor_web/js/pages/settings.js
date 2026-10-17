@@ -1,23 +1,24 @@
 // Settings — side settings navigation (Founder references 4–8, 11). Page
 // destinations render beside the navigation; Language, Appearance and
 // Notifications open as focused modals over the blurred current page.
-import { t, fmtDate } from '../i18n.js';
+import { t, fmtDate, locale } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
 import { prefs, savePrefs } from '../prefs.js';
 import { fetchBusiness, fetchZones, fetchMembers, fetchJoinRequests, fetchRiders } from '../data.js';
 import { mountHiring } from '../hiring.js';
-import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, typedConfirmDialog, copyText } from '../ui.js';
+import { esc, icon, avatar, chip, loadingRows, emptyState, errorState, gatedNote, toast, busy, modal, typedConfirmDialog, copyText, confirmDecision } from '../ui.js';
 import { showInviteLink } from '../invite_link.js';
 import { mountCoverageMap } from '../map.js';
 import { rerenderShell, signOutHandler } from '../shell.js';
 import { otpBoxesHtml, wireOtpBoxes, otpFailure } from './auth.js';
 import { openNotificationPrefs } from '../notifications.js';
+import { verification, complaints } from '../trust.js';
 
-const PAGES = ['profile', 'security', 'business', 'team', 'hiring', 'subscription', 'integrations', 'help', 'privacy', 'about'];
+const PAGES = ['profile', 'security', 'business', 'verification', 'complaints', 'team', 'hiring', 'subscription', 'integrations', 'help', 'privacy', 'about'];
 // D-74, as Vendor Mobile: business details, Team and billing are Owner-only.
 // Integrations stays open to Operators (Founder, 2026-09-29).
-const OWNER_ONLY = new Set(['business', 'team', 'subscription']);
+const OWNER_ONLY = new Set(['business', 'verification', 'team', 'subscription']);
 // M2: Hiring is Owner + Operator.
 const HIRING = new Set(['hiring']);
 
@@ -34,7 +35,7 @@ export default function settings({ el, params, setHeader }) {
       ${item('m:notifications', 'bell', 'set.notifications')}
       ${item('m:language', 'globe', 'set.language', esc(prefs.lang === 'ms' ? 'BM' : 'EN'))}
       ${item('m:appearance', 'palette', 'set.appearance')}
-      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') : ''}${item('go:storefront', 'store', 'set.storefront')}${item('go:products', 'pkg', 'set.products')}${item('integrations', 'link', 'set.integrations')}${ctx.isOwner ? item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}${!ctx.isOwner && ctx.canHire ? item('hiring', 'users', 'hiring.title') : ''}
+      <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') + item('verification', 'check', 'bv.title') : ''}${item('complaints', 'alert', 'cmp.title')}${item('go:storefront', 'store', 'set.storefront')}${item('go:products', 'pkg', 'set.products')}${item('integrations', 'link', 'set.integrations')}${ctx.isOwner ? item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}${!ctx.isOwner && ctx.canHire ? item('hiring', 'users', 'hiring.title') : ''}
       <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}${item('about', 'info', 'set.about')}
       <button class="signout" data-signout>${icon('logout')}<span>${esc(t('set.signOut'))}</span></button>
     </nav>
@@ -52,7 +53,7 @@ export default function settings({ el, params, setHeader }) {
   });
   // Hiring belongs to Team: keep Team highlighted while it is open.
   if (sub === 'hiring') el.querySelector('[data-s="team"]')?.classList.add('on');
-  ({ profile, security, business, team, hiring, subscription, integrations, help: staticPage('help'), privacy: staticPage('privacy'), about: staticPage('about') })[sub](page);
+  ({ profile, security, business, verification, complaints: p => complaints(p, params[1]), team, hiring, subscription, integrations, help: staticPage('help'), privacy: staticPage('privacy'), about: staticPage('about') })[sub](page);
 }
 
 // ---------------------------------------------------------------- modals
@@ -311,8 +312,8 @@ async function team(page) {
     body.innerHTML = `${reqs.length ? `<div class="sub-card"><h3>${esc(t('team.pending'))}</h3><p class="desc" style="margin:0 0 6px">${esc(t('team.pendingLead'))}</p>
         ${reqs.map(r => `<div class="list-row" style="cursor:default">${avatar(r.name || r.role)}
           <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc(t(`team.${r.role}`))} · ${esc(t('team.requested'))} ${esc(fmtDate(r.created_at))}</small></div>
-          <button class="btn sm" data-decide="${esc(r.id)}" data-approve="0">${esc(t('team.reject'))}</button>
-          <button class="btn sm primary" data-decide="${esc(r.id)}" data-approve="1">${esc(t('team.approve'))}</button></div>`).join('')}</div>` : ''}
+          <button class="btn sm" data-decide="${esc(r.id)}" data-name="${esc(r.name || '')}" data-approve="0">${esc(t('team.reject'))}</button>
+          <button class="btn sm primary" data-decide="${esc(r.id)}" data-name="${esc(r.name || '')}" data-approve="1">${esc(t('team.approve'))}</button></div>`).join('')}</div>` : ''}
       <div class="sub-card">${people.length ? people.map(m => `<div class="list-row" style="cursor:default">${avatar(memberName(m))}
           <div class="grow"><b>${esc(memberName(m))}</b><small>${esc(t(`team.${m.role}`))}</small></div>${chip('active', true)}
           <button class="btn sm danger-soft" data-remove="${esc(m.user_id)}">${esc(t('team.remove'))}</button></div>`).join('')
@@ -338,6 +339,7 @@ async function team(page) {
     const dc = e.target.closest('[data-decide]');
     if (dc) {
       const approve = dc.dataset.approve === '1';
+      if (!await confirmDecision(approve, dc.dataset.name || '')) return;
       try {
         await busy(dc, () => api.rpc('decide_team_join_request', { p_request_id: dc.dataset.decide, p_approve: approve }));
         toast(t(approve ? 'team.approved' : 'team.rejected')); paint();
@@ -386,12 +388,13 @@ async function hiring(page) {
       reqBox.innerHTML = rows.length ? `<div class="sub-card"><h3>${esc(t('team.pending'))}</h3><p class="desc" style="margin:0 0 6px">${esc(t('team.pendingLead'))}</p>
         ${rows.map(r => `<div class="list-row" style="cursor:default">${avatar(r.name || r.role)}
           <div class="grow"><b>${esc(r.name || t('team.member'))}</b><small>${esc(t('team.helper'))} · ${esc(t('team.requested'))} ${esc(fmtDate(r.created_at))}</small></div>
-          <button class="btn sm" data-hdec="${esc(r.id)}" data-ok="0">${esc(t('team.reject'))}</button>
-          <button class="btn sm primary" data-hdec="${esc(r.id)}" data-ok="1">${esc(t('team.approve'))}</button></div>`).join('')}</div>` : '';
+          <button class="btn sm" data-hdec="${esc(r.id)}" data-name="${esc(r.name || '')}" data-ok="0">${esc(t('team.reject'))}</button>
+          <button class="btn sm primary" data-hdec="${esc(r.id)}" data-name="${esc(r.name || '')}" data-ok="1">${esc(t('team.approve'))}</button></div>`).join('')}</div>` : '';
     };
     reqBox.addEventListener('click', async e => {
       const d = e.target.closest('[data-hdec]'); if (!d) return;
       const approve = d.dataset.ok === '1';
+      if (!await confirmDecision(approve, d.dataset.name || '')) return;
       try { await busy(d, () => api.rpc('decide_team_join_request', { p_request_id: d.dataset.hdec, p_approve: approve })); toast(t(approve ? 'team.approved' : 'team.rejected')); paintReqs(); }
       catch (ex) { toast(ex.message, 'error'); }
     });
@@ -639,8 +642,11 @@ function staticPage(kind) {
         location.href = `mailto:support@cefflo.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
       });
     } else if (kind === 'privacy') {
-      body.innerHTML = `<div class="sub-card"><h3>${esc(t('set.privacy'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.privacy'))}</p></div>
-        <div class="sub-card"><h3>${esc(t('legal.termsTitle'))}</h3><p class="desc" style="line-height:1.7">${esc(t('legal.terms'))}</p></div>`;
+      // The one Privacy Policy and Terms for every Cefflo surface
+      // (shared/legal, generated into js/legal.js).
+      const L = (window.CEFFLO_LEGAL || {})[locale().startsWith('ms') ? 'ms' : 'en'];
+      const doc = (key) => L ? `<div class="sub-card"><h3>${esc(L.titles[key])}</h3><p class="desc">${esc(L.titles.updated)}: ${esc(L.updated)}</p>${L[key].map((s, i) => `<h4 style="margin:16px 0 4px">${i + 1}. ${esc(s.h)}</h4><p class="desc" style="line-height:1.7;margin:0">${esc(s.p)}</p>`).join('')}</div>` : '';
+      body.innerHTML = doc('privacy') + doc('terms');
     } else {
       body.innerHTML = `<div class="sub-card row-card"><span class="about-mark"><span class="cf-sym" style="--u:26px"><img src="img/cefflo-symbol.png" alt="Cefflo" width="1024" height="1024"></span></span><div class="grow"><h3>Cefflo Vendor</h3><p class="desc" style="margin:0">${esc(t('about.lead'))}</p></div></div>
         <div class="sub-card"><div class="kv">${icon('info')}<div><small>${esc(t('about.version'))}</small><b>${esc(t('about.versionVal'))}${(window.CEFFLO_CONFIG || {}).environment === 'production' ? '' : ` · ${esc((window.CEFFLO_CONFIG || {}).environment || '')}`}</b></div></div>

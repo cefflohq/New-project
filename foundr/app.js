@@ -34,6 +34,10 @@ const icons = {
   vendors: '<path d="M4 9h16l-2-5H6zM5 9v11h14V9M9 20v-6h6v6"/>',
   operations: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h5"/>',
   verification: '<path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3z"/><path d="m9 12 2 2 4-4"/>',
+  bizverif: '<path d="M4 9h16l-2-5H6zM5 9v11h14V9"/><path d="m9 15 2 2 4-4"/>',
+  restrictions: '<circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>',
+  complaints: '<path d="M4 4h16v12H8l-4 4z"/><path d="M12 7v4M12 13.5h.01"/>',
+  incidents: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/>',
   riders: '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h4l3-6h4l1 6M13 11l-2-4H8"/>',
   controls: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
   product: '<path d="M4 5h16v13H4zM8 21h8M12 18v3"/>',
@@ -55,7 +59,7 @@ const I = {
 };
 
 const NAV = [
-  ['overview', 'Overview'], ['vendors', 'Vendors'], ['operations', 'Operations'], ['riders', 'Drivers'], ['verification', 'Driver Verification'],
+  ['overview', 'Overview'], ['vendors', 'Vendors'], ['operations', 'Operations'], ['riders', 'Drivers'], ['verification', 'Driver Verification'], ['complaints', 'Complaints'], ['restrictions', 'Restrictions'], ['bizverif', 'Business Verification'], ['incidents', 'Incidents'],
   ['controls', 'Controls'], ['product', 'Versions'], ['business', 'Subscriptions'],
   ['system', 'System'], ['audit', 'Audit Log'], ['support', 'Support'], ['marketing', 'Marketing'],
   ['settings', 'Settings'],
@@ -89,13 +93,19 @@ const LOADERS = {
   admins: () => F.listPlatformAdmins(),
   broadcasts: () => F.listBroadcasts(200),
   verif: () => F.listVerifications(),
+  incidents: () => F.listIncidents(),
+  complaints: () => F.listComplaints(),
+  tickets: () => F.listSupportTickets(),
+  restrictions: () => F.listRestrictions(),
+  deletions: () => F.listAccountDeletions(),
+  bizverif: () => F.listBusinessVerifications(),
 };
 const NEEDS = {
   overview: ['vendors', 'ops', 'stuck', 'audit', 'windows', 'activeAnns', 'flags', 'versions'],
   vendors: ['vendors', 'subs', 'plans'], operations: ['ops'], riders: ['riders', 'stuck'],
   controls: ['windows', 'flags', 'anns'], product: ['versions'], business: ['subs', 'plans'],
   system: ['windows', 'activeAnns', 'admins'], audit: ['audit'], settings: ['admins'],
-  support: [], marketing: [], verification: ['verif'],
+  support: ['tickets'], marketing: [], verification: ['verif'], incidents: ['incidents'], complaints: ['complaints'], restrictions: ['restrictions', 'deletions'], bizverif: ['bizverif'],
 };
 function load(key, force = false) {
   if (!force && (key in data)) return Promise.resolve(data[key]);
@@ -368,6 +378,124 @@ function loadVerifDetail(userId) {
   }).catch(e => { licences[userId] = e; handleAuthError(e); }).finally(render);
 }
 
+// --- Complaints (Prosedur Aduan): one side files, the other has 48 h to
+// reply, Cefflo mediates with the order's own records and decides. Both
+// sides get every step by email.
+const CMP_CAT = { damaged_lost: 'Damaged or lost', conduct: 'Conduct', safety: 'Safety', unpaid: 'Not paid', fraud: 'Fraud or scam', other: 'Other' };
+const CMP_DEC = [['settled', 'Settled between both sides'], ['no_fault', 'No fault found'], ['warning', 'Warning'], ['driver_at_fault', 'Driver at fault'], ['vendor_at_fault', 'Business at fault'], ['customer_at_fault', 'Customer at fault'], ['false_report', 'False report']];
+const CMP_ACT = [['none', 'No action'], ['written_warning', 'Written warning'], ['suspend', 'Suspend account'], ['ban', 'Ban permanently']];
+const CMP_TABS = [['awaiting_reply', 'Awaiting reply'], ['in_review', 'In review'], ['resolved', 'Resolved'], ['all', 'All']];
+const ROLE = { vendor: 'Business', driver: 'Driver', customer: 'Customer' };
+const cmpOverdue = c => c.status === 'awaiting_reply' && new Date(c.reply_due_at) < new Date();
+function complaints() {
+  const title = head('Drivers', 'Complaints', 'Complaints between businesses, drivers and customers. Read both sides and the delivery records, mediate, then decide.');
+  if (failed(['complaints'])) return title + errorBlock(['complaints']);
+  if (!ready(['complaints'])) return title + loadingBlock();
+  const all = data.complaints || [];
+  const tab = state.tab || 'awaiting_reply';
+  const list = all.filter(c => (tab === 'all' || c.status === tab) && match(state.query, c.ref, c.business_name, c.rider_name, c.complainant_name, c.order_ref));
+  const pg = paginate(list);
+  return `${title}
+  ${metrics([[num(all.filter(c => c.status === 'awaiting_reply').length), 'Awaiting reply', all.some(cmpOverdue) ? `${num(all.filter(cmpOverdue).length)} past 48 h` : '', all.some(cmpOverdue)], [num(all.filter(c => c.status === 'in_review').length), 'Ready to review', '', all.some(c => c.status === 'in_review')], [num(all.filter(c => c.status === 'resolved').length), 'Resolved']])}
+  ${tabs(CMP_TABS.map(([id, l]) => [id, l, id === 'all' ? all.length : all.filter(c => c.status === id).length]), tab)}
+  ${toolbar('Search case, business, driver or order…', '')}
+  ${pg.total ? table(['Case', 'Type', 'From', 'Against', 'Order', 'Status', 'Filed'], pg.rows.map(c => ({ id: c.id, cells: [`<b>${esc(c.ref)}</b>`, esc(CMP_CAT[c.category]), esc(`${ROLE[c.complainant_role]}${c.complainant_name ? ` · ${c.complainant_name}` : ''}`), esc(c.respondent_role === 'driver' ? `Driver · ${c.rider_name || '—'}` : `Business · ${c.business_name || '—'}`), esc(c.order_ref || '—'), cmpOverdue(c) ? chip('Reply overdue', 'red') : statusChip(c.status), esc(fmtDateTime(c.created_at))] })), 'complaint') : emptyBlock(all.length ? 'Nothing in this list' : 'No complaints yet', all.length ? '' : 'Complaints arrive from the Vendor app, the Driver app and the customer tracking page.')}
+  ${pager(pg, 'complaints')}`;
+}
+// --- Restrictions: suspensions and bans from complaint decisions. A
+// suspended or banned person cannot sign in (Supabase Auth ban) until it
+// ends or is lifted here.
+function restrictions() {
+  const title = head('Drivers', 'Restrictions', 'Accounts suspended or banned through a complaint decision. They cannot sign in until the restriction ends or you lift it.');
+  if (failed(['restrictions'])) return title + errorBlock(['restrictions']);
+  if (!ready(['restrictions'])) return title + loadingBlock();
+  const all = data.restrictions || [];
+  const live = all.filter(r => r.active);
+  const del = data.deletions || [];
+  return `${title}
+  ${metrics([[num(live.length), 'Active now'], [num(all.length), 'All time'], [num(del.filter(d => !d.purged_at).length), 'Accounts closing']])}
+  ${all.length ? table(['Account', 'Type', 'Until', 'Case', 'Reason', ''], all.map(r => ({ id: r.id, cells: [`<b>${esc(r.email)}</b>`, chip(r.kind === 'ban' ? 'Banned' : 'Suspended', 'red'), esc(r.kind === 'ban' ? 'Permanent' : fmtDateTime(r.until)), esc(r.complaint_ref || '—'), esc(String(r.reason || '').slice(0, 70)), r.active ? `<button class="btn" data-modal="lift" data-id="${esc(r.id)}">Lift</button>` : chip(r.lifted_at ? 'Lifted' : 'Ended')] }))) : emptyBlock('No restrictions', 'Suspensions and bans appear here after a complaint decision.')}
+  <div class="page-head" style="margin-top:28px"><div><h1 style="font-size:24px">Account deletions</h1><p>People who deleted their account. Details are erased automatically 30 days after the request.</p></div><button class="btn" data-modal="close-account">Close an account by email</button></div>
+  ${del.length ? table(['Account', 'Asked', 'Erased on', 'Source', 'Reason'], del.map(d => ({ id: d.user_id, cells: [`<b>${esc(d.email)}</b>`, esc(fmtDateTime(d.requested_at)), d.purged_at ? chip('Erased') : esc(fmtDate(d.purge_after)), esc(d.source === 'email' ? 'Email' : 'App'), esc(d.reason || '—')] }))) : emptyBlock('No deletion requests')}`;
+}
+// --- Business verification: SSM and the owner's IC, sealed after review.
+const bizUrls = {};
+// Ready answers for a rejected verification (shown to the owner as is).
+const BV_REJECT = [
+  'The IC photo is blurry or hard to read. Take a new, sharp photo.',
+  'Part of the IC is covered or cut off. Show the whole card, with no fingers on it.',
+  'The light is too dark or there is glare. Take it in bright, even light.',
+  'The photo is not of the real card (a screen, photocopy or edited image).',
+  'The IC does not match the business owner.',
+  'The SSM certificate is unreadable or not valid.',
+  'Other',
+];
+function bizverif() {
+  const title = head('Vendors', 'Business Verification', 'SSM registration and the owner\'s IC. Documents are visible only while a submission is pending; after your decision they are sealed.');
+  if (failed(['bizverif'])) return title + errorBlock(['bizverif']);
+  if (!ready(['bizverif'])) return title + loadingBlock();
+  const all = data.bizverif || [];
+  const tab = state.tab || 'pending';
+  const list = all.filter(v => tab === 'all' || v.status === tab);
+  return `${title}
+  ${metrics([[num(all.filter(v => v.status === 'pending').length), 'Waiting for review', '', all.some(v => v.status === 'pending')], [num(all.filter(v => v.status === 'verified').length), 'Verified'], [num(all.filter(v => v.status === 'rejected').length), 'Rejected']])}
+  ${tabs([['pending', 'Pending'], ['verified', 'Verified'], ['rejected', 'Rejected'], ['all', 'All']].map(([id, l]) => [id, l, id === 'all' ? all.length : all.filter(v => v.status === id).length]), tab)}
+  ${list.length ? table(['Business', 'Owner (read from IC)', 'SSM', 'Status', 'Submitted'], list.map(v => ({ id: v.business_id, cells: [`<b>${esc(v.business_name)}</b>`, v.ocr_status === 'read' ? esc(`${v.owner_name} · IC ••••${v.owner_ic_last4}`) : chip('Not read: check the IC photo', 'amber'), esc(v.ssm_path ? 'Attached' : 'None'), statusChip(v.status), esc(fmtDateTime(v.submitted_at))] })), 'bizverif') : emptyBlock('Nothing in this list', 'Owners submit verification from Business Profile in the Vendor app.')}`;
+}
+function loadBizDocs(v) {
+  if (bizUrls[v.business_id] !== undefined) return;
+  bizUrls[v.business_id] = null;
+  Promise.all([v.ssm_path, v.ic_front_path, v.ic_back_path].map(p => (p ? F.signObject('cefflo-business-documents', p).catch(e => e) : null)))
+    .then(([ssm, front, back]) => { bizUrls[v.business_id] = { ssm, front, back }; }).finally(render);
+}
+
+const cmpDetail = {}, cmpUrls = {};
+function loadComplaint(id, force = false) {
+  if (!force && cmpDetail[id] !== undefined) return;
+  cmpDetail[id] = null;
+  F.complaintDetail(id).then(async d => {
+    cmpDetail[id] = d;
+    const urls = {};
+    for (const e of d.entries || []) if (e.file_path) { try { urls[e.file_path] = await F.signObject('cefflo-complaint-evidence', e.file_path); } catch (x) { urls[e.file_path] = x; } }
+    if (d.pod_path) { try { urls.pod = await F.signObject('cefflo-pod', d.pod_path); } catch (x) { urls.pod = x; } }
+    cmpUrls[id] = urls;
+  }).catch(e => { cmpDetail[id] = e; handleAuthError(e); }).finally(render);
+}
+const photo = (u, label) => u instanceof Error ? `<p class="sub">${esc(u.message)}</p>` : u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(u)}" alt="${esc(label)}" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;background:var(--line,#eee)"></a>` : ldr();
+const routeLink = r => { const p = r?.path || []; if (!p.length) return 'No GPS recorded'; const pts = [p[0], ...p.filter((_, i) => i % Math.ceil(p.length / 8) === 0).slice(1), p[p.length - 1]].map(x => x.join(',')); return `<a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/${pts.map(encodeURIComponent).join('/')}">${num(r.points)} GPS points · open route ↗</a>`; };
+
+// --- Incidents: driver documents are sealed. A business reports an
+// incident; opening the case with a written reason unseals the driver's IC
+// and licence images for 72 h. Every opening and viewing is logged and the
+// driver is told (in-app and by email).
+const INC_TABS = [['reported', 'Reported'], ['open', 'Open'], ['closed', 'Closed'], ['all', 'All']];
+const incState = c => c.status === 'open' && !c.live ? 'expired' : c.status;
+function incidents() {
+  const title = head('Drivers', 'Incidents', 'Incidents reported by businesses. Driver documents stay sealed until you open a case with a written reason.');
+  if (failed(['incidents'])) return title + errorBlock(['incidents']);
+  if (!ready(['incidents'])) return title + loadingBlock();
+  const all = data.incidents || [];
+  const tab = state.tab || 'reported';
+  const list = all.filter(c => (tab === 'all' || c.status === tab) && match(state.query, c.driver_name, c.business_name, c.report));
+  const pg = paginate(list);
+  return `${title}
+  ${metrics([[num(all.filter(c => c.status === 'reported').length), 'Waiting for review', '', all.some(c => c.status === 'reported')], [num(all.filter(c => c.live).length), 'Open now'], [num(all.filter(c => c.status === 'closed').length), 'Closed']])}
+  ${tabs(INC_TABS.map(([id, l]) => [id, l, id === 'all' ? all.length : all.filter(c => c.status === id).length]), tab)}
+  ${toolbar('Search driver, business or report…', '')}
+  ${pg.total ? table(['Driver', 'Business', 'Report', 'Status', 'Reported'], pg.rows.map(c => ({ id: c.id, cells: [`<b>${esc(c.driver_name || '—')}</b>`, esc(c.business_name || '—'), esc(String(c.report || '').slice(0, 80)), statusChip(incState(c)), esc(fmtDateTime(c.created_at))] })), 'incident') : emptyBlock(all.length ? 'Nothing in this list' : 'No incidents reported', all.length ? '' : 'Businesses report incidents from a driver\'s profile in the Vendor app.')}
+  ${pager(pg, 'incidents')}`;
+}
+const incDocs = {};
+function loadIncidentDocs(c) {
+  if (incDocs[c.id] !== undefined) return;
+  incDocs[c.id] = null;
+  F.logIncidentView(c.id).then(() => F.getLicence(c.rider_user_id)).then(async l => {
+    const urls = { ic: l?.ic_last4 };
+    for (const [k, path] of [['front', l?.front_path], ['back', l?.back_path]]) { if (!path) continue; try { urls[k] = await F.signDocument(path); } catch (e) { urls[k] = e; } }
+    incDocs[c.id] = urls;
+  }).catch(e => { incDocs[c.id] = e; handleAuthError(e); }).finally(render);
+}
+
 // --- Controls: Maintenance, Feature Flags, Announcements (emergency comms)
 const SCOPES = [['all', 'All surfaces'], ['vendor', 'Vendor'], ['rider', 'Driver'], ['customer', 'Customer Tracking'], ['invite', 'Invite'], ['foundr', 'FOUNDR']];
 function controls() {
@@ -514,7 +642,26 @@ function audit() {
 }
 
 // --- Not built: Support, Marketing (no backend source; outside the D-21 minimum scope)
-const support = () => head('Support', 'Support & feedback', 'Customer, vendor and driver support.') + unavailable('Support tickets are not connected', 'There is no support-ticket backend in Cefflo yet. FOUNDR will show real tickets here once that backend exists.');
+// Tickets drivers send to Cefflo from Help & Support (app, account, other).
+// Tickets about a business go to that business, not here.
+const ticketUrls = {};
+function loadTicketPhoto(p) { ticketUrls[p] = null; F.signObject('cefflo-support-photos', p).then(u => { ticketUrls[p] = u; }).catch(() => { ticketUrls[p] = ''; }).finally(render); }
+const TICKET_CAT = { cefflo_app: 'App problem', account_documents: 'Account & documents', other: 'Other', delivery_run: 'Delivery', vendor_business: 'Business' };
+function support() {
+  const title = head('Support', 'Support tickets', 'Tickets drivers send to Cefflo from Help & Support. Business-related tickets go to the business.');
+  if (failed(['tickets'])) return title + errorBlock(['tickets']);
+  if (!ready(['tickets'])) return title + loadingBlock();
+  const all = data.tickets || [];
+  const tab = state.tab || 'open';
+  const list = all.filter(t => (tab === 'all' || t.status === tab) && match(state.query, t.name, t.email, t.description, t.business_name));
+  const pg = paginate(list);
+  return `${title}
+  ${metrics([[num(all.filter(t => t.status === 'open').length), 'Open', '', all.some(t => t.status === 'open')], [num(all.filter(t => t.status === 'resolved').length), 'Resolved']])}
+  ${tabs([['open', 'Open'], ['resolved', 'Resolved'], ['all', 'All']].map(([id, l]) => [id, l, id === 'all' ? all.length : all.filter(t => t.status === id).length]), tab)}
+  ${toolbar('Search name, email or message…', '')}
+  ${pg.total ? table(['From', 'Type', 'Message', 'Status', 'Sent'], pg.rows.map(t => ({ id: t.id, cells: [`<b>${esc(t.name || t.email || '—')}</b>`, esc(TICKET_CAT[t.category] || human(t.category)), esc(String(t.description || '').slice(0, 80)), statusChip(t.status === 'open' ? 'pending' : 'resolved'), esc(fmtDateTime(t.created_at))] })), 'ticket') : emptyBlock(all.length ? 'Nothing in this list' : 'No tickets yet', all.length ? '' : 'Drivers send tickets from Help & Support in the Driver app.')}
+  ${pager(pg, 'tickets')}`;
+}
 const marketing = () => head('Marketing', 'Marketing', 'Acquisition and ads performance.') + unavailable('Marketing data is not connected', 'Ads spend, leads and ROAS need an ads/analytics source connected to the backend. Until then FOUNDR shows no marketing numbers.');
 
 // --- Settings
@@ -536,7 +683,7 @@ function settings() {
     <aside class="stack">${unavailable('Platform preferences', 'Company details, notification preferences and backups have no backend store yet.')}</aside></div>`;
 }
 
-const PAGES = { overview, vendors, operations, riders, verification, controls, product, business, system, audit, support, marketing, settings };
+const PAGES = { overview, vendors, operations, riders, verification, complaints, restrictions, bizverif, incidents, controls, product, business, system, audit, support, marketing, settings };
 
 // ------------------------------------------------------------------ drawer
 const vendorDetail = {};
@@ -603,6 +750,53 @@ function drawer() {
       <button class="btn danger" data-modal="mp-decision" data-id="${esc(v.user_id)}|rejected">Reject</button>
       <button class="btn" data-modal="mp-decision" data-id="${esc(v.user_id)}|retake_licence">Retake licence</button>
       <button class="btn" data-modal="mp-decision" data-id="${esc(v.user_id)}|retake_vehicle">Retake vehicle</button></div>` : `<p class="sub">Decided (${esc(human(v.status))}). Only pending or needs-review verifications are decided here.</p>`}</div>`;
+  } else if (d.type === 'bizverif') {
+    const v = (data.bizverif || []).find(x => x.business_id === d.id);
+    if (!v) return ('bizverif' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
+    if (v.status === 'pending') queueMicrotask(() => loadBizDocs(v));
+    const u = bizUrls[v.business_id] || {};
+    const doc = (k, label) => `<figure class="doc"><figcaption>${label}</figcaption>${u[k] instanceof Error ? `<p class="sub">${esc(u[k].message)}</p>` : u[k] ? `<a href="${esc(u[k])}" target="_blank" rel="noopener noreferrer">${/\.pdf/i.test(v[k === 'ssm' ? 'ssm_path' : k === 'front' ? 'ic_front_path' : 'ic_back_path']) ? 'Open PDF ↗' : `<img src="${esc(u[k])}" alt="${esc(label)}" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:var(--line,#eee)">`}</a>` : ldr()}</figure>`;
+    body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(v.business_name))}</span><div><h2>${esc(v.business_name)}</h2>${statusChip(v.status)}</div>${close}</div>
+    <div class="drawer-section"><h3>Details</h3>${kvRows([['Owner (read from IC)', v.ocr_status === 'read' ? v.owner_name : 'Not read: read it from the photo'], ['IC (last 4)', v.owner_ic_last4 ? `•••• ${v.owner_ic_last4}` : '—'], ['SSM certificate', v.ssm_path ? 'Attached' : 'Not given (optional)'], ['Owner email', v.owner_email || '—'], ['Submitted', fmtDateTime(v.submitted_at)], ...(v.reject_reason ? [['Rejected because', v.reject_reason]] : [])])}${v.status === 'pending' ? `<button class="btn" style="width:100%;margin:6px 0" data-reread="${esc(v.business_id)}">Read IC again</button>` : ''}<p class="sub">Check the IC photos are a real card taken now, and that the name read matches. If an SSM certificate is attached, check it at ezbiz.ssm.com.my.</p></div>
+    <div class="drawer-section"><h3>Documents</h3>${v.status === 'pending' ? `<div style="display:grid;gap:10px">${doc('front', 'Owner IC (front)')}${doc('back', 'Owner IC (back)')}${v.ssm_path ? doc('ssm', 'SSM certificate') : ''}</div>` : '<p class="sub">Sealed. Documents open again only through an incident.</p>'}</div>
+    <div class="drawer-section"><h3>Decision</h3>${v.status === 'pending' ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn primary" data-modal="biz-verify" data-id="${esc(v.business_id)}|1">Verify</button><button class="btn danger" data-modal="biz-verify" data-id="${esc(v.business_id)}|0">Reject</button></div>` : `<p class="sub">Decided ${esc(fmtDateTime(v.reviewed_at))}.</p>`}</div>`;
+  } else if (d.type === 'ticket') {
+    const t = (data.tickets || []).find(x => x.id === d.id);
+    if (!t) return ('tickets' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
+    body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(t.name || t.email))}</span><div><h2>${esc(t.name || t.email || 'Driver')}</h2>${statusChip(t.status === 'open' ? 'pending' : 'resolved')}</div>${close}</div>
+    <div class="drawer-section"><h3>Message</h3><p style="white-space:pre-wrap;margin:0 0 8px">${esc(t.description)}</p>${kvRows([['Type', TICKET_CAT[t.category] || human(t.category)], ['Email', t.email || '—'], ['Phone', t.phone || '—'], ['Business', t.business_name || '—'], ['Sent', fmtDateTime(t.created_at)]])}
+      ${t.email ? `<a class="btn" style="display:inline-block;margin-top:8px" href="mailto:${esc(t.email)}?subject=${encodeURIComponent('Re: your Cefflo support request')}">Reply by email</a>` : ''}</div>
+    ${(t.photo_paths || []).length ? `<div class="drawer-section"><h3>Photos</h3><div style="display:grid;gap:8px">${t.photo_paths.map(p => { const u = ticketUrls[p]; if (u === undefined) queueMicrotask(() => loadTicketPhoto(p)); return u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(u)}" alt="Photo" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:var(--line,#eee)"></a>` : ldr(); }).join('')}</div></div>` : ''}
+    <div class="drawer-section"><h3>Resolution</h3>${t.status === 'resolved' ? kvRows([['Note', t.resolution_note || '—'], ['Resolved', fmtDateTime(t.resolved_at)]]) : `<button class="btn primary" style="width:100%" data-modal="ticket-resolve" data-id="${esc(t.id)}">Reply and resolve</button><p class="sub">Your reply is shown to the driver in the app, with a notification.</p>`}</div>`;
+  } else if (d.type === 'complaint') {
+    const row = (data.complaints || []).find(x => x.id === d.id);
+    if (!row) return ('complaints' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
+    if (cmpDetail[d.id] === undefined) queueMicrotask(() => loadComplaint(d.id));
+    const det = cmpDetail[d.id], urls = cmpUrls[d.id] || {};
+    const who = r => ({ complainant: `${ROLE[row.complainant_role]} (complaint)`, respondent: `${ROLE[row.respondent_role]} (reply)`, cefflo: 'Cefflo note' }[r]);
+    const thread = det && !(det instanceof Error) ? (det.entries || []).map(e => `<div class="kv" style="display:block;padding:8px 0"><div class="sub">${esc(who(e.author_role))} · ${esc(fmtDateTime(e.created_at))}</div>${e.body ? `<p style="white-space:pre-wrap;margin:4px 0">${esc(e.body)}</p>` : ''}${e.file_path ? photo(urls[e.file_path], 'Photo') : ''}</div>`).join('') : '';
+    const c = det?.complaint || {};
+    body = `<div class="drawer-head"><div><h2>${esc(row.ref)} · ${esc(CMP_CAT[row.category])}</h2>${cmpOverdue(row) ? chip('Reply overdue', 'red') : statusChip(row.status)}</div>${close}</div>
+    ${det === null || det === undefined ? ldr() : det instanceof Error ? `<div class="err-card card card-pad" role="alert"><b>Could not load this complaint.</b><p class="sub">${esc(det.message)}</p></div>` : `
+    <div class="drawer-section"><h3>People</h3>${kvRows([['From', `${ROLE[c.complainant_role]}${c.complainant_name ? ` · ${c.complainant_name}` : ''}${c.complainant_contact ? ` · ${c.complainant_contact}` : ''}`], ['Business', `${det.business?.name || '—'} · ${det.business?.phone || '—'} · ${det.business?.owner_email || det.business?.email || '—'}`], ['Driver', det.driver ? `${det.driver.name} · ${det.driver.phone || '—'} · ${det.driver.email || '—'}` : '—'], ['Reply due', fmtDateTime(c.reply_due_at)]])}<p class="sub">Use these to call or email both sides while you mediate.</p></div>
+    <div class="drawer-section"><h3>Both sides</h3>${thread || '<p class="sub">Nothing yet.</p>'}${row.replied ? '' : '<p class="sub">No reply yet.</p>'}</div>
+    <div class="drawer-section"><h3>Delivery records</h3>${det.order ? kvRows([['Order', `${det.order.ref} · ${human(det.order.status)}`], ['Customer', `${det.order.customer_name || '—'} · ${det.order.customer_phone || '—'}`], ['Rating', det.rating ? `${det.rating.rating}/5 ${(det.rating.feedback || []).join(', ')}` : 'None']]) + `<div style="margin:8px 0">${routeLink(det.route)}</div>` + (det.pod_path ? `<figure class="doc"><figcaption>Proof of delivery</figcaption>${photo(urls.pod, 'Proof of delivery')}</figure>` : '<p class="sub">No proof-of-delivery photo.</p>') + `<details style="margin-top:8px"><summary>Timeline (${num((det.timeline || []).length)})</summary>${kvRows((det.timeline || []).map(t => [fmtDateTime(t.at), `${human(t.to || t.event)} · ${human(t.actor)}`]))}</details>` : '<p class="sub">Not linked to an order.</p>'}</div>
+    <div class="drawer-section"><h3>Decision</h3>${c.status === 'resolved' ? kvRows([['Outcome', (CMP_DEC.find(x => x[0] === c.decision) || [, '—'])[1]], ['Account action', (CMP_ACT.find(x => x[0] === c.account_action) || [, '—'])[1]], ['Note', c.decision_note], ['Decided', fmtDateTime(c.decided_at)]]) : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn" data-modal="complaint-note" data-id="${esc(row.id)}">Add note</button><button class="btn primary" data-modal="complaint-decide" data-id="${esc(row.id)}">Decide</button></div><p class="sub">Notes stay inside Cefflo. The decision is emailed to both sides.</p>`}</div>
+    ${det.driver ? `<div class="drawer-section"><h3>Police or court</h3><p class="sub">Only when the case goes to the police or a court: opens the driver's sealed IC and licence for 72 hours under Incidents. The driver is told by app and email.</p><button class="btn danger" style="width:100%" data-modal="complaint-escalate" data-id="${esc(row.id)}">Open driver documents</button></div>` : ''}`}`;
+  } else if (d.type === 'incident') {
+    const c = (data.incidents || []).find(x => x.id === d.id);
+    if (!c) return ('incidents' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
+    if (c.live) queueMicrotask(() => loadIncidentDocs(c));
+    const docs = incDocs[c.id];
+    const doc = (k, label) => { const u = docs && !(docs instanceof Error) ? docs[k] : null; return `<figure class="doc"><figcaption>${label}</figcaption>${u instanceof Error ? `<p class="sub">${esc(u.message)}</p>` : u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"><img src="${esc(u)}" alt="${esc(label)}" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;background:var(--line,#eee)"></a>` : docs === null ? ldr() : '<p class="sub">Not uploaded</p>'}</figure>`; };
+    body = `<div class="drawer-head"><span class="entity-avatar" style="width:42px;height:42px">${esc(initials(c.driver_name))}</span><div><h2>${esc(c.driver_name || 'Driver')}</h2>${statusChip(incState(c))}</div>${close}</div>
+    <div class="drawer-section"><h3>Report</h3><p style="white-space:pre-wrap;margin:0 0 8px">${esc(c.report)}</p>${kvRows([['Business', c.business_name || '—'], ['Reported by', c.reported_by_name || '—'], ['Reported', fmtDateTime(c.created_at)], ['Driver phone', c.driver_phone || '—']])}</div>
+    ${c.opened_at ? `<div class="drawer-section"><h3>Case</h3>${kvRows([['Reason opened', c.open_reason || '—'], ['Opened', fmtDateTime(c.opened_at)], [c.live ? 'Access ends' : 'Access ended', fmtDateTime(c.expires_at)]])}</div>` : ''}
+    <div class="drawer-section"><h3>Documents</h3>${c.live
+      ? (docs instanceof Error ? `<p class="sub">${esc(docs.message)}</p>` : `${kvRows([['IC (last 4)', docs?.ic ? `•••• ${docs.ic}` : docs === null ? '…' : '—']])}<div style="display:grid;gap:10px;margin-top:8px">${doc('front', 'Licence (front)')}${doc('back', 'Licence (back)')}</div><p class="sub">Each viewing is logged. Links expire in 5 minutes.</p>`)
+      : '<p class="sub">Sealed. Open the case to see the IC and licence for 72 hours. The driver is told by app and email.</p>'}</div>
+    <div class="drawer-section"><h3>Decision</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${c.status !== 'closed' ? `<button class="btn primary" data-modal="incident-open" data-id="${esc(c.id)}">${c.status === 'open' ? 'Reopen 72 h' : 'Open case'}</button><button class="btn" data-modal="incident-close" data-id="${esc(c.id)}">Close case</button>` : '<p class="sub">Closed. Documents are sealed.</p>'}</div></div>`;
   } else if (d.type === 'audit') {
     const a = (data.audit || []).find(x => String(x.id) === String(d.id));
     if (!a) return ('audit' in data) ? '' : `<aside class="drawer">${close}${ldr()}</aside>`;
@@ -685,6 +879,53 @@ function modal() {
       return wrap(label, `<p class="sub">${esc(effect)} No payment, OCR or Google Vision is involved.</p>
         <div class="field"><label for="mp-reason">Reason${decision === 'verified' ? ' (optional)' : ''}</label><textarea id="mp-reason" name="reason" rows="3" maxlength="300">${esc(v.reason || '')}</textarea></div>` + actions('Review'));
     }
+    case 'complaint-escalate': {
+      const x = (data.complaints || []).find(y => y.id === m.id) || {};
+      if (m.step === 'confirm') return wrap('Open driver documents?', confirm([`Case: <b>${esc(x.ref)}</b> · driver ${esc(x.rider_name || '')}`, 'IC and licence images open to platform admins for <b>72 hours</b> under Incidents.', 'The driver gets an in-app notice and an email.', `Reason: ${esc(v.reason)}`], 'incident_opened', true) + actions('Open documents', true));
+      return wrap('Open driver documents', `<p class="sub">Use only for a police report or court request. Write the reference.</p><div class="field"><label for="esc-reason">Reason (e.g. police report number)</label><textarea id="esc-reason" name="reason" rows="3" maxlength="500">${esc(v.reason || '')}</textarea></div>` + actions('Review'));
+    }
+    case 'lift': {
+      const r = (data.restrictions || []).find(y => y.id === m.id) || {};
+      if (m.step === 'confirm') return wrap('Lift this restriction?', confirm([`Account: <b>${esc(r.email)}</b>`, 'They can sign in again straight away.', `Note: ${esc(v.note)}`], 'restriction_lifted', true) + actions('Lift'));
+      return wrap('Lift restriction', `<div class="field"><label for="lift-note">Why</label><textarea id="lift-note" name="note" rows="3" maxlength="500">${esc(v.note || '')}</textarea></div>` + actions('Review'));
+    }
+    case 'biz-verify': {
+      const [bid, ok] = String(m.id).split('|');
+      const x = (data.bizverif || []).find(y => y.business_id === bid) || {};
+      if (m.step === 'confirm') return wrap(ok === '1' ? 'Verify this business?' : 'Reject verification?', confirm([`Business: <b>${esc(x.business_name)}</b>${x.owner_name ? ` · owner ${esc(x.owner_name)}` : ''}`, ok === '1' ? 'The business is marked verified. Documents are sealed.' : `Reason sent to the owner: ${esc(v.finalReason)}`], ok === '1' ? 'business_verified' : 'business_verification_rejected', ok !== '1') + actions(ok === '1' ? 'Verify' : 'Reject', ok !== '1'));
+      return wrap(ok === '1' ? 'Verify business' : 'Reject verification', ok === '1' ? '<p class="sub">You checked the owner\'s IC (and SSM, if attached).</p>' + actions('Review') : `<p class="sub">Choose why. The owner sees this and takes new photos.</p>
+        <div class="field" role="radiogroup" aria-label="Reason" style="display:grid;gap:6px">${BV_REJECT.map((r, i) => `<label style="display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:6px"><input type="radio" name="preset" value="${i}" ${String(v.preset) === String(i) ? 'checked' : ''}> <span>${esc(r)}</span></label>`).join('')}</div>
+        <div class="field"><label for="bv-reason">Note (optional, or required for Other)</label><textarea id="bv-reason" name="reason" rows="2" maxlength="300">${esc(v.reason || '')}</textarea></div>` + actions('Review'));
+    }
+    case 'close-account':
+      if (m.step === 'confirm') return wrap('Close this account?', confirm([`Account: <b>${esc(v.email)}</b>`, 'Signed out now and cannot sign in. Personal details are erased after 30 days.', `Note: ${esc(v.note)}`], 'account_deletion_requested', true) + actions('Close account', true));
+      return wrap('Close an account by email', `<p class="sub">For a deletion request sent to support@cefflo.com. Check it came from the account's own email.</p><div class="field"><label for="ca-email">Account email</label><input id="ca-email" name="email" type="email" value="${esc(v.email || '')}"></div><div class="field"><label for="ca-note">Note</label><textarea id="ca-note" name="note" rows="2" maxlength="300">${esc(v.note || '')}</textarea></div>` + actions('Review'));
+    case 'ticket-resolve':
+      if (m.step === 'confirm') return wrap('Mark this ticket resolved?', confirm([esc(v.note)], 'support_ticket_resolved', true) + actions('Mark resolved'));
+      return wrap('Mark resolved', `<div class="field"><label for="tk-note">Reply to the driver</label><textarea id="tk-note" name="note" rows="3" maxlength="1000">${esc(v.note || '')}</textarea></div>` + actions('Review'));
+    case 'complaint-note':
+      if (m.step === 'confirm') return wrap('Save this note?', confirm([esc(v.note)], 'complaint_note', true) + actions('Save note'));
+      return wrap('Add note', `<p class="sub">For your own record of calls and follow-ups. Not shown to either side.</p><div class="field"><label for="cmp-note">Note</label><textarea id="cmp-note" name="note" rows="4" maxlength="2000">${esc(v.note || '')}</textarea></div>` + actions('Save note'));
+    case 'complaint-decide': {
+      const x = (data.complaints || []).find(y => y.id === m.id) || {};
+      if (m.step === 'confirm') return wrap('Send this decision?', confirm([`Case: <b>${esc(x.ref)}</b>`, `Outcome: <b>${esc((CMP_DEC.find(d => d[0] === v.decision) || [])[1])}</b>`, `Account action: ${esc((CMP_ACT.find(d => d[0] === v.action) || [])[1])}${['suspend', 'ban'].includes(v.action) ? ` → <b>${esc({ driver: 'driver', business: 'business owner and whole team', complainant: 'person who complained' }[v.target])}</b>${v.action === 'suspend' ? ` for ${esc(v.days)} days` : ' permanently'}. They are signed out and cannot sign in.` : ''}`, `Note to both sides: ${esc(v.note)}`, 'Both sides are emailed. The case closes.'], 'complaint_decided', true) + actions('Send decision'));
+      return wrap(`Decide ${x.ref || ''}`, `<div class="field"><label for="cmp-dec">Outcome</label><select class="select" id="cmp-dec" name="decision">${CMP_DEC.map(([k, l]) => `<option value="${k}" ${v.decision === k ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        <div class="field"><label for="cmp-act">Account action</label><select class="select" id="cmp-act" name="action">${CMP_ACT.map(([k, l]) => `<option value="${k}" ${v.action === k ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        <div class="field"><label for="cmp-target">Account action applies to</label><select class="select" id="cmp-target" name="target"><option value="driver" ${v.target === 'driver' ? 'selected' : ''}>Driver</option><option value="business" ${v.target === 'business' ? 'selected' : ''}>Business (owner and whole team)</option><option value="complainant" ${v.target === 'complainant' ? 'selected' : ''}>Person who complained</option></select></div>
+        <div class="field"><label for="cmp-days">Suspension length (days)</label><input id="cmp-days" name="days" type="number" min="1" max="365" value="${esc(v.days || 7)}"></div>
+        <div class="field"><label for="cmp-dnote">Explanation for both sides</label><textarea id="cmp-dnote" name="note" rows="4" maxlength="2000">${esc(v.note || '')}</textarea></div>` + actions('Review'));
+    }
+    case 'incident-open': {
+      const c = (data.incidents || []).find(y => y.id === m.id) || {};
+      if (m.step === 'confirm') return wrap('Open this case?', confirm([`Driver: <b>${esc(c.driver_name)}</b> (${esc(c.business_name)})`, 'Their IC and licence images become visible to platform admins for <b>72 hours</b>.', 'The driver gets an in-app notice and an email.', `Reason: ${esc(v.reason)}`], 'incident_opened', true) + actions('Open case', true));
+      return wrap('Open case', `<p class="sub">Write why you need to see this driver's documents. The reason is stored and audited.</p>
+        <div class="field"><label for="inc-reason">Reason</label><textarea id="inc-reason" name="reason" rows="3" maxlength="500">${esc(v.reason || '')}</textarea></div>` + actions('Review'));
+    }
+    case 'incident-close': {
+      const c = (data.incidents || []).find(y => y.id === m.id) || {};
+      if (m.step === 'confirm') return wrap('Close this case?', confirm([`Driver: <b>${esc(c.driver_name)}</b>`, 'The documents are sealed again straight away.', `Outcome: ${esc(v.note)}`], 'incident_closed', true) + actions('Close case'));
+      return wrap('Close case', `<div class="field"><label for="inc-note">Outcome</label><textarea id="inc-note" name="note" rows="3" maxlength="500">${esc(v.note || '')}</textarea></div>` + actions('Review'));
+    }
     case 'subscription': {
       const s = (data.subs || []).find(x => x.business_id === m.id) || {};
       const plans = data.plans || [];
@@ -738,6 +979,34 @@ function validate(type, v) {
       if (v.audience === 'business' && !v.business) return 'Choose the business.';
       if (!v.reason) return 'Reason is required.';
       return '';
+    case 'complaint-escalate':
+      return String(v.reason || '').trim().length < 10 ? 'Write a reason of at least 10 characters.' : '';
+    case 'lift':
+      return String(v.note || '').trim().length < 3 ? 'Write why.' : '';
+    case 'biz-verify': {
+      if (!String(state.modal?.id || '').endsWith('|0')) return '';
+      if (v.preset === undefined || v.preset === '') return 'Choose a reason.';
+      if (BV_REJECT[v.preset] === 'Other' && String(v.reason || '').trim().length < 5) return 'Write the reason for Other.';
+      // What the owner sees: the ready answer, plus the note when given.
+      const pick = BV_REJECT[v.preset];
+      v.finalReason = pick === 'Other' ? v.reason.trim() : [pick, String(v.reason || '').trim()].filter(Boolean).join(' ');
+      return '';
+    }
+    case 'complaint-decide':
+      if (['suspend', 'ban'].includes(v.action) && !v.target) return 'Choose who the account action applies to.';
+      if (String(v.note || '').trim().length < 10) return 'Explain the decision (at least 10 characters).';
+      return '';
+    case 'close-account':
+      if (!/^\S+@\S+\.\S+$/.test(String(v.email || ''))) return 'Enter the account email.';
+      return String(v.note || '').trim().length < 3 ? 'Write a note.' : '';
+    case 'ticket-resolve':
+      return String(v.note || '').trim().length < 3 ? 'Write what was done.' : '';
+    case 'complaint-note':
+      return String(v.note || '').trim().length < 3 ? 'Write a note.' : '';
+    case 'incident-open':
+      return String(v.reason || '').trim().length < 10 ? 'Write a reason of at least 10 characters.' : '';
+    case 'incident-close':
+      return String(v.note || '').trim().length < 5 ? 'Write the outcome (at least 5 characters).' : '';
     case 'mp-decision':
       if (!String(state.modal?.id || '').endsWith('|verified') && !v.reason) return 'A reason is required for this decision.';
       return '';
@@ -780,6 +1049,15 @@ async function submitModal(form) {
       case 'broadcast': { const r = await F.broadcastNotification(v.title, v.body, v.audience, v.audience === 'business' ? v.business : null, v.reason); invalidate('broadcasts'); done = `Broadcast sent to ${num(r?.recipient_count ?? 0)} account${r?.recipient_count === 1 ? '' : 's'}`; break; }
       case 'version': await F.recordAppVersion(v.app, v.version, v.min || null, v.notes || null); invalidate('versions'); done = 'Release recorded'; break;
       case 'mp-decision': { const [uid, decision] = String(m.id).split('|'); const r = await F.decideVerification(uid, decision, v.reason || null); invalidate('verif'); delete licences[uid]; done = `Saved: ${human(r?.status || decision)}${r?.retake ? ` (retake ${r.retake})` : ''}`; break; }
+      case 'complaint-escalate': await F.escalateComplaint(m.id, v.reason.trim()); invalidate('incidents'); loadComplaint(m.id, true); done = 'Driver documents open for 72 hours (see Incidents)'; break;
+      case 'lift': await F.liftRestriction(m.id, v.note.trim()); invalidate('restrictions'); done = 'Restriction lifted'; break;
+      case 'biz-verify': { const [bid, ok] = String(m.id).split('|'); await F.decideBusinessVerification(bid, ok === '1', v.finalReason || null); delete bizUrls[bid]; invalidate('bizverif'); done = ok === '1' ? 'Business verified' : 'Verification rejected'; break; }
+      case 'close-account': await F.closeAccountByEmail(v.email.trim(), v.note.trim()); invalidate('deletions'); done = 'Account closed'; break;
+      case 'ticket-resolve': await F.resolveSupportTicket(m.id, v.note.trim()); invalidate('tickets'); done = 'Ticket resolved'; break;
+      case 'complaint-note': await F.addComplaintNote(m.id, v.note.trim()); invalidate('complaints'); loadComplaint(m.id, true); done = 'Note saved'; break;
+      case 'complaint-decide': await F.decideComplaint(m.id, v.decision, v.action, v.note.trim(), ['suspend', 'ban'].includes(v.action) ? v.target : null, Number(v.days) || 7); invalidate('restrictions'); invalidate('complaints'); loadComplaint(m.id, true); done = 'Decision sent to both sides'; break;
+      case 'incident-open': await F.openIncident(m.id, v.reason.trim()); delete incDocs[m.id]; invalidate('incidents'); done = 'Case opened for 72 hours'; break;
+      case 'incident-close': await F.closeIncident(m.id, v.note.trim()); delete incDocs[m.id]; invalidate('incidents'); done = 'Case closed'; break;
       case 'subscription': { const r = await F.setSubscription(m.id, v.plan, v.status, v.mrr === '' ? null : Math.round(Number(v.mrr) * 100), v.trial ? new Date(`${v.trial}T23:59:59+08:00`).toISOString() : null); const row = Array.isArray(r) ? r[0] : r; invalidate('subs'); done = `Saved: ${planName(row?.plan_key || v.plan)} · ${human(row?.status || v.status)}`; break; }
     }
     invalidate('audit');
@@ -897,6 +1175,13 @@ root.addEventListener('click', e => {
   if (el('[data-open]')) { const [type, ...id] = el('[data-open]').dataset.open.split(':'); state.drawer = { type, id: id.join(':') }; if (type === 'vendor') ensure(['vendors', 'subs']); return render(); }
   if (el('[data-tab]')) { state.tab = el('[data-tab]').dataset.tab; state.page = 1; if (state.route === 'controls') { state.query = ''; state.filters = {}; } if (state.route === 'riders' && state.tab === 'stuck') ensure(['stuck']); return render(); }
   if (el('[data-page]')) { const b = el('[data-page]'); if (b.disabled) return; state.page = Number(b.dataset.page); render(); return document.querySelector('.tabs, .toolbar')?.scrollIntoView({ block: 'nearest' }); }
+  if (el('[data-reread]')) {
+    const id = el('[data-reread]').dataset.reread;
+    toast('Reading the IC…');
+    F.rereadBusinessIc(id).then(r => { toast(r?.read ? `Read: ${r.owner_name} · IC ••••${r.owner_ic_last4}` : `Could not read the IC (${r?.reason || 'unknown'})`); invalidate('bizverif'); ensure(['bizverif']); })
+      .catch(e => { toast(e.message || 'Could not read the IC'); handleAuthError(e); });
+    return;
+  }
   if (el('[data-select]')) { const r = el('[data-select]'); state.drawer = { type: r.dataset.select, id: r.dataset.id }; return render(); }
   if (el('[data-close]')) { state.drawer = null; return render(); }
   if (el('[data-retry]')) { el('[data-retry]').dataset.retry.split(',').forEach(k => { if (errors[k]) load(k, true); }); return render(); }

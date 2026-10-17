@@ -372,7 +372,7 @@
   // name and price centred, a segmented control, a black pill CTA and a
   // "You may also like" rail. Home shows the featured item this way.
   T.pour = {
-    name: 'Pour', defaults: { accent: '#111111', accent2: '#E6E7E9', bg: '#EDEEEF', bar: '#EDEEEF' },
+    name: 'Spotlight', defaults: { accent: '#111111', accent2: '#E6E7E9', bg: '#EDEEEF', bar: '#EDEEEF' },
     home(c) { const f = c.list()[0] || first(c); return f ? this.product(c, f, true) : `<section class="po-pdp">${c.empty()}</section>`; },
     product(c, p, home) {
       const others = c.list(null, '').filter(x => x.id !== p.id);
@@ -382,13 +382,18 @@
         <div class="po-body">
           <h1>${c.esc(p.name)}</h1>
           <p class="po-price">${c.money(p.price)}</p>
-          <div class="po-row"><div class="po-seg">${c.stepper('__sel', 'po-step')}</div><button type="button" class="po-cta" data-act="${home ? 'addsel' : 'buy'}">${L("Add to Order")}</button></div>
+          <div class="po-row"><button type="button" class="po-cta" data-act="${home ? 'addsel' : 'buy'}">${L("Add to Order")}</button></div>
           ${home && c.count() ? `<button type="button" class="po-view" data-act="tocart">View order · ${c.count()} · ${c.money(c.total())}</button>` : ''}
           ${others.length ? `<h2>${L("You may also like")}</h2><div class="po-rail">${others.map(o => `<article class="po-card" ${c.open(o.id)}>${c.img(o)}<b>${c.esc(o.name)}</b><span>${c.money(o.price)}</span></article>`).join('')}</div>` : ''}
         </div>
       </section>`;
     },
     bar: false,
+    // Reference row: a segmented size control beside a black "Add to Order" pill.
+    dock(c, p) {
+      const seg = p.sizes?.length ? `<div class="po-seg" role="radiogroup" aria-label="${L("Size")}">${p.sizes.slice(0, 3).map(z => `<button type="button" role="radio" aria-checked="${(c.ui.size || p.sizes[0]) === z}" class="${(c.ui.size || p.sizes[0]) === z ? 'on' : ''}" data-act="size" data-id="${c.esc(z)}">${c.esc(z)}</button>`).join('')}</div>` : '';
+      return `${seg}${c.buy(L('Add to Order'), 'po-cta')}`;
+    },
   };
 
   // ======================================================== 12. TAILOR
@@ -397,7 +402,7 @@
   // two-up cards with hearts; detail with thumbnail column, quantity +
   // total price and a black "Add to Bag".
   T.tailor = {
-    name: 'Tailor', cutout: true, defaults: { accent: '#111111', accent2: '#F59E6B', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Showcase', cutout: true, defaults: { accent: '#111111', accent2: '#F59E6B', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list(), all = c.list(null, ''), f = all[0];
       return `<section class="tl-home">
@@ -422,10 +427,14 @@
           <div class="tl-badges"><span class="o">${L("New")}</span>${c.catName(p.categoryId) ? `<span class="g">${c.esc(c.catName(p.categoryId))}</span>` : ''}</div>
           <div class="tl-nm"><h1>${c.esc(p.name)}</h1>${c.icon('heart')}</div>
           <p class="tl-sub">${c.esc(p.description || c.s.name)}</p>
-          <p class="tl-price">${c.money(p.price)}</p>
-          ${c.buy(`${c.icon('bag')} Add to Bag`, 'tl-cta')}
+          ${p.sizes?.length ? `<div class="tl-szh"><b>${L("Select size")}</b></div><div class="tl-sizes" role="radiogroup" aria-label="${L("Size")}">${p.sizes.map(z => `<button type="button" role="radio" aria-checked="${(c.ui.size || p.sizes[0]) === z}" class="${(c.ui.size || p.sizes[0]) === z ? 'on' : ''}" data-act="size" data-id="${c.esc(z)}">${c.esc(z)}</button>`).join('')}</div>` : ''}
         </div>
       </section>`;
+    },
+    // Reference footer: Qty stepper and Total price side by side, then a
+    // full-width black "Add to Bag".
+    dock(c, p) {
+      return `<div class="tl-dk"><div><small>${L("Qty")}</small>${c.stepper('__sel', 'tl-qty')}</div><div class="tl-tot"><small>${L("Total price")}</small><b>${c.money(p.price * c.ui.sel)}</b></div></div>${c.buy(`${c.icon('bag')} ${L('Add to Bag')}`, 'tl-cta')}`;
     },
   };
 
@@ -542,12 +551,13 @@
           <div class="sv-tabs"><span class="on">${L("About")}</span><span>${c.money(p.price)}</span></div>
           ${p.description ? `<h2>${L("About")}</h2><p class="sv-about">${desc(c, p)}</p>` : ''}
           <h2>${L("Provided by")}</h2>
-          <div class="sv-prov"><span class="sv-pav">${c.esc(c.initials(c.s.name))}</span><div><b>${brand(c)}</b><small>${c.esc(c.openLabel() || 'Service provider')}</small></div></div>
-          <div class="sv-q">${c.stepper('__sel', 'sv-step')}</div>
+          <div class="sv-prov"><span class="sv-pav">${c.esc(c.initials(c.s.name))}</span><div><b>${brand(c)}</b><small>${c.esc(c.openLabel() || c.t('Service provider'))}</small></div></div>
           ${c.buy(L('Order Now'), 'sv-cta')}
         </div>
       </section>`;
     },
+    // Reference footer: one full-width blue pill, no quantity.
+    dock(c) { return c.buy(L('Book Service Now'), 'sv-book'); },
   };
 
   // ======================================================== 16. WARUNG
@@ -556,7 +566,7 @@
   // dish overhangs the card's left edge with a green order button; detail
   // with a big dish, payment detail rows and a Total + green CTA footer.
   T.warung = {
-    name: 'Warung', cutout: true, defaults: { accent: '#169A49', accent2: '#E11D2E', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Menu', cutout: true, defaults: { accent: '#169A49', accent2: '#E11D2E', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list();
       return `<section class="wr-home">
@@ -635,7 +645,7 @@
   // quantity steppers and a "View Cart" footer; a detail screen with image
   // counter, thumbnails, price, quantity, outlined Add to Cart + Buy Now.
   T.care = {
-    name: 'Care', cutout: true, defaults: { accent: '#1677D8', accent2: '#E8F2FD', bg: '#ffffff', bar: '#ffffff' },
+    name: 'Basket', cutout: true, defaults: { accent: '#1677D8', accent2: '#E8F2FD', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const all = c.list(null, ''), f = all[0];
       return `<section class="ca-home">
@@ -658,6 +668,11 @@
         ${nav(c, 'cat')}
       </section>`;
     },
+    // Reference footer: quantity on the right, then an outlined "Add to Cart"
+    // (adds and stays) beside a filled "Buy Now" (adds and opens the cart).
+    dock(c, p) {
+      return `<div class="ca-dq">${c.stepper('__sel', 'ca-step')}</div><div class="ca-db"><button type="button" class="ca-add" data-act="addsel">${c.icon('cart')} ${L('Add to Cart')}</button>${c.buy(L('Buy Now'), 'ca-buy')}</div>`;
+    },
     bar(c) { return `<div class="ca-bar"><div><small>${c.count()} item${c.count() === 1 ? '' : 's'}</small><b>${c.money(c.total())}</b></div><button type="button" data-act="tocart">View Cart ${c.icon('arrowRight')}</button></div>`; },
     product(c, p) {
       const n = Math.max(1, p.images.length);
@@ -669,7 +684,6 @@
         <p class="ca-sub">${c.esc(c.catName(p.categoryId))}</p>
         <b class="ca-price">${c.money(p.price)}</b>
         ${p.description ? `<p class="ca-desc">${desc(c, p)}</p>` : ''}
-        <div class="ca-qty">${c.stepper('__sel', 'ca-step')}</div>
         <div class="ca-two"><button type="button" class="ca-out" data-act="addsel">${c.icon('cart')} Add to Cart</button>${c.buy(L('Buy Now'), 'ca-fill')}</div>
       </section>`;
     },
@@ -708,10 +722,9 @@
     name: 'Dapur', defaults: { accent: '#C2410C', accent2: '#FFF7ED', bg: '#ffffff', bar: '#ffffff' },
     home(c) {
       const ps = c.list();
-      const day = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
       return `<section class="hf">
         <header class="hf-top">${mark(c, 'bz-mark')}<div><b>${c.esc(c.s.name)}</b><small>${c.esc([c.s.area, c.openLabel()].filter(Boolean).join(' · '))}</small></div>${c.toCart('bz-ic', c.icon('bag'))}</header>
-        <div class="hf-today"><small>${L("Today's menu")}</small><h1>${c.esc(day)}</h1>${c.hoursText() ? `<p>${c.icon('clock')}${c.esc(c.hoursText())}</p>` : ''}${c.s.tagline ? `<p class="hf-tag">${c.esc(c.s.tagline)}</p>` : ''}</div>
+        <div class="hf-today"><small>${L("Menu")}</small><h1>${c.esc(c.s.name)}</h1>${c.hoursText() ? `<p>${c.icon('clock')}${c.esc(c.hoursText())}</p>` : ''}${c.s.tagline ? `<p class="hf-tag">${c.esc(c.s.tagline)}</p>` : ''}</div>
         <nav class="hf-tabs">${chips(c, 'hf-tab')}</nav>
         ${groups(c, ps).map(([k, l]) => `<section class="hf-group"><h2>${c.esc(k.name)}</h2>${l.map(p => `<article class="hf-row"><button type="button" class="hf-pic" ${c.open(p.id)}>${c.img(p)}</button><div class="hf-tx" ${c.open(p.id)}><b>${c.esc(p.name)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}<span>${price(c, p)}</span></div>${addBtn(c, p, 'hf-add')}</article>`).join('')}</section>`).join('') || c.empty()}
       </section>`;
@@ -808,7 +821,6 @@
         <header class="ct-top">${mark(c, 'bz-mark')}${c.toCart('bz-ic', c.icon('bag'))}</header>
         <div class="ct-card"><small>${L("Catering")}</small><h1>${c.esc(c.s.name)}</h1>${c.s.tagline ? `<p>${c.esc(c.s.tagline)}</p>` : ''}
           <dl>${c.s.area ? `<div><dt>${L("Area")}</dt><dd>${c.esc(c.s.area)}</dd></div>` : ''}${c.hoursText() ? `<div><dt>${L("Hours")}</dt><dd>${c.esc(c.hoursText())}</dd></div>` : ''}</dl></div>
-        <p class="ct-note">${c.icon('info')}<span>${L("For an event or a scheduled delivery, write the date and time in the delivery notes at checkout.")}</span></p>
         <nav class="ct-tabs">${chips(c, 'ct-tab')}</nav>
         <div class="ct-list">${ps.map((p, i) => `<article class="ct-pkg" ${c.open(p.id)}><div class="ct-img">${c.img(p)}</div><div class="ct-tx"><small>${String(i + 1).padStart(2, '0')} · ${c.esc(c.catName(p.categoryId))}</small><b>${c.esc(p.name)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}<span>${price(c, p)}</span></div></article>`).join('') || c.empty()}</div>
       </section>`;
@@ -817,7 +829,7 @@
       return `<section class="ct ct-pdp">${pdpBack(c, 'bz-pbar')}
         <div class="ct-photo">${c.img(p, '', c.ui.img)}</div>
         <div class="ct-body"><small>${c.esc(c.catName(p.categoryId))}</small><h1>${c.esc(p.name)}</h1><b>${price(c, p)}</b>${p.description ? `<p>${c.esc(p.description)}</p>` : ''}
-          <p class="ct-note">${c.icon('info')}<span>${L("For an event or a scheduled delivery, write the date and time in the delivery notes at checkout.")}</span></p></div>
+          </div>
         ${c.buy(L('Add to cart'), 'bz-buy')}
       </section>`;
     },
@@ -951,9 +963,10 @@
 
   window.CEFFLO_TEMPLATES = T;
   // Gallery order + discovery tags (the Vendor App reads the same list).
-  // Template Library (Vendor App + Vendor Web): the ten business templates.
-  window.CEFFLO_TEMPLATE_ORDER = ['homefood', 'bakery', 'eatery', 'cafe', 'catering', 'frozen', 'florist', 'laundry', 'retail', 'outlets'];
-  // Earlier V1 templates: still rendered for storefronts saved on them, no
+  // Template Library (Vendor App + Vendor Web): five templates, each one
+  // Founder UI reference (2026-10-17): Menu, Showcase, Basket, Service, Spotlight.
+  window.CEFFLO_TEMPLATE_ORDER = ['warung', 'tailor', 'care', 'service', 'pour'];
+  // Earlier templates: still rendered for storefronts saved on them, no
   // longer offered in the library.
-  window.CEFFLO_TEMPLATE_LEGACY = ['care', 'capsule', 'kit', 'brew', 'crimson', 'lift', 'harvest', 'botanic', 'combo', 'discover', 'atelier', 'pour', 'tailor', 'sprint', 'splash', 'service', 'warung', 'collector'];
+  window.CEFFLO_TEMPLATE_LEGACY = ['homefood', 'bakery', 'eatery', 'cafe', 'catering', 'frozen', 'florist', 'laundry', 'retail', 'outlets', 'capsule', 'kit', 'brew', 'crimson', 'lift', 'harvest', 'botanic', 'combo', 'discover', 'atelier', 'sprint', 'splash', 'collector'];
 })();

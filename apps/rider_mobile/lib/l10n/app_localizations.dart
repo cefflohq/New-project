@@ -3599,7 +3599,7 @@ abstract class AppLocalizations {
   /// No description provided for @mvIntro.
   ///
   /// In en, this message translates to:
-  /// **'To apply for jobs in Find Jobs, add your licence and your vehicle. Deliveries from businesses that invited you do not need this.'**
+  /// **'Add your licence and your vehicle. Businesses that invite you, and jobs you apply for in Find Jobs, need these before you can start. Your IC and licence photos stay private to Cefflo.'**
   String get mvIntro;
 
   /// No description provided for @mvChecking.
@@ -4015,6 +4015,606 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opens at {time} · {minutes} min before pickup'**
   String pickupOpensAt(String time, int minutes);
+
+  /// Label under the page loader ring.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get loaderDefault;
+
+  /// Loader label after a long wait.
+  ///
+  /// In en, this message translates to:
+  /// **'Still loading, please wait a moment'**
+  String get loaderSlow;
+
+  /// No description provided for @youreAllCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all caught up.'**
+  String get youreAllCaughtUp;
+
+  /// No description provided for @notificationDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification deleted'**
+  String get notificationDeleted;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @ntDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get ntDelete;
+
+  /// No description provided for @notificationOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification options'**
+  String get notificationOptions;
+
+  /// No description provided for @pickupLockArrive.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrive at {business} to open the checklist'**
+  String pickupLockArrive(String business);
+
+  /// No description provided for @pickupLockPacking.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {business} to finish packing'**
+  String pickupLockPacking(String business);
+
+  /// No description provided for @pickupCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get pickupCheckAgain;
+
+  /// No description provided for @countryCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Country code'**
+  String get countryCodeTitle;
+
+  /// No description provided for @searchCountryOrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Search country or code'**
+  String get searchCountryOrCode;
+
+  /// No description provided for @legalLastUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated'**
+  String get legalLastUpdated;
+
+  /// No description provided for @legalPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get legalPrivacyPolicy;
+
+  /// No description provided for @legalTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get legalTerms;
+
+  /// No description provided for @legalConsentLead.
+  ///
+  /// In en, this message translates to:
+  /// **'By creating an account, you agree to the '**
+  String get legalConsentLead;
+
+  /// No description provided for @legalConsentAnd.
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get legalConsentAnd;
+
+  /// No description provided for @legalAgreeLead.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the '**
+  String get legalAgreeLead;
+
+  /// No description provided for @legalAgreeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick the box to agree to the Terms of Service and Privacy Policy first.'**
+  String get legalAgreeRequired;
+
+  /// No description provided for @legalWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Cefflo'**
+  String get legalWelcomeTitle;
+
+  /// No description provided for @legalWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you continue, please agree to how Cefflo works and how we handle your data.'**
+  String get legalWelcomeBody;
+
+  /// No description provided for @legalAgreeContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree and continue'**
+  String get legalAgreeContinue;
+
+  /// No description provided for @legalDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get legalDecline;
+
+  /// No description provided for @legalPrivacyShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get legalPrivacyShort;
+
+  /// No description provided for @legalTermsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms'**
+  String get legalTermsShort;
+
+  /// No description provided for @docsRequiredShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get docsRequiredShort;
+
+  /// No description provided for @docsRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your IC, driving licence and vehicle photo. The business can only approve you once these are in.'**
+  String get docsRequiredBody;
+
+  /// No description provided for @uploadDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload documents'**
+  String get uploadDocuments;
+
+  /// No description provided for @cmpReportProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem'**
+  String get cmpReportProblem;
+
+  /// No description provided for @cmpReportLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Not paid, behaviour, safety or fraud. Cefflo hears both sides.'**
+  String get cmpReportLead;
+
+  /// No description provided for @cmpWhatHappened.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened?'**
+  String get cmpWhatHappened;
+
+  /// No description provided for @cmpDescribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what happened'**
+  String get cmpDescribe;
+
+  /// No description provided for @cmpDescribeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened, when, and which order'**
+  String get cmpDescribeHint;
+
+  /// No description provided for @cmpPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos (up to 5)'**
+  String get cmpPhotos;
+
+  /// No description provided for @cmpAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get cmpAddPhoto;
+
+  /// No description provided for @cmpSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get cmpSend;
+
+  /// No description provided for @cmpTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us a little more (at least 10 characters).'**
+  String get cmpTooShort;
+
+  /// No description provided for @cmpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent. Case {ref}.'**
+  String cmpSent(String ref);
+
+  /// No description provided for @cmpCatDamaged.
+  ///
+  /// In en, this message translates to:
+  /// **'Item damaged or lost'**
+  String get cmpCatDamaged;
+
+  /// No description provided for @cmpCatConduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Behaviour'**
+  String get cmpCatConduct;
+
+  /// No description provided for @cmpCatSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety'**
+  String get cmpCatSafety;
+
+  /// No description provided for @cmpCatUnpaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Not paid'**
+  String get cmpCatUnpaid;
+
+  /// No description provided for @cmpCatFraud.
+  ///
+  /// In en, this message translates to:
+  /// **'Fraud or scam'**
+  String get cmpCatFraud;
+
+  /// No description provided for @cmpCatOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get cmpCatOther;
+
+  /// No description provided for @cmpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaints'**
+  String get cmpTitle;
+
+  /// No description provided for @cmpLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports you made and reports about you.'**
+  String get cmpLead;
+
+  /// No description provided for @cmpEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No complaints. Reports you make or receive appear here.'**
+  String get cmpEmpty;
+
+  /// No description provided for @cmpTabOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get cmpTabOpen;
+
+  /// No description provided for @cmpTabResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get cmpTabResolved;
+
+  /// No description provided for @cmpYouReported.
+  ///
+  /// In en, this message translates to:
+  /// **'You reported'**
+  String get cmpYouReported;
+
+  /// No description provided for @cmpAboutYou.
+  ///
+  /// In en, this message translates to:
+  /// **'About you'**
+  String get cmpAboutYou;
+
+  /// No description provided for @cmpStatusAwaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for reply'**
+  String get cmpStatusAwaiting;
+
+  /// No description provided for @cmpStatusReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Cefflo is reviewing'**
+  String get cmpStatusReview;
+
+  /// No description provided for @cmpStatusResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get cmpStatusResolved;
+
+  /// No description provided for @cmpReplyBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply by {date}'**
+  String cmpReplyBy(String date);
+
+  /// No description provided for @cmpTheirSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Their side'**
+  String get cmpTheirSide;
+
+  /// No description provided for @cmpYourSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Your side'**
+  String get cmpYourSide;
+
+  /// No description provided for @cmpCefflo.
+  ///
+  /// In en, this message translates to:
+  /// **'Cefflo'**
+  String get cmpCefflo;
+
+  /// No description provided for @cmpNoReplyYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No reply yet.'**
+  String get cmpNoReplyYet;
+
+  /// No description provided for @cmpGiveYourSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Give your side'**
+  String get cmpGiveYourSide;
+
+  /// No description provided for @cmpReplyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain what happened from your side'**
+  String get cmpReplyHint;
+
+  /// No description provided for @cmpSendReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reply'**
+  String get cmpSendReply;
+
+  /// No description provided for @cmpReplySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply sent to Cefflo'**
+  String get cmpReplySent;
+
+  /// No description provided for @cmpOutcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome'**
+  String get cmpOutcome;
+
+  /// No description provided for @cmpDecSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled between both sides'**
+  String get cmpDecSettled;
+
+  /// No description provided for @cmpDecNoFault.
+  ///
+  /// In en, this message translates to:
+  /// **'No fault found'**
+  String get cmpDecNoFault;
+
+  /// No description provided for @cmpDecWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'A warning was given'**
+  String get cmpDecWarning;
+
+  /// No description provided for @cmpDecDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'The driver was at fault'**
+  String get cmpDecDriver;
+
+  /// No description provided for @cmpDecVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'The business was at fault'**
+  String get cmpDecVendor;
+
+  /// No description provided for @cmpDecCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'The customer was at fault'**
+  String get cmpDecCustomer;
+
+  /// No description provided for @cmpDecFalse.
+  ///
+  /// In en, this message translates to:
+  /// **'The report was found to be false'**
+  String get cmpDecFalse;
+
+  /// No description provided for @cmpFromCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get cmpFromCustomer;
+
+  /// No description provided for @cmpFromDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver'**
+  String get cmpFromDriver;
+
+  /// No description provided for @cmpFromBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get cmpFromBusiness;
+
+  /// No description provided for @cmpOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {ref}'**
+  String cmpOrder(String ref);
+
+  /// No description provided for @cmpBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get cmpBusiness;
+
+  /// No description provided for @cmpNoBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a business first to report a problem.'**
+  String get cmpNoBusiness;
+
+  /// No description provided for @ticketAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered'**
+  String get ticketAnswered;
+
+  /// No description provided for @ticketOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get ticketOpen;
+
+  /// No description provided for @ticketReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get ticketReply;
+
+  /// No description provided for @couldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load. Pull to try again.'**
+  String get couldNotLoad;
+
+  /// No description provided for @idCamTipFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit the whole card inside the yellow frame'**
+  String get idCamTipFrame;
+
+  /// No description provided for @idCamTipLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Use bright, even light; avoid shadows'**
+  String get idCamTipLight;
+
+  /// No description provided for @idCamTipGlare.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilt slightly if there is glare on the card'**
+  String get idCamTipGlare;
+
+  /// No description provided for @idCamCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Is the text sharp and readable?'**
+  String get idCamCheck;
+
+  /// No description provided for @idCamUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this photo'**
+  String get idCamUse;
+
+  /// No description provided for @idCamUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera is not available. Allow camera access in your phone settings.'**
+  String get idCamUnavailable;
+
+  /// No description provided for @idCamFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not take the photo. Try again.'**
+  String get idCamFailed;
+
+  /// No description provided for @idCamFindCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Place the card inside the frame'**
+  String get idCamFindCard;
+
+  /// No description provided for @idCamHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold still…'**
+  String get idCamHold;
+
+  /// No description provided for @idCamTaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking the photo…'**
+  String get idCamTaking;
+
+  /// No description provided for @idCamSnap.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get idCamSnap;
+
+  /// No description provided for @idCamRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get idCamRetake;
+
+  /// No description provided for @delTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get delTitle;
+
+  /// No description provided for @delLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get delLink;
+
+  /// No description provided for @delBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account closes now: you are signed out and cannot sign in again. After 30 days your name, phone, email and documents are erased. Order records stay for 7 years without your name, as the Privacy Policy says.'**
+  String get delBody;
+
+  /// No description provided for @delOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'If you own a business, its team loses access too.'**
+  String get delOwner;
+
+  /// No description provided for @delReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you leaving? (optional)'**
+  String get delReasonHint;
+
+  /// No description provided for @delConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get delConfirm;
+
+  /// No description provided for @delDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is closed.'**
+  String get delDone;
 }
 
 class _AppLocalizationsDelegate

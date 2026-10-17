@@ -4,13 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/env.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
+import '../../data/vendor_repository.dart' show RepositoryError;
 import '../../data/models.dart';
+import '../address_suggest.dart';
 import '../async_view.dart';
 import '../delivery_pin.dart';
 import '../shell.dart';
 import '../widgets.dart';
+import 'complaints.dart' show reportProblem;
 import 'hiring.dart';
 import 'planning.dart' show showDispatchSheet;
 
@@ -18,10 +22,115 @@ import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 
 import '../../core/ui_locale.dart';
 
-/// V-16 — Zones overview: every zone on one map, then the zone list (name,
-/// status, today's orders and riders). Tapping a zone opens its Zone detail.
-class ZonesScreen extends StatelessWidget {
+/// V-16 — Zones overview: every zone and pinned order on one map.
+/// The tab is one full map: tapping a zone opens its Zone detail; "Select"
+/// ticks zones instead, to delete several at once
+/// (Founder 2026-10-16).
+class ZonesScreen extends StatefulWidget {
   const ZonesScreen({super.key});
+
+  @override
+  State<ZonesScreen> createState() => _ZonesScreenState();
+}
+
+class _ZonesScreenState extends State<ZonesScreen> {
+  bool _selecting = false;
+  final Set<String> _selected = {};
+  bool _deleting = false;
+
+  void _toggle(String id) => setState(() {
+    _selecting = true;
+    if (!_selected.remove(id)) _selected.add(id);
+  });
+
+  void _stopSelecting() => setState(() {
+    _selecting = false;
+    _selected.clear();
+  });
+
+  Future<void> _deleteSelected(List<Zone> zones) async {
+    final app = AppScope.read(context);
+    final picked = zones.where((z) => _selected.contains(z.id)).toList();
+    if (picked.isEmpty || _deleting) return;
+    final confirmed = await showCefSheet<bool>(
+      context: context,
+      backgroundColor: context.c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius),
+        ),
+      ),
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Gap.gutter,
+            Gap.xl,
+            Gap.gutter,
+            Gap.lg,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                L.zonesDeleteSelectedTitle(picked.length),
+                style: Theme.of(sheet).textTheme.titleMedium,
+              ),
+              const SizedBox(height: Gap.xs),
+              Text(
+                L.zonesDeleteSelectedBody,
+                style: Theme.of(sheet).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: Gap.xl),
+              Row(
+                children: [
+                  Expanded(
+                    child: CefButton(
+                      L.cancel,
+                      secondary: true,
+                      onTap: () => Navigator.of(sheet).pop(false),
+                    ),
+                  ),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: CefButton(
+                      L.delete2,
+                      destructive: true,
+                      onTap: () => Navigator.of(sheet).pop(true),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _deleting = true);
+    var deleted = 0;
+    for (final z in picked) {
+      try {
+        // Refused while the zone has orders in progress (delete_zone).
+        await app.repo.deleteZone(z.id);
+        deleted++;
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    setState(() {
+      _deleting = false;
+      _selecting = false;
+      _selected.clear();
+    });
+    zonesRevision.value++;
+    app.dataChanged();
+    final kept = picked.length - deleted;
+    showCefToast(
+      context,
+      kept == 0 ? L.zonesDeleted(deleted) : L.zonesNotDeleted(kept),
+      error: kept > 0,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,77 +154,181 @@ class ZonesScreen extends StatelessWidget {
       ),
       builder: (context, data, reload) {
         final (zones, orders) = data;
-        return PageBody(
-          onRefresh: reload,
-          children: [
-            _ZonesOverviewMap(
-              orders: orders,
-              zones: zones.where((z) => z.isActive).toList(),
-            ),
-            SectionHeading(L.zones2(zones.length)),
-            if (zones.isEmpty)
-              StateBlock.empty(L.noZonesYetTapCreateFirst)
-            else
-              for (final z in zones)
-                Builder(
-                  builder: (context) {
-                    // Counts derive from the same scoped orders read.
-                    final inZone = orders.where((o) => o.zoneId == z.id);
-                    final riders = {
-                      for (final o in inZone)
-                        if (o.assignedRiderId != null) o.assignedRiderId,
-                    };
-                    return CefListRow(
-                      title: z.name,
-                      subtitle: L.zoneOrdersRiders(
-                        inZone.length,
-                        riders.length,
-                      ),
-                      // Same colour as the zone's area on the map.
-                      leading: IconTile(
-                        LucideIcons.mapPin,
-                        color: z.isActive && z.boundary != null
-                            ? zoneColor(z)
+        final allPicked =
+            zones.isNotEmpty && zones.every((z) => _selected.contains(z.id));
+        final unzoned = unzonedOrders(orders);
+        final c = context.c;
+        Widget pill(Widget child) => DecoratedBox(
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+            border: Border.all(color: c.border),
+            boxShadow: const [
+              BoxShadow(color: Color(0x1A000000), blurRadius: 8),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Gap.sm),
+            child: child,
+          ),
+        );
+        // The whole tab is the map (Founder 2026-10-16): tapping a zone's
+        // area opens its Zone detail; "Select" ticks zones to delete.
+        return Padding(
+          // 10px from every edge (Founder 2026-10-16).
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: PinsMap(
+                        height: null,
+                        drops: _selecting ? const [] : _drops(orders),
+                        zones: zones,
+                        emptyLabel: zones.isEmpty
+                            ? L.noZonesYetTapCreateFirst
                             : null,
+                        selectedZoneIds: _selecting ? _selected : null,
+                        onZoneTap: (z) => _selecting
+                            ? _toggle(z.id)
+                            : app.go(VRoute.zoneDetail, entityId: z.id),
                       ),
-                      trailing: StatusChip(
-                        z.isActive ? L.active : L.inactive,
-                        success: z.isActive,
+                    ),
+                    // Zones with no drawn area can't be tapped on the map:
+                    // they sit as chips along the bottom instead.
+                    if (zones.any((z) => z.boundary == null))
+                      Positioned(
+                        left: Gap.sm,
+                        right: Gap.sm,
+                        bottom: Gap.xl,
+                        child: Wrap(
+                          spacing: Gap.xs,
+                          runSpacing: Gap.xs,
+                          children: [
+                            for (final z in zones.where(
+                              (z) => z.boundary == null,
+                            ))
+                              GestureDetector(
+                                onTap: () => _selecting
+                                    ? _toggle(z.id)
+                                    : app.go(VRoute.zoneDetail, entityId: z.id),
+                                child: pill(
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: Gap.sm,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _selecting
+                                              ? (_selected.contains(z.id)
+                                                    ? LucideIcons.circleCheck
+                                                    : LucideIcons.circle)
+                                              : LucideIcons.mapPin,
+                                          size: 16,
+                                          color:
+                                              _selecting &&
+                                                  _selected.contains(z.id)
+                                              ? CefColors.standardBrand
+                                              : c.textSecondary,
+                                        ),
+                                        const SizedBox(width: Gap.xs),
+                                        Text(
+                                          z.name,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                      // Audit fix 2: bound to this zone's id.
-                      onTap: () => app.go(VRoute.zoneDetail, entityId: z.id),
-                    );
-                  },
+                    if (zones.isNotEmpty)
+                      Positioned(
+                        top: Gap.sm,
+                        right: Gap.sm,
+                        left: _selecting ? Gap.sm : null,
+                        child: pill(
+                          _selecting
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: Gap.xs,
+                                        ),
+                                        child: Text(
+                                          L.zonesSelected(_selected.length),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall,
+                                        ),
+                                      ),
+                                    ),
+                                    CefLink(
+                                      allPicked
+                                          ? L.zonesDeselectAll
+                                          : L.zonesSelectAll,
+                                      onTap: () => setState(() {
+                                        if (allPicked) {
+                                          _selected.clear();
+                                        } else {
+                                          _selected.addAll(
+                                            zones.map((z) => z.id),
+                                          );
+                                        }
+                                      }),
+                                    ),
+                                    CefLink(L.cancel, onTap: _stopSelecting),
+                                  ],
+                                )
+                              : CefLink(
+                                  L.zonesSelect,
+                                  icon: LucideIcons.circleCheck,
+                                  onTap: () =>
+                                      setState(() => _selecting = true),
+                                ),
+                        ),
+                      ),
+                  ],
                 ),
-            // Orders still waiting for planning but without a zone: they are
-            // in no zone's plan, so surface them here to be given one.
-            if (unzonedOrders(orders).isNotEmpty)
-              CefListRow(
-                title: L.noZoneCount(unzonedOrders(orders).length),
-                subtitle: L.noZoneHint,
-                icon: LucideIcons.circleAlert,
-                onTap: () => _showUnzonedOrders(context, unzonedOrders(orders)),
               ),
-          ],
+              if (_selecting) ...[
+                const SizedBox(height: Gap.md),
+                CefButton(
+                  L.zonesDeleteSelected(_selected.length),
+                  destructive: true,
+                  busy: _deleting,
+                  onTap: _selected.isEmpty
+                      ? null
+                      : () => _deleteSelected(zones),
+                ),
+              ] else if (unzoned.isNotEmpty) ...[
+                const SizedBox(height: Gap.sm),
+                // Orders waiting for planning without a zone: in no zone's
+                // plan, so surface them here to be given one.
+                CefListRow(
+                  title: L.noZoneCount(unzoned.length),
+                  subtitle: L.noZoneHint,
+                  icon: LucideIcons.circleAlert,
+                  showDivider: false,
+                  onTap: () => _showUnzonedOrders(context, unzoned),
+                ),
+              ],
+            ],
+          ),
         );
       },
     );
   }
-}
-
-/// Every pinned order across the business's zones on one real map, with
-/// each zone's drawn boundary (Founder 2026-10-12).
-class _ZonesOverviewMap extends StatelessWidget {
-  const _ZonesOverviewMap({required this.orders, this.zones = const []});
-  final List<VendorOrder> orders;
-  final List<Zone> zones;
-
-  @override
-  Widget build(BuildContext context) => PinsMap(
-    drops: _drops(orders),
-    zones: zones,
-    emptyLabel: L.mapNoPinnedOrders,
-  );
 }
 
 /// Pinned orders as map drops; delivered ones show a check.
@@ -283,7 +496,7 @@ class _ZoneDetailScreenState extends State<ZoneDetailScreen> {
           leading: [HeaderBackButton(onTap: AppScope.read(context).back)],
           trailing: [
             IconAction(
-              icon: LucideIcons.ellipsis,
+              icon: LucideIcons.ellipsisVertical,
               tooltip: L.zoneOptions,
               color: Colors.white,
               onTap: zone == null ? () {} : () => _showZoneOptions(zone),
@@ -890,9 +1103,7 @@ class _DeliveryStopRow extends StatelessWidget {
       trailing: eta == null ? null : Text(eta, style: text.bodySmall),
       onTap: onTap,
     );
-    // Removing a delivery from today's plan has no canonical contract yet
-    // (D-61), so the real build offers no swipe at all.
-    if (!AppScope.of(context).repo.isDemo) return row;
+    // Swipe removes it from today's plan (remove_from_todays_plan).
     return Dismissible(
       key: ValueKey('stop-${stop.orderId}'),
       direction: DismissDirection.endToStart,
@@ -1098,9 +1309,11 @@ class _RidersScreenState extends State<RidersScreen> {
     if (business == null) {
       return PageBody(children: [StateBlock.empty(L.noBusinessLinked)]);
     }
-    return ValueListenableBuilder<RidersMode>(
-      valueListenable: ridersMode,
-      builder: (context, _, _) => AsyncView<(List<RiderRow>, Set<String>)>(
+    return ListenableBuilder(
+      // Openings mode swaps its list for the centred empty state when the
+      // last opening closes, so it rebuilds on the openings too.
+      listenable: Listenable.merge([ridersMode, openOpenings]),
+      builder: (context, _) => AsyncView<(List<RiderRow>, Set<String>)>(
         key: ValueKey('riders-${business.id}'),
         live: true,
         load: () async {
@@ -1137,7 +1350,18 @@ class _RidersScreenState extends State<RidersScreen> {
                 const SizedBox(height: Gap.md),
               ],
               if (business.canHire && mode == RidersMode.openings)
-                const OpeningsList()
+                // No openings: the page's trailing state, centred in the
+                // free space like every other empty state.
+                if (openOpenings.value == null)
+                  const StateBlock.loading()
+                else if (openOpenings.value!.isEmpty)
+                  StateBlock.empty(
+                    L.noOpenOpenings,
+                    actionLabel: L.newOpening,
+                    onAction: () => openNewOpening(context),
+                  )
+                else
+                  const OpeningsList()
               else ...[
                 SegmentedTabs(
                   labels: tabLabels,
@@ -1261,17 +1485,36 @@ class RiderDetailScreen extends StatelessWidget {
                       child: CefButton(
                         L.reject,
                         secondary: true,
-                        onTap: () => _decideRider(context, rider.id, false),
+                        onTap: () => _decideRider(
+                          context,
+                          rider.id,
+                          false,
+                          name: rider.name,
+                        ),
                       ),
                     ),
                     const SizedBox(width: Gap.cardGap),
                     Expanded(
                       child: CefButton(
                         L.approveRider,
-                        onTap: () => _decideRider(context, rider.id, true),
+                        onTap: () => _decideRider(
+                          context,
+                          rider.id,
+                          true,
+                          name: rider.name,
+                        ),
                       ),
                     ),
                   ],
+                )
+              // Rider removal is Owner-only (enforced by deactivate_rider);
+              // pinned at the bottom like every action (Founder 2026-10-16).
+              : rider.status != 'inactive' && app.business?.isOwner == true
+              ? CefButton(
+                  L.removeRider,
+                  destructive: true,
+                  icon: LucideIcons.trash2,
+                  onTap: () => _confirmRemoveRider(context, rider),
                 )
               : null,
           children: [
@@ -1296,30 +1539,65 @@ class RiderDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: Gap.md),
             ContactCard(phone: rider.phone),
-            CefListGroup(
-              children: [
-                CefListRow(
-                  title: L.drivingLicence,
-                  subtitle: L.noLicenceDocumentAvailable,
-                  icon: LucideIcons.fileText,
-                ),
-                CefListRow(
-                  title: L.additionalInformation,
-                  subtitle: L.noAdditionalInformationAvailable,
-                  icon: LucideIcons.clipboardList,
-                ),
-              ],
+            // Basic profile only (PDPA): IC and licence images stay sealed
+            // with Cefflo; the business sees that they were submitted.
+            FutureBuilder<Map<String, dynamic>>(
+              future: app.repo.driverBasicProfile(rider.id),
+              builder: (context, snap) {
+                final p = snap.data ?? const {};
+                final licence = p['licence_submitted'] == true;
+                final last4 = p['ic_last4'] as String?;
+                return CefListGroup(
+                  children: [
+                    CefListRow(
+                      title: L.drivingLicence,
+                      subtitle: licence
+                          ? L.licenceSubmittedPrivate
+                          : L.noLicenceDocumentAvailable,
+                      icon: licence
+                          ? LucideIcons.badgeCheck
+                          : LucideIcons.fileText,
+                    ),
+                    if (last4 != null)
+                      CefListRow(
+                        title: L.icNumber,
+                        subtitle: '•••• •••• $last4',
+                        icon: LucideIcons.idCard,
+                      ),
+                    if (p['vehicle_photo_url'] is String)
+                      Padding(
+                        padding: const EdgeInsets.all(Gap.md),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(Sizes.cardRadius),
+                          child: AspectRatio(
+                            aspectRatio: 4 / 3,
+                            child: Image.network(
+                              p['vehicle_photo_url'] as String,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    CefListRow(
+                      title: L.cmpReportProblem,
+                      subtitle: L.cmpReportLead,
+                      subtitleMaxLines: 2,
+                      icon: LucideIcons.shieldAlert,
+                      onTap: () => reportProblem(context, riderId: rider.id),
+                    ),
+                    if ((p['address'] as String?)?.isNotEmpty ?? false)
+                      CefListRow(
+                        title: L.address,
+                        subtitle: p['address'] as String,
+                        subtitleMaxLines: 2,
+                        icon: LucideIcons.mapPin,
+                      ),
+                  ],
+                );
+              },
             ),
-            // Rider removal is Owner-only (enforced by deactivate_rider).
-            if (!pending &&
-                rider.status != 'inactive' &&
-                app.business?.isOwner == true)
-              CefButton(
-                L.removeRider,
-                destructive: true,
-                icon: LucideIcons.trash2,
-                onTap: () => _confirmRemoveRider(context, rider),
-              ),
           ],
         );
       },
@@ -1351,7 +1629,8 @@ class RiderDetailScreen extends StatelessWidget {
       app.back();
     } catch (e) {
       if (!context.mounted) return;
-      final message = '$e'.contains('active work')
+      final message =
+          (e is RepositoryError ? e.raw : '$e').contains('active work')
           ? L.riderHasActiveWorkCannotRemove
           : '$e';
       showCefToast(context, message, error: true);
@@ -1801,6 +2080,10 @@ class SettingsScreen extends StatelessWidget {
                 : null,
           ),
         label(L.support),
+        if (app.business?.isOwner ?? true)
+          row(L.bvTitle, LucideIcons.badgeCheck, VRoute.businessVerification),
+        row(L.deliverySettings, LucideIcons.route, VRoute.deliverySettings),
+        row(L.cmpTitle, LucideIcons.messageSquareWarning, VRoute.complaints),
         row(L.helpSupport2, LucideIcons.circleHelp, VRoute.helpSupport),
         row(L.aboutCefflo, LucideIcons.info, VRoute.about),
         const SizedBox(height: Gap.sm),
@@ -1816,7 +2099,12 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: Gap.sm),
+        Center(
+          child: TextButton(
+            onPressed: () => _confirmDeleteAccount(context),
+            child: Text(L.delLink, style: text.labelMedium?.copyWith(color: c.textSecondary)),
+          ),
+        ),
         Center(child: AppVersionText(style: text.labelSmall, prefix: true)),
       ],
     );
@@ -1952,9 +2240,12 @@ class _CreateZoneDialogState extends State<_CreateZoneDialog> {
 Future<void> _decideRider(
   BuildContext context,
   String riderId,
-  bool approve,
-) async {
+  bool approve, {
+  String name = '',
+}) async {
   final app = AppScope.read(context);
+  if (!await confirmDecision(context, approve: approve, name: name)) return;
+  if (!context.mounted) return;
   try {
     if (approve) {
       await app.repo.approvePendingRider(riderId);
@@ -1988,6 +2279,12 @@ class TeamRequestRowState extends State<TeamRequestRow> {
 
   Future<void> _decide(bool approve) async {
     final app = AppScope.read(context);
+    final ok = await confirmDecision(
+      context,
+      approve: approve,
+      name: (widget.request['name'] ?? '') as String,
+    );
+    if (!ok || !mounted) return;
     setState(() => _busy = true);
     try {
       await app.repo.decideTeamRequest(widget.request['id'] as String, approve);
@@ -2103,6 +2400,67 @@ Future<void> _confirmSignOut(BuildContext context) async {
   if (yes != true) return;
   await app.repo.signOut();
   app.clearSession();
+}
+
+/// Delete account (Google Play / PDPA): explained in a sheet, then closed.
+Future<void> _confirmDeleteAccount(BuildContext context) async {
+  final app = AppScope.read(context);
+  final text = Theme.of(context).textTheme;
+  final reason = TextEditingController();
+  final yes = await showCefSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: context.c.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(Sizes.cardRadius)),
+    ),
+    builder: (sheet) => Padding(
+      padding: EdgeInsets.fromLTRB(
+        Gap.gutter,
+        Gap.xl,
+        Gap.gutter,
+        24 + MediaQuery.viewInsetsOf(sheet).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(L.delTitle, textAlign: TextAlign.center, style: text.titleMedium),
+          const SizedBox(height: Gap.sm),
+          Text(L.delBody, style: text.bodySmall),
+          if (app.business?.isOwner ?? false) ...[
+            const SizedBox(height: Gap.xs),
+            Text(L.delOwner, style: text.bodySmall?.copyWith(color: sheet.c.attention)),
+          ],
+          const SizedBox(height: Gap.md),
+          CefField(controller: reason, hint: L.delReasonHint, maxLines: 2),
+          const SizedBox(height: Gap.lg),
+          CefButton(
+            L.delConfirm,
+            destructive: true,
+            onTap: () => Navigator.of(sheet).pop(true),
+          ),
+          const SizedBox(height: Gap.sm),
+          CefButton(
+            L.cancel,
+            secondary: true,
+            onTap: () => Navigator.of(sheet).pop(false),
+          ),
+        ],
+      ),
+    ),
+  );
+  final why = reason.text.trim();
+  reason.dispose();
+  if (yes != true || !context.mounted) return;
+  try {
+    await app.repo.deleteAccount(why.isEmpty ? null : why);
+    if (context.mounted) showCefToast(context, L.delDone);
+    await app.repo.signOut();
+    app.clearSession();
+  } on RepositoryError catch (e) {
+    if (context.mounted) showCefToast(context, e.message, error: true);
+  }
 }
 
 /// Plan settings: which active drivers this plan may use, and Balance or
@@ -2341,6 +2699,9 @@ class ZoneNameInput extends StatefulWidget {
 class _ZoneNameInputState extends State<ZoneNameInput> {
   Timer? _debounce;
   List<AreaSuggestion> _options = const [];
+  // Google places (towns, neighbourhoods, kampung) beyond the official area
+  // list, so a smaller place still gets a real point (Founder 2026-10-15).
+  List<AddressSuggestion> _google = const [];
   int _seq = 0;
 
   @override
@@ -2352,20 +2713,96 @@ class _ZoneNameInputState extends State<ZoneNameInput> {
   void _changed(String q) {
     _debounce?.cancel();
     if (widget.controller.place != null || q.trim().length < 2) {
-      if (_options.isNotEmpty) setState(() => _options = const []);
+      if (_options.isNotEmpty || _google.isNotEmpty) {
+        setState(() {
+          _options = const [];
+          _google = const [];
+        });
+      }
       return;
     }
     final seq = ++_seq;
     _debounce = Timer(const Duration(milliseconds: 250), () async {
+      final language = Localizations.localeOf(context).languageCode;
       final found = await AppScope.read(context).repo.searchAreas(q);
-      if (mounted && seq == _seq) setState(() => _options = found);
+      var google = const <AddressSuggestion>[];
+      if (found.length < 3 && Env.googleMapsApiKey.isNotEmpty) {
+        try {
+          final known = {for (final a in found) a.label.toLowerCase()};
+          // Areas first; any Google place when no area matches the name.
+          var places = await placeSuggestions(
+            q.trim(),
+            language,
+            regions: true,
+          );
+          if (places.isEmpty) {
+            places = await placeSuggestions(q.trim(), language);
+          }
+          google = places
+              .where((g) => !known.contains(g.main.toLowerCase()))
+              .toList();
+        } catch (_) {}
+      }
+      if (mounted && seq == _seq) {
+        setState(() {
+          _options = found;
+          _google = google;
+        });
+      }
     });
+  }
+
+  Future<void> _pickGoogle(AddressSuggestion g) async {
+    setState(() => _google = const []);
+    final point = await placeLocation(g.placeId);
+    if (!mounted) return;
+    if (point == null) {
+      widget.controller.text = g.main;
+      return;
+    }
+    widget.controller.pick(
+      AreaSuggestion(
+        label: g.main,
+        state: g.secondary,
+        latitude: point.lat,
+        longitude: point.lng,
+      ),
+    );
+    setState(() => _options = const []);
+  }
+
+  Widget _row(String title, String? subtitle, VoidCallback onTap) {
+    final c = context.c;
+    final text = Theme.of(context).textTheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Gap.lg,
+          vertical: Gap.md,
+        ),
+        child: Row(
+          children: [
+            Icon(LucideIcons.mapPin, size: 18, color: c.textSecondary),
+            const SizedBox(width: Gap.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: text.bodyLarge),
+                  if (subtitle != null) Text(subtitle, style: text.bodySmall),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final text = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2378,7 +2815,7 @@ class _ZoneNameInputState extends State<ZoneNameInput> {
           enabled: widget.enabled,
           onChanged: _changed,
         ),
-        if (_options.isNotEmpty)
+        if (_options.isNotEmpty || _google.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(bottom: Gap.md),
             decoration: BoxDecoration(
@@ -2386,44 +2823,21 @@ class _ZoneNameInputState extends State<ZoneNameInput> {
               borderRadius: BorderRadius.circular(Sizes.cardRadius),
               border: Border.all(color: c.border),
             ),
-            constraints: const BoxConstraints(maxHeight: 240),
+            constraints: const BoxConstraints(maxHeight: 280),
             child: ListView(
               shrinkWrap: true,
               padding: EdgeInsets.zero,
               children: [
                 for (final a in _options)
-                  InkWell(
-                    onTap: () {
-                      widget.controller.pick(a);
-                      setState(() => _options = const []);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Gap.lg,
-                        vertical: Gap.md,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            LucideIcons.mapPin,
-                            size: 18,
-                            color: c.textSecondary,
-                          ),
-                          const SizedBox(width: Gap.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(a.label, style: text.bodyLarge),
-                                if (a.state != null)
-                                  Text(a.state!, style: text.bodySmall),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _row(a.label, a.state, () {
+                    widget.controller.pick(a);
+                    setState(() {
+                      _options = const [];
+                      _google = const [];
+                    });
+                  }),
+                for (final g in _google)
+                  _row(g.main, g.secondary, () => _pickGoogle(g)),
               ],
             ),
           ),

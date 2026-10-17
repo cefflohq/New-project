@@ -28,6 +28,9 @@ abstract final class CefPush {
   static bool get supported => _bridge?.supported().toDart ?? false;
   static String get permission => _bridge?.permission().toDart ?? 'unsupported';
 
+  /// Web: the service worker opens the target URL itself.
+  static Stream<String> get opened => const Stream.empty();
+
   static Future<bool> isOn() async {
     final b = _bridge;
     if (b == null) return false;

@@ -22,12 +22,15 @@ void main() {
     );
   });
 
-  test('the Driver app ships the same approved signature as the Vendor App', () {
-    final driver = File('assets/sounds/cefflo_signature.mp3').readAsBytesSync();
-    final vendor = File(
-      '../vendor_mobile/assets/sounds/cefflo_signature.mp3',
-    ).readAsBytesSync();
-    expect(driver, vendor);
-    expect(driver.length, lessThan(60 * 1024));
-  });
+  test(
+    'the Driver app ships the same approved signature as the Vendor App',
+    () {
+      final driver = File('assets/sounds/cefflo_signature.mp3')
+          .readAsBytesSync();
+      final vendor = File('../vendor_mobile/assets/sounds/cefflo_signature.mp3')
+          .readAsBytesSync();
+      expect(driver, vendor);
+      expect(driver.length, lessThan(60 * 1024));
+    },
+  );
 }

@@ -20,6 +20,18 @@ class Env {
     'CEFFLO_MAPBOX_PUBLIC_TOKEN',
   );
 
+  /// Google Maps Platform key for Map Tiles API (Founder 2026-10-15: Google
+  /// Maps). Empty = the Mapbox / CARTO tiles above.
+  static const googleMapsApiKey = String.fromEnvironment(
+    'CEFFLO_GOOGLE_MAPS_API_KEY',
+  );
+
+  /// Google OAuth *Web* client id (the one in Supabase → Auth → Google).
+  /// Set: Android signs in with Google inside the app. Empty: browser OAuth.
+  static const googleWebClientId = String.fromEnvironment(
+    'CEFFLO_GOOGLE_WEB_CLIENT_ID',
+  );
+
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
 

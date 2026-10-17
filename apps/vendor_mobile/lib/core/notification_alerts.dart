@@ -82,6 +82,10 @@ class NotificationAlertEffects {
     'run.declined' => (title: L.ntRunDeclined, body: L.ntRunDeclinedBody),
     'rider.joined' => (title: L.ntRiderJoined, body: L.ntRiderJoinedBody),
     'run.completed' => (title: L.ntRunCompleted, body: L.ntRunCompletedBody),
+    'support.ticket' => (
+      title: L.ntDriverSupport((n.params['name'] ?? '').toString()),
+      body: n.body,
+    ),
     _ => (title: n.title, body: n.body),
   };
 }

@@ -177,11 +177,10 @@ void main() {
     expect(L.whyInPreparation, 'Sedang disediakan');
   });
 
-  testWidgets('Zones lists unzoned orders; one opens Order detail with the '
+  testWidgets('Zones map shows unzoned orders; one opens Order detail with the '
       'zone selector, which assigns a zone', (tester) async {
     final repo = await _pumpZones(tester);
     final entry = find.text('No zone (1)');
-    await tester.scrollUntilVisible(entry, 200);
     expect(entry, findsOneWidget);
 
     await tester.tap(entry);

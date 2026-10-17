@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:math' as math;
 import 'dart:math' show max;
 
+import 'package:cefflo_push/cefflo_push.dart';
 import 'package:flutter/material.dart';
+
+import '../ui/legal_consent.dart' show ConsentStore;
 
 import '../data/demo_data.dart';
 import '../data/driver_models.dart';
@@ -10,6 +15,7 @@ import 'live_location.dart';
 import 'notification_alerts.dart';
 import 'browser_history.dart';
 import 'join_link.dart';
+import 'invite_launch.dart';
 import 'ui_locale.dart';
 import 'routes.dart';
 
@@ -35,7 +41,34 @@ enum RunPhase { accept, pickup, route, delivering, done }
 /// pattern as Vendor Mobile's AppState. Identifiers stay "Rider" internally
 /// per D-38; only rendered copy says "Driver".
 class AppState extends ChangeNotifier {
-  AppState(this.repo, {this.live});
+  AppState(this.repo, {this.live}) {
+    // A tapped push (app closed or in the background) opens its order or
+    // run once the notification list has it (Founder 2026-10-16).
+    if (!repo.isDemo) {
+      _pushOpened = CefPush.opened.listen((id) {
+        _pendingPush = id;
+        refreshNotifications();
+      });
+    }
+  }
+
+  StreamSubscription<String>? _pushOpened;
+  String? _pendingPush;
+
+  @override
+  void dispose() {
+    _pushOpened?.cancel();
+    super.dispose();
+  }
+
+  void _followPendingPush() {
+    final id = _pendingPush;
+    if (id == null) return;
+    final n = notifications.where((n) => n.id == id).firstOrNull;
+    if (n == null) return;
+    _pendingPush = null;
+    openNotification(n);
+  }
 
   final RiderRepository repo;
 
@@ -68,6 +101,26 @@ class AppState extends ChangeNotifier {
 
   /// Number plate typed on V3, carried to D12.2.
   String registrationPlate = '';
+
+  /// D12 onboarding draft for a new driver without an invitation (Founder
+  /// 2026-10-16): filled across D12 / D12.1 / D12.2, saved on Submit.
+  String draftName = '', draftPhone = '', draftDob = '', draftAddress = '';
+  String draftEmergency = '';
+
+  /// D12.2 Submit: the whole registration lands on the account, then Home.
+  Future<void> submitOnboarding() async {
+    await repo.saveRegistration(
+      vehicleType: registrationVehicle,
+      fullName: draftName,
+      phone: draftPhone,
+      plate: registrationPlate,
+      dateOfBirth: draftDob,
+      address: draftAddress,
+      emergencyContact: draftEmergency,
+    );
+    resetTo(homeRoute);
+  }
+
   RiderRelationship? active;
   List<RiderOrder> orders = const [];
 
@@ -474,6 +527,7 @@ class AppState extends ChangeNotifier {
       notificationsError = e.message;
     }
     notifyListeners();
+    _followPendingPush();
   }
 
   void _onNotificationChange(String type, Map<String, dynamic> row) {
@@ -557,6 +611,38 @@ class AppState extends ChangeNotifier {
 
   Future<void> markNotificationUnread(DriverNotification target) =>
       _setRead(target, false);
+
+  final Map<String, Timer> _pendingDeletes = {};
+
+  /// Removes a notification at once; the server delete waits 5 s so Undo
+  /// can bring it back (same as the Vendor app). Returns the undo entry.
+  (int, DriverNotification)? deleteNotification(DriverNotification target) {
+    final index = notifications.indexWhere(
+      (n) => identical(n, target) || (n.id != null && n.id == target.id),
+    );
+    if (index < 0) return null;
+    final removed = notifications[index];
+    notifications = List.of(notifications)..removeAt(index);
+    final id = removed.id;
+    if (!repo.isDemo && id != null) {
+      if (removed.unread) _unreadLive = max(0, _unreadLive - 1);
+      _pendingDeletes[id] = Timer(const Duration(seconds: 5), () {
+        _pendingDeletes.remove(id);
+        repo.deleteNotification(id).catchError((_) => refreshNotifications());
+      });
+    }
+    notifyListeners();
+    return (index, removed);
+  }
+
+  void restoreNotification((int, DriverNotification) entry) {
+    final (index, n) = entry;
+    if (n.id != null) _pendingDeletes.remove(n.id)?.cancel();
+    if (!repo.isDemo && n.unread) _unreadLive++;
+    notifications = List.of(notifications)
+      ..insert(index.clamp(0, notifications.length), n);
+    notifyListeners();
+  }
 
   Future<void> markAllNotificationsRead() async {
     notifications = [for (final n in notifications) n.copyWith(unread: false)];
@@ -656,6 +742,8 @@ class AppState extends ChangeNotifier {
       _project();
       if (_cancelNotifications == null) startNotifications();
       sessionLoaded = true;
+      // A signed-in account has agreed: this device skips the tick next time.
+      ConsentStore.mark();
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {
@@ -670,7 +758,7 @@ class AppState extends ChangeNotifier {
   final JoinLinkStore _joinStore = JoinLinkStore();
 
   Future<void> restoreJoinToken(Uri launch) async {
-    joinToken = await _joinStore.read(launch);
+    joinToken = await _joinStore.read(await inviteLaunchUri(launch));
     notifyListeners();
   }
 
@@ -893,7 +981,7 @@ class AppState extends ChangeNotifier {
         dateOfBirth: '',
         address: '',
         vehicleType: rel.vehicleType ?? '',
-        vehicleModel: '',
+        vehicleModel: repo.registration['vehicle_model']?.toString() ?? '',
         plateNumber: rel.plate ?? '',
         statusLabel: rel.isActive ? L.activeDriver : L.pendingReview,
       );
@@ -961,6 +1049,21 @@ class AppState extends ChangeNotifier {
     return RunPhase.delivering;
   }
 
+  /// Straight-line run length: pickup, then each drop in order (Founder
+  /// 2026-10-16). Null while any point is unknown; a road route needs a
+  /// routing service.
+  static double? _routeKm(double? lat, double? lng, List<RiderOrder> stops) {
+    if (lat == null || lng == null || stops.isEmpty) return null;
+    var m = 0.0;
+    var (pa, po) = (lat, lng);
+    for (final o in stops) {
+      if (o.latitude == null || o.longitude == null) return null;
+      m += _metresBetween(pa, po, o.latitude!, o.longitude!);
+      (pa, po) = (o.latitude!, o.longitude!);
+    }
+    return double.parse((m / 1000).toStringAsFixed(1));
+  }
+
   DriverRun _toDriverRun(RiderRun r) {
     final ordered = [
       ...r.orders,
@@ -985,7 +1088,11 @@ class AppState extends ChangeNotifier {
       zone: biz,
       pickupBusinessName: biz,
       pickupAddress: active?.businessAddress ?? '',
-      distanceKm: null,
+      distanceKm: _routeKm(
+        active?.businessLatitude,
+        active?.businessLongitude,
+        ordered,
+      ),
       state: phase == RunPhase.done
           ? RunState.completed
           : (phase == RunPhase.delivering
@@ -1039,6 +1146,7 @@ class AppState extends ChangeNotifier {
     ],
     deliveredAt: o.completedAt == null ? null : _timeLabel(o.completedAt!),
     deliveryStatus: o.status.name,
+    packed: o.packed,
     latitude: o.latitude,
     longitude: o.longitude,
     note: o.note.trim().isEmpty ? null : o.note.trim(),
@@ -1166,27 +1274,66 @@ class AppState extends ChangeNotifier {
   Iterable<DriverStop> get pickupStops =>
       currentRun.stops.where((s) => s.status == StopStatus.pending);
 
-  /// The Pickup Checklist opens this long before the pickup time (Founder
-  /// 2026-10-13): time to arrive, check names, addresses and items, tick
-  /// and confirm, so delivery can start on time.
-  static const pickupWindowMinutes = 15;
+  /// The Pickup Checklist opens once the Driver is at the pickup point and
+  /// the business has packed every order (Founder 2026-10-16; replaces the
+  /// 15-minute window).
+  static const pickupRadiusMetres = 200.0;
+
+  /// Null until a location fix is checked; demo counts as there.
+  bool? _atPickup;
+  bool get atPickup =>
+      repo.isDemo ||
+      _atPickup == true ||
+      currentRun.pickupLatitude == null ||
+      currentRun.pickupLongitude == null;
+
+  /// The demo keeps a later run waiting on packing so both states show.
+  bool get pickupPacked => repo.isDemo
+      ? (currentRun.pickupMinutes ?? 0) - 15 <= _nowMinutes
+      : pickupStops.every((s) => s.packed);
+
+  /// True once a location check has run for this run.
+  bool get atPickupChecked => _atPickup != null;
+
+  /// Checks the Driver's position against the run's pickup point. Without
+  /// a known pickup point the location part cannot block.
+  Future<void> refreshAtPickup() async {
+    final lat = currentRun.pickupLatitude, lng = currentRun.pickupLongitude;
+    if (repo.isDemo || lat == null || lng == null) {
+      _atPickup = true;
+      notifyListeners();
+      return;
+    }
+    final fix = await live?.source.current();
+    if (fix == null) return;
+    final there =
+        _metresBetween(fix.latitude, fix.longitude, lat, lng) <=
+        pickupRadiusMetres;
+    if (there != _atPickup) {
+      _atPickup = there;
+      notifyListeners();
+    }
+  }
+
+  static double _metresBetween(double a1, double o1, double a2, double o2) {
+    const r = 6371000.0;
+    final p1 = a1 * math.pi / 180, p2 = a2 * math.pi / 180;
+    final dp = (a2 - a1) * math.pi / 180, dl = (o2 - o1) * math.pi / 180;
+    final h =
+        math.sin(dp / 2) * math.sin(dp / 2) +
+        math.cos(p1) * math.cos(p2) * math.sin(dl / 2) * math.sin(dl / 2);
+    return 2 * r * math.asin(math.sqrt(h));
+  }
+
+  bool get pickupWindowOpen => atPickup && pickupPacked;
 
   /// Minutes after midnight now. The prototype runs on a fixed 1:50 PM so
-  /// both states show (Donuts Jo open, Kopi Kita still locked).
+  /// both states show (Donuts Jo open, Kopi Kita still waiting).
   int get _nowMinutes {
     if (repo.isDemo) return 13 * 60 + 50;
     final n = DateTime.now();
     return n.hour * 60 + n.minute;
   }
-
-  /// When the checklist opens, minutes after midnight; null = no lock
-  /// (no known pickup time).
-  int? get pickupOpensAt => currentRun.pickupMinutes == null
-      ? null
-      : currentRun.pickupMinutes! - pickupWindowMinutes;
-
-  bool get pickupWindowOpen =>
-      pickupOpensAt == null || _nowMinutes >= pickupOpensAt!;
 
   bool get allPickupTicked =>
       pickupWindowOpen &&
@@ -1310,19 +1457,17 @@ class AppState extends ChangeNotifier {
     await _advanceCurrentStop(finishedId: stopId);
   }, locationEvent: true);
 
-  /// rider_report_delivery_issue with a canonical reason. Reasons with no
-  /// canonical equivalent are refused honestly rather than forced.
+  /// rider_report_delivery_issue with a canonical reason (every reason is
+  /// recordable since 2026-10-16).
   Future<void> reportIssue(String stopId, IssueReason reason, String note) {
     final type = switch (reason) {
       IssueReason.customerNotAvailable => 'customer_unreachable',
       IssueReason.wrongAddress => 'address_problem',
       IssueReason.itemsNotAvailable => 'vendor_not_ready',
       IssueReason.safetyConcern => 'rider_unable_to_proceed',
-      IssueReason.customerRequestedReschedule || IssueReason.other => null,
+      IssueReason.customerRequestedReschedule => 'customer_rescheduled',
+      IssueReason.other => 'other',
     };
-    if (type == null) {
-      throw RepositoryError(L.reasonCantRecordedYetChooseAnother);
-    }
     if (repo.isDemo && runPhase == RunPhase.pickup) {
       // Prototype pickup: mark the order reported locally.
       currentRun = currentRun.copyWith(

@@ -74,7 +74,8 @@ void main() {
     expect(find.text('Excel / CSV'), findsOneWidget);
     expect(find.text('Google Drive'), findsOneWidget);
     // Google sources say honestly that they need a connection (Batch E).
-    expect(find.text('Connect Google'), findsNWidgets(2));
+    // Sheets opens a paste-link sheet, Drive the file picker (2026-10-16).
+    expect(find.text('Connect Google'), findsNothing);
     expect(find.textContaining('not wired'), findsNothing);
   });
 

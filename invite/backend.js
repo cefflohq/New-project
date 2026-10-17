@@ -220,8 +220,26 @@
     invited(result);
     $('declineBtn').hidden = true;
     const accept = $('acceptBtn');
-    accept.textContent = 'Continue';
+    accept.textContent = kind === 'rider' ? 'Open Cefflo Driver' : 'Continue';
+    // Driver invites open the Cefflo Driver app, not a web app (Founder
+    // 2026-10-16, option B): Android opens the installed app at Join, or
+    // Google Play with the invite in the install referrer, so the app picks
+    // it up on first launch. Other platforms see the store screen.
+    const driverApp = () => {
+      const stores = (window.CEFFLO_CONFIG && window.CEFFLO_CONFIG.driverStoreUrls) || {};
+      const play = 'https://play.google.com/store/apps/details?id=com.cefflo.driver&referrer=' +
+        encodeURIComponent('join=' + openLink);
+      if (/Android/i.test(navigator.userAgent)) {
+        location.href = 'intent://join?join=' + openLink +
+          '#Intent;scheme=cefflo-driver;package=com.cefflo.driver;S.browser_fallback_url=' +
+          encodeURIComponent(stores.android || play) + ';end';
+        return;
+      }
+      if (/iPhone|iPad/i.test(navigator.userAgent) && stores.ios) { location.href = stores.ios; return; }
+      accepted();
+    };
     const go = () => {
+      if (kind === 'rider') return driverApp();
       if (!destination) return accepted();
       location.href = destination;
     };

@@ -1,5 +1,8 @@
 import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
+
+import 'legal_consent.dart' show confirmConsentSheet;
+
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/app_state.dart';
@@ -88,6 +91,24 @@ class VendorShell extends StatelessWidget {
     final app = AppScope.of(context);
     final c = context.c;
     final route = app.current.route;
+    // An account that has not agreed yet (a new Google account) confirms
+    // the Terms and Privacy Policy once (Founder 2026-10-16).
+    if (!app.repo.isDemo &&
+        app.repo.currentUser != null &&
+        !app.repo.termsAccepted &&
+        !_askingConsent) {
+      _askingConsent = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final ok = await confirmConsentSheet(context);
+        if (ok) {
+          await app.repo.acceptTerms().catchError((Object _) {});
+        } else {
+          await app.repo.signOut();
+          app.clearSession();
+        }
+        _askingConsent = false;
+      });
+    }
     final immersive = _immersiveRoutes.contains(route);
     final ownHeader = _ownHeaderRoutes.contains(route);
     final hero = _heroRoutes.contains(route);
@@ -434,6 +455,11 @@ class _TodayGreeting extends StatelessWidget {
   }
 }
 
+/// The open Order detail's extra ⋯ actions, set by that screen.
+final orderMenuExtras = ValueNotifier<List<(String, IconData, VoidCallback)>>(
+  const [],
+);
+
 /// Locked list-screen header pattern: a compact search icon (and an add
 /// action where the list has one) in the title bar, in place of an inline
 /// full-width field.
@@ -453,10 +479,47 @@ List<Widget> _searchHeaderActions(BuildContext context, VRoute route) {
     VRoute.products => (L.addProduct, VRoute.addProduct),
     _ => null,
   };
+  // Order detail: edit and the order's other actions (report issue,
+  // recover) live behind a ⋯ in the header (Founder 2026-10-16).
+  if (route == VRoute.orderDetail && app.current.entityId != null) {
+    final id = app.current.entityId!;
+    return [
+      IconAction(
+        icon: LucideIcons.ellipsisVertical,
+        tooltip: L.editOrder2,
+        color: Colors.white,
+        onTap: () => showListSheet(
+          context,
+          title: L.editOrder2,
+          children: [
+            CefListRow(
+              title: L.editOrder2,
+              icon: LucideIcons.pencil,
+              showChevron: false,
+              onTap: () {
+                Navigator.of(context).pop();
+                app.go(VRoute.editOrder, entityId: id);
+              },
+            ),
+            for (final (label, icon, run) in orderMenuExtras.value)
+              CefListRow(
+                title: label,
+                icon: icon,
+                showChevron: false,
+                onTap: () {
+                  Navigator.of(context).pop();
+                  run();
+                },
+              ),
+          ],
+        ),
+      ),
+    ];
+  }
   if (route == VRoute.notificationInbox) {
     return [
       IconAction(
-        icon: LucideIcons.ellipsis,
+        icon: LucideIcons.ellipsisVertical,
         tooltip: L.notificationOptions,
         color: Colors.white,
         onTap: () => showListSheet(
@@ -573,8 +636,9 @@ class _BottomNav extends StatelessWidget {
             children: _items.map((item) {
               final selected = app.activeTab == item.$1;
               // Active = the Anchor Blue of the top background (Founder,
-              // 2026-09-24); inactive = neutral.
-              final tone = selected ? CefColors.anchorBlue : c.iconColor;
+              // 2026-09-24), or the chosen Appearance colour; inactive =
+              // neutral.
+              final tone = selected ? CefColors.navActive : c.iconColor;
               return Expanded(
                 child: Material(
                   color: Colors.transparent,
@@ -615,7 +679,7 @@ class _BottomNav extends StatelessWidget {
                             height: 3,
                             decoration: BoxDecoration(
                               color: selected
-                                  ? CefColors.anchorBlue
+                                  ? CefColors.navActive
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(2),
                             ),
@@ -646,7 +710,7 @@ class _FilledCube extends StatelessWidget {
     final size = theme.size ?? Sizes.icon;
     return CustomPaint(
       size: Size.square(size),
-      painter: _FilledCubePainter(theme.color ?? CefColors.anchorBlue),
+      painter: _FilledCubePainter(theme.color ?? CefColors.navActive),
     );
   }
 }
@@ -705,19 +769,18 @@ class StickyActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: context.c.card,
-      border: Border(top: BorderSide(color: context.c.border)),
-    ),
+    // No hairline above the action (Founder 2026-10-16).
+    decoration: BoxDecoration(color: context.c.card),
     child: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: PageBody.maxContentWidth),
         child: Padding(
+          // Lifted off the bottom edge so the thumb reaches it comfortably.
           padding: const EdgeInsets.fromLTRB(
             Gap.gutter,
             Gap.md,
             Gap.gutter,
-            Gap.md,
+            Gap.xxl,
           ),
           child: child,
         ),
@@ -749,20 +812,25 @@ class PageBody extends StatelessWidget {
   /// No-op at every tested phone width (largest is ~412dp).
   static const maxContentWidth = 480.0;
 
-  /// A page that ends in an empty / error / blocked state: the state is
-  /// centred in the space left below the page's own controls (tabs, search)
-  /// and above the navigation, by layout -- never a fixed offset.
-  bool get _endsInState =>
-      children.isNotEmpty &&
-      children.last is StateBlock &&
-      (children.last as StateBlock).kind != StateKind.loading;
+  /// A page that ends in a loading / empty / error / blocked state: the
+  /// state is centred in the space left below the page's own controls (tabs,
+  /// search) and above the navigation, by layout -- never a fixed offset.
+  bool get _endsInState => children.isNotEmpty && children.last is StateBlock;
 
   @override
   Widget build(BuildContext context) {
+    // Grouped cards sit 10px from the frame; a page that opens with tabs
+    // starts them close under the header (Founder 2026-10-16).
+    final side = grouped ? 10.0 : Gap.gutter;
+    final top = children.isNotEmpty && children.first is SegmentedTabs
+        ? 0.0
+        : grouped
+        ? 10.0
+        : Gap.lg;
     final padding = EdgeInsets.fromLTRB(
-      Gap.gutter,
-      Gap.lg,
-      Gap.gutter,
+      side,
+      top,
+      side,
       bottom == null ? Gap.xxl : Gap.lg,
     );
     final Widget list = _endsInState
@@ -892,12 +960,20 @@ class HeroPage extends StatelessWidget {
   }
 }
 
-/// Loading state for the detail-hero archetype: an avatar and identity bars
-/// on the gradient, then rows on the white surface. Only the placeholder
-/// shapes pulse; the white surface stays solid.
+/// Loading state for the detail-hero archetype: the page's own white
+/// surface with the loader centred on it (Founder 2026-10-15: loading stays
+/// on the screen, never a full gradient page).
 class SkeletonHeroPage extends StatelessWidget {
   const SkeletonHeroPage({super.key});
 
   @override
-  Widget build(BuildContext context) => const CefPageLoader();
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.only(top: Gap.lg),
+    child: SizedBox.expand(
+      child: ContentSurface(child: Center(child: CefPageLoader())),
+    ),
+  );
 }
+
+/// One consent sheet at a time.
+bool _askingConsent = false;

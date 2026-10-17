@@ -20,7 +20,7 @@ final List<StorefrontTemplateDef> kLegacyStorefrontTemplates =
 
 /// The storefront a vendor starts on before choosing a template (and the
 /// one the public page uses for an unknown / retired key).
-const kDefaultStorefrontTemplateId = 'homefood';
+const kDefaultStorefrontTemplateId = 'warung';
 
 /// Lookup by id; unknown ids fall back to the default template so a stale
 /// saved id never breaks the storefront.
@@ -34,13 +34,7 @@ StorefrontTemplateDef storefrontTemplateById(String id) =>
 
 /// Preferred chip order for well-known tags; any other tag follows in
 /// first-seen order.
-const _tagOrder = [
-  'Food',
-  'Desserts & Drinks',
-  'Retail',
-  'Gifts',
-  'Services',
-];
+const _tagOrder = ['Food', 'Desserts & Drinks', 'Retail', 'Gifts', 'Services'];
 
 /// Filter chips, derived from the registry's tags -- a new tag on a new
 /// template appears automatically.

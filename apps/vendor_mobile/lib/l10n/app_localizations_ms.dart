@@ -1240,7 +1240,7 @@ class AppLocalizationsMs extends AppLocalizations {
       'Pesanan anda telah berjaya dikemas kini.';
 
   @override
-  String get reviewCreate => 'Semak & Cipta';
+  String get reviewCreate => 'Cipta';
 
   @override
   String get updateOrder => 'Kemas Kini Pesanan';
@@ -3821,7 +3821,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get openingClosed => 'Kekosongan ditutup';
 
   @override
-  String get newOpening => 'Kekosongan baharu';
+  String get newOpening => 'Pengambilan';
 
   @override
   String get openingFixFields =>
@@ -4362,4 +4362,547 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get hrProfileDone => 'Siap';
+
+  @override
+  String get loaderDefault => 'Memuatkan…';
+
+  @override
+  String get loaderSlow => 'Masih memuatkan, sila tunggu sebentar';
+
+  @override
+  String get itemNameLabel => 'Nama item';
+
+  @override
+  String get quantityLabel => 'Kuantiti';
+
+  @override
+  String get unitPriceOptional => 'Harga seunit (RM, pilihan)';
+
+  @override
+  String get itemNameRequired => 'Masukkan nama item.';
+
+  @override
+  String get quantityInvalid => 'Masukkan kuantiti 1 atau lebih.';
+
+  @override
+  String get priceInvalid => 'Masukkan harga yang sah.';
+
+  @override
+  String get addItem => 'Tambah item';
+
+  @override
+  String get editItem => 'Edit item';
+
+  @override
+  String get receipt => 'Resit';
+
+  @override
+  String get receiptNoPrices => 'Tiada harga dimasukkan untuk item ini.';
+
+  @override
+  String get fullScreen => 'Skrin penuh';
+
+  @override
+  String get exitFullScreen => 'Keluar skrin penuh';
+
+  @override
+  String get zonesSelect => 'Pilih';
+
+  @override
+  String get zonesSelectAll => 'Pilih semua';
+
+  @override
+  String get zonesDeselectAll => 'Nyahpilih semua';
+
+  @override
+  String zonesSelected(int count) {
+    return '$count dipilih';
+  }
+
+  @override
+  String zonesDeleteSelected(int count) {
+    return 'Padam ($count)';
+  }
+
+  @override
+  String zonesDeleteSelectedTitle(int count) {
+    return 'Padam $count zon?';
+  }
+
+  @override
+  String get zonesDeleteSelectedBody =>
+      'Zon ini akan dibuang daripada tetapan penghantaran anda. Order lama kekal dengan zonnya.';
+
+  @override
+  String zonesDeleted(int count) {
+    return '$count zon dipadam';
+  }
+
+  @override
+  String zonesNotDeleted(int count) {
+    return '$count zon masih ada order sedang berjalan dan tidak dipadam';
+  }
+
+  @override
+  String get countryCodeTitle => 'Kod negara';
+
+  @override
+  String get searchCountryOrCode => 'Cari negara atau kod';
+
+  @override
+  String get issueCustomerRescheduled => 'Pelanggan minta tukar masa';
+
+  @override
+  String get issueOther => 'Lain-lain';
+
+  @override
+  String ntDriverSupport(String name) {
+    return 'Permintaan bantuan daripada $name';
+  }
+
+  @override
+  String get noFaqResults => 'Tiada soalan yang sepadan.';
+
+  @override
+  String get sheetLinkHint =>
+      'Tampal link Google Sheet anda. Kongsi dahulu sebagai \"Sesiapa yang ada link boleh lihat\".';
+
+  @override
+  String get sheetLinkInvalid => 'Itu bukan link Google Sheets.';
+
+  @override
+  String get sheetNotShared =>
+      'Tidak dapat buka sheet itu. Kongsi sebagai \"Sesiapa yang ada link boleh lihat\" dan cuba lagi.';
+
+  @override
+  String get legalLastUpdated => 'Kemas kini terakhir';
+
+  @override
+  String get legalPrivacyPolicy => 'Polisi Privasi';
+
+  @override
+  String get legalTerms => 'Terma Perkhidmatan';
+
+  @override
+  String get legalConsentLead =>
+      'Dengan mencipta akaun, anda bersetuju dengan ';
+
+  @override
+  String get legalConsentAnd => ' dan ';
+
+  @override
+  String get legalAgreeLead => 'Saya bersetuju dengan ';
+
+  @override
+  String get legalAgreeRequired =>
+      'Tanda kotak untuk bersetuju dengan Terma Perkhidmatan dan Polisi Privasi dahulu.';
+
+  @override
+  String get legalWelcomeTitle => 'Selamat datang ke Cefflo';
+
+  @override
+  String get legalWelcomeBody =>
+      'Sebelum meneruskan, sila bersetuju dengan cara Cefflo berfungsi dan cara kami mengendalikan data anda.';
+
+  @override
+  String get legalAgreeContinue => 'Setuju dan teruskan';
+
+  @override
+  String get legalDecline => 'Bukan sekarang';
+
+  @override
+  String confirmApproveTitle(String name) {
+    return 'Luluskan $name?';
+  }
+
+  @override
+  String confirmRejectTitle(String name) {
+    return 'Tolak $name?';
+  }
+
+  @override
+  String get confirmApproveBody =>
+      'Mereka akan dapat akses ke bisnes anda dan dimaklumkan melalui emel.';
+
+  @override
+  String get confirmRejectBody =>
+      'Permohonan mereka akan ditolak. Tindakan ini tidak boleh dibatalkan.';
+
+  @override
+  String get confirmApproveYes => 'Ya, luluskan';
+
+  @override
+  String get confirmRejectYes => 'Ya, tolak';
+
+  @override
+  String get licenceSubmittedPrivate =>
+      'Dihantar dan disimpan sulit oleh Cefflo';
+
+  @override
+  String get icNumber => 'Nombor IC';
+
+  @override
+  String get reportIncident => 'Laporkan insiden';
+
+  @override
+  String get reportIncidentLead =>
+      'Kecurian, penipuan atau isu keselamatan dengan pemandu ini';
+
+  @override
+  String get reportIncidentBody =>
+      'Cefflo akan menyemak laporan ini. Hanya untuk insiden sebenar Cefflo boleh membuka dokumen sulit pemandu ini, dan pemandu akan dimaklumkan.';
+
+  @override
+  String get reportIncidentHint =>
+      'Apa yang berlaku, bila, dan order yang terlibat';
+
+  @override
+  String get reportIncidentSend => 'Hantar laporan';
+
+  @override
+  String get reportIncidentTooShort => 'Terangkan apa yang berlaku dahulu.';
+
+  @override
+  String get reportIncidentSent => 'Laporan dihantar kepada Cefflo';
+
+  @override
+  String get cmpReportProblem => 'Laporkan masalah';
+
+  @override
+  String get cmpReportLead =>
+      'Kerosakan, kelakuan atau keselamatan. Cefflo dengar kedua-dua pihak.';
+
+  @override
+  String get cmpWhatHappened => 'Apa yang berlaku?';
+
+  @override
+  String get cmpDescribe => 'Terangkan apa yang berlaku';
+
+  @override
+  String get cmpDescribeHint => 'Apa berlaku, bila, dan order mana';
+
+  @override
+  String get cmpPhotos => 'Gambar (sehingga 5)';
+
+  @override
+  String get cmpAddPhoto => 'Tambah gambar';
+
+  @override
+  String get cmpSend => 'Hantar laporan';
+
+  @override
+  String get cmpTooShort =>
+      'Terangkan sedikit lagi (sekurang-kurangnya 10 huruf).';
+
+  @override
+  String cmpSent(String ref) {
+    return 'Laporan dihantar. Kes $ref.';
+  }
+
+  @override
+  String get cmpCatDamaged => 'Barang rosak atau hilang';
+
+  @override
+  String get cmpCatConduct => 'Kelakuan';
+
+  @override
+  String get cmpCatSafety => 'Keselamatan';
+
+  @override
+  String get cmpCatUnpaid => 'Tidak dibayar';
+
+  @override
+  String get cmpCatFraud => 'Penipuan atau scam';
+
+  @override
+  String get cmpCatOther => 'Lain-lain';
+
+  @override
+  String get cmpTitle => 'Aduan';
+
+  @override
+  String get cmpLead =>
+      'Laporan yang anda buat dan laporan tentang bisnes anda.';
+
+  @override
+  String get cmpEmpty =>
+      'Tiada aduan. Laporan yang anda buat atau terima akan muncul di sini.';
+
+  @override
+  String get cmpTabOpen => 'Aktif';
+
+  @override
+  String get cmpTabResolved => 'Selesai';
+
+  @override
+  String get cmpYouReported => 'Anda laporkan';
+
+  @override
+  String get cmpAboutYou => 'Tentang bisnes anda';
+
+  @override
+  String get cmpStatusAwaiting => 'Menunggu jawapan';
+
+  @override
+  String get cmpStatusReview => 'Cefflo sedang menyemak';
+
+  @override
+  String get cmpStatusResolved => 'Selesai';
+
+  @override
+  String cmpReplyBy(String date) {
+    return 'Jawab sebelum $date';
+  }
+
+  @override
+  String get cmpTheirSide => 'Pihak mereka';
+
+  @override
+  String get cmpYourSide => 'Pihak anda';
+
+  @override
+  String get cmpCefflo => 'Cefflo';
+
+  @override
+  String get cmpNoReplyYet => 'Belum ada jawapan.';
+
+  @override
+  String get cmpGiveYourSide => 'Beri penjelasan anda';
+
+  @override
+  String get cmpReplyHint => 'Terangkan apa yang berlaku dari pihak anda';
+
+  @override
+  String get cmpSendReply => 'Hantar jawapan';
+
+  @override
+  String get cmpReplySent => 'Jawapan dihantar kepada Cefflo';
+
+  @override
+  String get cmpOutcome => 'Keputusan';
+
+  @override
+  String get cmpDecSettled => 'Diselesaikan antara kedua-dua pihak';
+
+  @override
+  String get cmpDecNoFault => 'Tiada kesalahan';
+
+  @override
+  String get cmpDecWarning => 'Amaran diberikan';
+
+  @override
+  String get cmpDecDriver => 'Driver bersalah';
+
+  @override
+  String get cmpDecVendor => 'Bisnes bersalah';
+
+  @override
+  String get cmpDecCustomer => 'Customer bersalah';
+
+  @override
+  String get cmpDecFalse => 'Laporan didapati palsu';
+
+  @override
+  String get cmpFromCustomer => 'Customer';
+
+  @override
+  String get cmpFromDriver => 'Driver';
+
+  @override
+  String get cmpFromBusiness => 'Bisnes';
+
+  @override
+  String cmpOrder(String ref) {
+    return 'Order $ref';
+  }
+
+  @override
+  String get bvTitle => 'Pengesahan bisnes';
+
+  @override
+  String get bvLead =>
+      'Cefflo menyemak pendaftaran SSM dan IC pemilik. Dokumen dimeterai selepas semakan.';
+
+  @override
+  String get bvSsm => 'Nombor pendaftaran SSM';
+
+  @override
+  String get bvSsmHint => 'cth. 202301012345 (1234567-X)';
+
+  @override
+  String get bvOwner => 'Nama penuh pemilik (seperti dalam IC)';
+
+  @override
+  String get bvIc => 'Nombor IC pemilik';
+
+  @override
+  String get bvIcHint => 'Hanya 4 digit terakhir disimpan';
+
+  @override
+  String get bvSsmDoc => 'Sijil SSM (gambar atau PDF)';
+
+  @override
+  String get bvIcFront => 'IC pemilik (depan)';
+
+  @override
+  String get bvIcBack => 'IC pemilik (belakang)';
+
+  @override
+  String get bvChoose => 'Pilih fail';
+
+  @override
+  String get bvChosen => 'Ditambah';
+
+  @override
+  String get bvSubmit => 'Hantar untuk semakan';
+
+  @override
+  String get bvMissing => 'Isi semua ruangan dan tambah ketiga-tiga dokumen.';
+
+  @override
+  String get bvIcInvalid => 'Masukkan nombor IC penuh 12 digit.';
+
+  @override
+  String get bvSent => 'Dihantar. Cefflo menyemak dalam 2 hari bekerja.';
+
+  @override
+  String get bvPending => 'Dalam semakan';
+
+  @override
+  String get bvVerified => 'Disahkan';
+
+  @override
+  String get bvRejected => 'Tidak diluluskan';
+
+  @override
+  String get bvNone => 'Belum disahkan';
+
+  @override
+  String bvRejectedBecause(String reason) {
+    return 'Sebab: $reason';
+  }
+
+  @override
+  String get bvPendingBody => 'Cefflo sedang menyemak dokumen anda.';
+
+  @override
+  String get bvVerifiedBody => 'Bisnes anda telah disahkan.';
+
+  @override
+  String get bvOwnerOnly => 'Hanya pemilik bisnes boleh menghantar pengesahan.';
+
+  @override
+  String get bvBannerTitle => 'Sahkan bisnes untuk menerima order';
+
+  @override
+  String get bvBannerBody =>
+      'Order disekat sehingga Cefflo mengesahkan SSM dan IC pemilik.';
+
+  @override
+  String get bvBannerPending =>
+      'Pengesahan sedang disemak. Order dibuka selepas diluluskan.';
+
+  @override
+  String get bvBannerStaff => 'Minta pemilik bisnes melengkapkan pengesahan.';
+
+  @override
+  String get bvSsmOptional => 'Sijil SSM (pilihan)';
+
+  @override
+  String get bvSnap => 'Ambil gambar';
+
+  @override
+  String get bvRetake => 'Ambil semula';
+
+  @override
+  String get bvAddFile => 'Tambah';
+
+  @override
+  String get bvAutoRead =>
+      'Ambil gambar kedua-dua belah IC pemilik dengan kamera. Nama dan nombor IC dibaca dari gambar.';
+
+  @override
+  String bvReadResult(String name, String last4) {
+    return 'Dibaca dari IC: $name · IC ••••$last4';
+  }
+
+  @override
+  String get bvReadLater => 'Cefflo akan membaca butiran IC semasa semakan.';
+
+  @override
+  String get bvIcMissing => 'Ambil gambar kedua-dua belah IC.';
+
+  @override
+  String get idCamTipFrame => 'Letak seluruh IC di dalam bingkai kuning';
+
+  @override
+  String get idCamTipLight => 'Guna cahaya terang dan sekata; elak bayang';
+
+  @override
+  String get idCamTipGlare => 'Condongkan sedikit jika ada silau pada kad';
+
+  @override
+  String get idCamCheck => 'Adakah tulisan jelas dan boleh dibaca?';
+
+  @override
+  String get idCamUse => 'Guna gambar ini';
+
+  @override
+  String get idCamUnavailable =>
+      'Kamera tidak tersedia. Benarkan akses kamera dalam tetapan telefon.';
+
+  @override
+  String get idCamFailed => 'Gambar tidak dapat diambil. Cuba lagi.';
+
+  @override
+  String get idCamFindCard => 'Letak IC di dalam bingkai';
+
+  @override
+  String get idCamHold => 'Tahan stabil…';
+
+  @override
+  String get idCamTaking => 'Mengambil gambar…';
+
+  @override
+  String get delTitle => 'Padam akaun';
+
+  @override
+  String get delLink => 'Padam akaun';
+
+  @override
+  String get delBody =>
+      'Akaun anda ditutup sekarang: anda dilog keluar dan tidak boleh log masuk semula. Selepas 30 hari, nama, telefon, emel dan dokumen anda dipadam. Rekod order disimpan 7 tahun tanpa nama anda, seperti dalam Polisi Privasi.';
+
+  @override
+  String get delOwner =>
+      'Jika anda pemilik bisnes, pasukan anda juga hilang akses.';
+
+  @override
+  String get delReasonHint => 'Kenapa anda pergi? (pilihan)';
+
+  @override
+  String get delConfirm => 'Padam akaun saya';
+
+  @override
+  String get delDone => 'Akaun anda telah ditutup.';
+
+  @override
+  String get dsLead =>
+      'Berapa banyak order yang Cefflo masukkan dalam satu run bila merancang penghantaran untuk driver.';
+
+  @override
+  String get dsRunSize => 'Order setiap run';
+
+  @override
+  String get dsMin => 'Sekurang-kurangnya';
+
+  @override
+  String get dsMax => 'Paling banyak';
+
+  @override
+  String get dsHint =>
+      'Run kecil siap lebih cepat; run besar guna kurang driver. 1 hingga 50.';
+
+  @override
+  String get dsSaved => 'Tetapan penghantaran disimpan';
 }

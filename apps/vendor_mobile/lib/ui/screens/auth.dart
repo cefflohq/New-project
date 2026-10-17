@@ -29,6 +29,7 @@ import '../../core/auth_access.dart';
 import '../../core/theme.dart';
 import '../../data/vendor_repository.dart';
 import '../brand_block.dart';
+import '../legal_consent.dart';
 import '../system_bars.dart';
 import '../widgets.dart';
 
@@ -917,6 +918,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Future<void> _google() async {
     if (widget.onPrototypeAuthenticated != null) {
+      await ConsentStore.mark();
       widget.onPrototypeAuthenticated!();
       return;
     }
@@ -926,6 +928,7 @@ class _SignInScreenState extends State<SignInScreen> {
     });
     try {
       await AppScope.read(context).repo.signInWithGoogle();
+      await ConsentStore.mark();
     } on RepositoryError catch (e) {
       if (mounted) setState(() => _providerError = authErrorText(e));
     } finally {
@@ -1399,7 +1402,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     super.dispose();
   }
 
-  bool _keep = true;
+  bool _keep = false; // The user ticks it themselves (Founder 2026-10-16).
 
   Future<void> _signIn() async {
     setState(() {
@@ -1418,6 +1421,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         password: _password.text,
       );
       await saveKeepSignedIn(_keep);
+      await ConsentStore.mark();
       await app.loadSession();
     } on RepositoryError catch (e) {
       if (needsEmailVerification(e)) {
@@ -1537,9 +1541,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  bool _agree = false;
+  bool _agreeError = false;
+
   Future<void> _create() async {
     if (_password.text != _confirm.text) {
       setState(() => _confirmError = L.passwordsDoNotMatch);
+      return;
+    }
+    // Sign-up always ticks the agreement (PDPA notice, 2026-10-16).
+    if (!_agree) {
+      setState(() => _agreeError = true);
       return;
     }
     if (widget.onPrototypeSignedUp != null) {
@@ -1557,6 +1569,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         email: _email.text,
         password: _password.text,
       );
+      await ConsentStore.mark();
       if (!mounted) return;
       if (needsVerification) {
         widget.onNeedsVerification(_email.text.trim());
@@ -1628,6 +1641,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
           const SizedBox(height: Gap.md),
         ],
+        ConsentCheck(
+          value: _agree,
+          error: _agreeError,
+          onChanged: (v) => setState(() {
+            _agree = v;
+            _agreeError = false;
+          }),
+        ),
+        if (_agreeError)
+          Padding(
+            padding: const EdgeInsets.only(top: Gap.xs),
+            child: Text(
+              L.legalAgreeRequired,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: context.c.attention),
+            ),
+          ),
+        const SizedBox(height: Gap.md),
         CefButton(
           L.createAccount,
           busy: _busy,

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'legal_consent.dart' show confirmConsentSheet;
+
 import 'package:flutter/services.dart';
 
 import '../core/app_state.dart';
@@ -36,6 +39,23 @@ class DriverShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final fullBleed = _fullBleedRoutes.contains(app.current.route);
+    // An account that has not agreed yet (a new Google account) confirms
+    // the Terms and Privacy Policy once (Founder 2026-10-16).
+    if (!app.repo.isDemo &&
+        app.repo.currentUser != null &&
+        !app.repo.termsAccepted &&
+        !_askingConsent) {
+      _askingConsent = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final ok = await confirmConsentSheet(context);
+        if (ok) {
+          await app.repo.acceptTerms().catchError((Object _) {});
+        } else {
+          await app.signOut();
+        }
+        _askingConsent = false;
+      });
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // Every Driver screen opens on the navy gradient, so the status bar
@@ -85,3 +105,6 @@ class DriverShell extends StatelessWidget {
           ),
         );
 }
+
+/// One consent sheet at a time.
+bool _askingConsent = false;

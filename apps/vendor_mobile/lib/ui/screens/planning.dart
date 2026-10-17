@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../map_pin.dart';
 import '../../core/app_state.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
@@ -285,7 +286,7 @@ class _DispatchSheetState extends State<_DispatchSheet> {
       final stale = RegExp(
         'no longer eligible|capacity|invalid rider',
         caseSensitive: false,
-      ).hasMatch('$e');
+      ).hasMatch(e is RepositoryError ? e.raw : '$e');
       if (mounted) setState(() => _error = stale ? L.planStale : '$e');
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -499,6 +500,11 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
         _prefill(b);
         final configured = b['service_coverage_radius_km'] != null;
         return PageBody(
+          bottom: CefButton(
+            L.saveServiceArea,
+            busy: busy,
+            onTap: _hasOrigin ? () => _save(reload) : null,
+          ),
           children: [
             CefListRow(
               icon: LucideIcons.map,
@@ -550,13 +556,6 @@ class _ServiceAreaScreenState extends State<ServiceAreaScreen> {
                       ?.copyWith(color: context.c.attention),
                 ),
               ),
-            const SizedBox(height: Gap.sm),
-            CefButton(
-              L.saveServiceArea,
-              busy: busy,
-              onTap: _hasOrigin ? () => _save(reload) : null,
-            ),
-            const SizedBox(height: Gap.section),
             CefListRow(
               title: L.manageZones,
               subtitle: L.seeConfigureZonesDeliver,
@@ -630,11 +629,7 @@ class CoveragePreview extends StatelessWidget {
                       width: 36,
                       height: 36,
                       alignment: Alignment.topCenter,
-                      child: const Icon(
-                        LucideIcons.mapPin,
-                        color: CefColors.navy,
-                        size: 32,
-                      ),
+                      child: const CefPin(size: 32),
                     ),
                   ],
                 ),

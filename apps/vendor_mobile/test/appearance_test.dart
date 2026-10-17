@@ -117,7 +117,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(await AppearanceStore().read(), const Appearance(color: 0xFF7C3AED));
 
-    final app = AppScope.read(tester.element(find.text('Purple')));
+    final app = AppScope.read(tester.element(find.byType(Scaffold).first));
     app.go(VRoute.today);
     await tester.pumpAndSettle();
     expect(liveAppearance.value, const Appearance(color: 0xFF7C3AED));

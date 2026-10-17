@@ -71,8 +71,13 @@ enum DRoute {
   // (D39 Select Language is a bottom sheet over D38, not a route.)
   // --- Support (D40 family) --------------------------------------------
   helpSupport, // D40
+  privacyPolicy, // D40.2
+  termsOfService, // D40.3
   vendorSupport, // D40-B
   submitTicket, // D40-C
+  complaints, // D40-D
+  complaintDetail, // D40-E
+  reportProblem, // D40-F
   // --- Find Jobs (D41 family, Rider Hub; Founder 2026-10-05) -----------
   // Live shows "coming soon" until the Rider Hub backend exists (D-67);
   // the prototype walks the designed flow with example openings.
@@ -354,6 +359,21 @@ Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
     parent: DRoute.profile,
     tab: NavTab.profile,
   ),
+  // One Privacy Policy and Terms for every Cefflo surface (2026-10-16).
+  DRoute.privacyPolicy: RouteSpec(
+    route: DRoute.privacyPolicy,
+    id: 'D40.2',
+    title: L.legalPrivacyPolicy,
+    parent: DRoute.profile,
+    tab: NavTab.profile,
+  ),
+  DRoute.termsOfService: RouteSpec(
+    route: DRoute.termsOfService,
+    id: 'D40.3',
+    title: L.legalTerms,
+    parent: DRoute.profile,
+    tab: NavTab.profile,
+  ),
   DRoute.vendorSupport: RouteSpec(
     route: DRoute.vendorSupport,
     id: 'D40-B',
@@ -366,6 +386,28 @@ Map<DRoute, RouteSpec> get routeSpecs => <DRoute, RouteSpec>{
     id: 'D40-C',
     title: L.submitTicket,
     parent: DRoute.helpSupport,
+    tab: NavTab.profile,
+  ),
+  DRoute.complaints: RouteSpec(
+    route: DRoute.complaints,
+    id: 'D40-D',
+    title: L.cmpTitle,
+    parent: DRoute.helpSupport,
+    tab: NavTab.profile,
+  ),
+  DRoute.complaintDetail: RouteSpec(
+    route: DRoute.complaintDetail,
+    id: 'D40-E',
+    title: L.cmpTitle,
+    parent: DRoute.complaints,
+    tab: NavTab.profile,
+    requiresEntityId: true,
+  ),
+  DRoute.reportProblem: RouteSpec(
+    route: DRoute.reportProblem,
+    id: 'D40-F',
+    title: L.cmpReportProblem,
+    parent: DRoute.complaints,
     tab: NavTab.profile,
   ),
   DRoute.findJobs: RouteSpec(

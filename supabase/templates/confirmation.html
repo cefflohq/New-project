@@ -1,19 +1,21 @@
 <!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Confirm your Cefflo account</title></head>
-<body style="margin:0;padding:0;background:#f4f6fa;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0b1220">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fa;padding:32px 16px">
-    <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:12px;padding:32px 28px">
-        <tr><td style="font-size:26px;font-weight:800;letter-spacing:-.02em;color:#07111c;padding-bottom:24px">Cefflo</td></tr>
-        <tr><td style="font-size:22px;font-weight:700;padding-bottom:12px">Confirm your email</td></tr>
-        <tr><td style="font-size:15px;line-height:1.55;color:#475467;padding-bottom:12px">Enter this code in the Cefflo app to confirm {{ .Email }}.</td></tr>
-        <tr><td style="padding-bottom:20px"><div style="display:inline-block;font-family:'SFMono-Regular',Menlo,Consolas,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#07111c;background:#f4f6fa;border:1px solid #e5e9ef;border-radius:10px;padding:14px 22px">{{ .Token }}</div></td></tr>
-        <tr><td style="font-size:13px;line-height:1.5;color:#667085;padding-bottom:20px">The code works once. Didn&#39;t create a Cefflo account? You can ignore this email.</td></tr>
-        <tr><td style="font-size:12px;line-height:1.5;color:#98a2b3;padding-bottom:24px">Or confirm with this link on the device where you started: <a href="{{ .ConfirmationURL }}" style="color:#0870de">open link</a></td></tr>
-      </table>
-      <p style="font-size:12px;color:#98a2b3;margin:16px 0 0">Cefflo · Help: support@cefflo.com</p>
-    </td></tr>
-  </table>
+<!-- Same layout as the approval emails (supabase/functions/approval-email). -->
+<body style="margin:0;background:#f5f7fa;font-family:Arial,sans-serif;color:#0f1b33">
+<div style="max-width:520px;margin:0 auto;padding:10px">
+<img src="https://cefflo-email-assets.vercel.app/img/header.png?v=3" alt="Cefflo" width="488" style="display:block;width:100%;height:auto;border:0;border-radius:16px 16px 0 0;background:#0a2a70">
+<div style="background:#fff;border-radius:0 0 16px 16px;padding:24px">
+<p style="font-size:22px;font-weight:700;margin:0 0 12px">Confirm your email</p>
+<p style="font-size:15px;line-height:1.5;margin:0 0 10px">Enter this code in the Cefflo app to confirm <b>{{ .Email }}</b>.</p>
+<div style="text-align:center;margin:20px 0">
+<div style="display:inline-block;background:#f5f7fa;border:1px solid #d9dfea;border-radius:14px;padding:14px 28px;font-size:30px;font-weight:700;letter-spacing:8px;color:#0f1b33">{{ .Token }}</div>
+</div>
+<p style="font-size:13px;line-height:1.5;color:#5b6577;margin:0 0 10px">The code works once. Didn't create a Cefflo account? You can ignore this email.</p>
+<p style="font-size:13px;line-height:1.5;color:#5b6577;margin:0">Or use this link on the device where you started: <a href="{{ .ConfirmationURL }}" style="color:#0060FE;text-decoration:none">open link</a></p>
+</div>
+<p style="font-size:12px;line-height:1.5;color:#5b6577;text-align:center;margin:16px 0 0">Questions or need help? Email us at <a href="mailto:support@cefflo.com" style="color:#0060FE;text-decoration:none">support@cefflo.com</a></p>
+<p style="font-size:12px;line-height:1.5;color:#5b6577;text-align:center;margin:20px 0 0">Cefflo Technologies<br>SSM: PG0592731-P</p>
+</div>
 </body>
 </html>

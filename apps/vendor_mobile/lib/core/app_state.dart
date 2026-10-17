@@ -6,7 +6,10 @@ import 'browser_history.dart';
 import 'join_link.dart';
 import 'notification_alerts.dart';
 
+import 'package:cefflo_push/cefflo_push.dart';
 import 'package:flutter/material.dart';
+
+import '../ui/legal_consent.dart' show ConsentStore;
 
 import '../data/models.dart';
 import '../data/plans.dart';
@@ -23,7 +26,34 @@ import 'package:cefflo_vendor_mobile/l10n/l10n.dart';
 /// pops that history and falls back to the route's declared parent, never to
 /// Today (audit fix 1).
 class AppState extends ChangeNotifier {
-  AppState(this.repo);
+  AppState(this.repo) {
+    // A tapped push (app closed or in the background) opens its order or
+    // run once the notification list has it (Founder 2026-10-16).
+    if (!repo.isDemo) {
+      _pushOpened = CefPush.opened.listen((id) {
+        _pendingPush = id;
+        refreshNotifications();
+      });
+    }
+  }
+
+  StreamSubscription<String>? _pushOpened;
+  String? _pendingPush;
+
+  @override
+  void dispose() {
+    _pushOpened?.cancel();
+    super.dispose();
+  }
+
+  void _followPendingPush() {
+    final id = _pendingPush;
+    if (id == null) return;
+    final n = notifications.where((n) => n.id == id).firstOrNull;
+    if (n == null) return;
+    _pendingPush = null;
+    openNotification(n);
+  }
 
   final VendorRepository repo;
 
@@ -56,7 +86,7 @@ class AppState extends ChangeNotifier {
   // ---- Storefront (V-31/X-02/V-33). Template and customization persist on
   // the server (public_order_pages, Storefront V1); these fields mirror the
   // loaded state. Products and business data are never stored here.
-  String activeStorefrontTemplateId = 'homefood';
+  String activeStorefrontTemplateId = 'warung';
 
   Future<Map<String, dynamic>?>? _storefrontPreview;
 
@@ -441,6 +471,7 @@ class AppState extends ChangeNotifier {
       notificationsError = e.message;
     }
     notifyListeners();
+    _followPendingPush();
   }
 
   void _onNotificationChange(String type, Map<String, dynamic> row) {
@@ -753,6 +784,8 @@ class AppState extends ChangeNotifier {
         startNotifications();
       }
       sessionLoaded = true;
+      // A signed-in account has agreed: this device skips the tick next time.
+      ConsentStore.mark();
     } on RepositoryError catch (e) {
       sessionError = e.message;
     } finally {

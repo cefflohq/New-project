@@ -10,7 +10,6 @@ self.addEventListener('push', e => {
   const base = self.registration.scope;
   e.waitUntil(self.registration.showNotification(d.title || 'Cefflo', {
     body: d.body || '',
-    icon: base + 'icon-192.png',
     badge: base + 'badge-96.png',
     tag: d.tag || undefined,
     renotify: !!d.tag,

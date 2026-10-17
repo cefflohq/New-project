@@ -1974,7 +1974,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get mvIntro =>
-      'Untuk memohon kerja di Cari Kerja, tambah lesen dan kenderaan anda. Penghantaran daripada bisnes yang menjemput anda tidak memerlukannya.';
+      'Tambah lesen dan kenderaan anda. Bisnes yang menjemput anda, dan kerja yang anda mohon di Cari Kerja, memerlukannya sebelum anda boleh mula. Gambar IC dan lesen anda kekal sulit dengan Cefflo.';
 
   @override
   String get mvChecking => 'Disemak';
@@ -2215,4 +2215,324 @@ class AppLocalizationsMs extends AppLocalizations {
   String pickupOpensAt(String time, int minutes) {
     return 'Dibuka pada $time · $minutes minit sebelum pickup';
   }
+
+  @override
+  String get loaderDefault => 'Memuatkan…';
+
+  @override
+  String get loaderSlow => 'Masih memuatkan, sila tunggu sebentar';
+
+  @override
+  String get youreAllCaughtUp => 'Tiada pemberitahuan baharu.';
+
+  @override
+  String get notificationDeleted => 'Pemberitahuan dipadam';
+
+  @override
+  String get undo => 'Buat asal';
+
+  @override
+  String get ntDelete => 'Padam';
+
+  @override
+  String get notificationOptions => 'Pilihan pemberitahuan';
+
+  @override
+  String pickupLockArrive(String business) {
+    return 'Sampai di $business untuk buka senarai semak';
+  }
+
+  @override
+  String pickupLockPacking(String business) {
+    return 'Menunggu $business selesai membungkus';
+  }
+
+  @override
+  String get pickupCheckAgain => 'Semak semula';
+
+  @override
+  String get countryCodeTitle => 'Kod negara';
+
+  @override
+  String get searchCountryOrCode => 'Cari negara atau kod';
+
+  @override
+  String get legalLastUpdated => 'Kemas kini terakhir';
+
+  @override
+  String get legalPrivacyPolicy => 'Polisi Privasi';
+
+  @override
+  String get legalTerms => 'Terma Perkhidmatan';
+
+  @override
+  String get legalConsentLead =>
+      'Dengan mencipta akaun, anda bersetuju dengan ';
+
+  @override
+  String get legalConsentAnd => ' dan ';
+
+  @override
+  String get legalAgreeLead => 'Saya bersetuju dengan ';
+
+  @override
+  String get legalAgreeRequired =>
+      'Tanda kotak untuk bersetuju dengan Terma Perkhidmatan dan Polisi Privasi dahulu.';
+
+  @override
+  String get legalWelcomeTitle => 'Selamat datang ke Cefflo';
+
+  @override
+  String get legalWelcomeBody =>
+      'Sebelum meneruskan, sila bersetuju dengan cara Cefflo berfungsi dan cara kami mengendalikan data anda.';
+
+  @override
+  String get legalAgreeContinue => 'Setuju dan teruskan';
+
+  @override
+  String get legalDecline => 'Bukan sekarang';
+
+  @override
+  String get legalPrivacyShort => 'Privasi';
+
+  @override
+  String get legalTermsShort => 'Terma';
+
+  @override
+  String get docsRequiredShort => 'Diperlukan';
+
+  @override
+  String get docsRequiredBody =>
+      'Muat naik IC, lesen memandu dan gambar kenderaan anda. Bisnes hanya boleh meluluskan anda selepas dokumen ini dihantar.';
+
+  @override
+  String get uploadDocuments => 'Muat naik dokumen';
+
+  @override
+  String get cmpReportProblem => 'Laporkan masalah';
+
+  @override
+  String get cmpReportLead =>
+      'Tidak dibayar, kelakuan, keselamatan atau penipuan. Cefflo dengar kedua-dua pihak.';
+
+  @override
+  String get cmpWhatHappened => 'Apa yang berlaku?';
+
+  @override
+  String get cmpDescribe => 'Terangkan apa yang berlaku';
+
+  @override
+  String get cmpDescribeHint => 'Apa berlaku, bila, dan order mana';
+
+  @override
+  String get cmpPhotos => 'Gambar (sehingga 5)';
+
+  @override
+  String get cmpAddPhoto => 'Tambah gambar';
+
+  @override
+  String get cmpSend => 'Hantar laporan';
+
+  @override
+  String get cmpTooShort =>
+      'Terangkan sedikit lagi (sekurang-kurangnya 10 huruf).';
+
+  @override
+  String cmpSent(String ref) {
+    return 'Laporan dihantar. Kes $ref.';
+  }
+
+  @override
+  String get cmpCatDamaged => 'Barang rosak atau hilang';
+
+  @override
+  String get cmpCatConduct => 'Kelakuan';
+
+  @override
+  String get cmpCatSafety => 'Keselamatan';
+
+  @override
+  String get cmpCatUnpaid => 'Tidak dibayar';
+
+  @override
+  String get cmpCatFraud => 'Penipuan atau scam';
+
+  @override
+  String get cmpCatOther => 'Lain-lain';
+
+  @override
+  String get cmpTitle => 'Aduan';
+
+  @override
+  String get cmpLead => 'Laporan yang anda buat dan laporan tentang anda.';
+
+  @override
+  String get cmpEmpty =>
+      'Tiada aduan. Laporan yang anda buat atau terima akan muncul di sini.';
+
+  @override
+  String get cmpTabOpen => 'Aktif';
+
+  @override
+  String get cmpTabResolved => 'Selesai';
+
+  @override
+  String get cmpYouReported => 'Anda laporkan';
+
+  @override
+  String get cmpAboutYou => 'Tentang anda';
+
+  @override
+  String get cmpStatusAwaiting => 'Menunggu jawapan';
+
+  @override
+  String get cmpStatusReview => 'Cefflo sedang menyemak';
+
+  @override
+  String get cmpStatusResolved => 'Selesai';
+
+  @override
+  String cmpReplyBy(String date) {
+    return 'Jawab sebelum $date';
+  }
+
+  @override
+  String get cmpTheirSide => 'Pihak mereka';
+
+  @override
+  String get cmpYourSide => 'Pihak anda';
+
+  @override
+  String get cmpCefflo => 'Cefflo';
+
+  @override
+  String get cmpNoReplyYet => 'Belum ada jawapan.';
+
+  @override
+  String get cmpGiveYourSide => 'Beri penjelasan anda';
+
+  @override
+  String get cmpReplyHint => 'Terangkan apa yang berlaku dari pihak anda';
+
+  @override
+  String get cmpSendReply => 'Hantar jawapan';
+
+  @override
+  String get cmpReplySent => 'Jawapan dihantar kepada Cefflo';
+
+  @override
+  String get cmpOutcome => 'Keputusan';
+
+  @override
+  String get cmpDecSettled => 'Diselesaikan antara kedua-dua pihak';
+
+  @override
+  String get cmpDecNoFault => 'Tiada kesalahan';
+
+  @override
+  String get cmpDecWarning => 'Amaran diberikan';
+
+  @override
+  String get cmpDecDriver => 'Driver bersalah';
+
+  @override
+  String get cmpDecVendor => 'Bisnes bersalah';
+
+  @override
+  String get cmpDecCustomer => 'Customer bersalah';
+
+  @override
+  String get cmpDecFalse => 'Laporan didapati palsu';
+
+  @override
+  String get cmpFromCustomer => 'Customer';
+
+  @override
+  String get cmpFromDriver => 'Driver';
+
+  @override
+  String get cmpFromBusiness => 'Bisnes';
+
+  @override
+  String cmpOrder(String ref) {
+    return 'Order $ref';
+  }
+
+  @override
+  String get cmpBusiness => 'Bisnes';
+
+  @override
+  String get cmpNoBusiness => 'Sertai bisnes dahulu untuk melaporkan masalah.';
+
+  @override
+  String get ticketAnswered => 'Dijawab';
+
+  @override
+  String get ticketOpen => 'Menunggu';
+
+  @override
+  String get ticketReply => 'Jawapan';
+
+  @override
+  String get couldNotLoad => 'Tidak dapat dimuatkan. Tarik untuk cuba lagi.';
+
+  @override
+  String get idCamTipFrame => 'Letak seluruh kad di dalam bingkai kuning';
+
+  @override
+  String get idCamTipLight => 'Guna cahaya terang dan sekata; elak bayang';
+
+  @override
+  String get idCamTipGlare => 'Condongkan sedikit jika ada silau pada kad';
+
+  @override
+  String get idCamCheck => 'Adakah tulisan jelas dan boleh dibaca?';
+
+  @override
+  String get idCamUse => 'Guna gambar ini';
+
+  @override
+  String get idCamUnavailable =>
+      'Kamera tidak tersedia. Benarkan akses kamera dalam tetapan telefon.';
+
+  @override
+  String get idCamFailed => 'Gambar tidak dapat diambil. Cuba lagi.';
+
+  @override
+  String get idCamFindCard => 'Letak kad di dalam bingkai';
+
+  @override
+  String get idCamHold => 'Tahan stabil…';
+
+  @override
+  String get idCamTaking => 'Mengambil gambar…';
+
+  @override
+  String get idCamSnap => 'Ambil gambar';
+
+  @override
+  String get idCamRetake => 'Ambil semula';
+
+  @override
+  String get delTitle => 'Padam akaun';
+
+  @override
+  String get delLink => 'Padam akaun';
+
+  @override
+  String get delBody =>
+      'Akaun anda ditutup sekarang: anda dilog keluar dan tidak boleh log masuk semula. Selepas 30 hari, nama, telefon, emel dan dokumen anda dipadam. Rekod order disimpan 7 tahun tanpa nama anda, seperti dalam Polisi Privasi.';
+
+  @override
+  String get delOwner =>
+      'Jika anda pemilik bisnes, pasukan anda juga hilang akses.';
+
+  @override
+  String get delReasonHint => 'Kenapa anda pergi? (pilihan)';
+
+  @override
+  String get delConfirm => 'Padam akaun saya';
+
+  @override
+  String get delDone => 'Akaun anda telah ditutup.';
 }

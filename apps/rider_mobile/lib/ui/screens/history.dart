@@ -339,8 +339,6 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  int _tab = 0;
-
   static final _compact = TextButton.styleFrom(
     minimumSize: const Size(0, Sizes.tapTarget),
     padding: const EdgeInsets.symmetric(horizontal: Gap.sm),
@@ -354,8 +352,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
   }
 
-  void _rowOptions(DriverNotification n) {
+  void _toggleRead(DriverNotification n) {
     final app = AppScope.read(context);
+    _guard(
+      n.unread ? app.markNotificationRead(n) : app.markNotificationUnread(n),
+    );
+  }
+
+  void _delete(DriverNotification n) {
+    final app = AppScope.read(context);
+    final undo = app.deleteNotification(n);
+    if (undo == null) return;
+    showCefToast(
+      context,
+      L.notificationDeleted,
+      actionLabel: L.undo,
+      onAction: () => app.restoreNotification(undo),
+    );
+  }
+
+  void _rowOptions(DriverNotification n) {
     showCeffloSheet<void>(
       context,
       child: Material(
@@ -369,11 +385,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               title: Text(n.unread ? L.ntMarkRead : L.ntMarkUnread),
               onTap: () {
                 Navigator.of(context).pop();
-                _guard(
-                  n.unread
-                      ? app.markNotificationRead(n)
-                      : app.markNotificationUnread(n),
-                );
+                _toggleRead(n);
+              },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.trash2),
+              title: Text(L.ntDelete),
+              onTap: () {
+                Navigator.of(context).pop();
+                _delete(n);
               },
             ),
             const SizedBox(height: Gap.md),
@@ -386,41 +406,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    final all = app.notifications.where((n) => !n.archived).toList();
-    final unread = all.where((n) => n.unread).toList();
-    final archived = app.notifications.where((n) => n.archived).toList();
-    final shown = switch (_tab) {
-      1 => unread,
-      2 => archived,
-      _ => all,
-    };
+    // One list, like the Vendor inbox (Founder 2026-10-15): swipe right to
+    // toggle read, swipe left to delete (with Undo), ⋯ for both.
+    final items = app.notifications.where((n) => !n.archived).toList();
+    final hasUnread = items.any((n) => n.unread);
+    Widget swipe(Color color, IconData icon, Alignment align) => Container(
+      color: color,
+      alignment: align,
+      padding: const EdgeInsets.symmetric(horizontal: Gap.xl),
+      child: Icon(icon, color: Colors.white, size: 22),
+    );
     return CeffloNavySheetScaffold(
       onRefresh: app.refreshNotifications,
       header: CeffloScreenHeader(
         title: L.notifications,
         onBack: app.back,
-        // D33's reference carries the same bell as every other inner header;
-        // it is inert here because this *is* the notifications screen.
         onBell: () {},
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
         Gap.sheet,
-        Gap.lg,
+        Gap.sm,
         Gap.sheet,
         Gap.lg,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CeffloSegmentedTabs(
-            labels: [
-              L.all(all.length),
-              L.unread(unread.length),
-              L.archive(archived.length),
-            ],
-            index: _tab,
-            onChanged: (i) => setState(() => _tab = i),
-          ),
           Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -433,7 +444,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 icon: const Icon(LucideIcons.settings, size: 18),
                 label: Text(L.ntSettings),
               ),
-              if (unread.isNotEmpty)
+              if (hasUnread)
                 TextButton(
                   style: _compact,
                   onPressed: () => _guard(app.markAllNotificationsRead()),
@@ -441,21 +452,43 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
             ],
           ),
-          if (shown.isEmpty && app.notificationsError != null)
+          if (items.isEmpty && app.notificationsError != null)
             StateBlock.error(
               app.notificationsError!,
               onRetry: app.refreshNotifications,
             )
-          else if (shown.isEmpty)
-            StateBlock.empty(L.nothingHereRightNow)
+          else if (items.isEmpty)
+            StateBlock.empty(L.youreAllCaughtUp)
           else
-            for (final n in shown) ...[
-              _NotificationRow(
-                notification: n,
-                onTap: () => app.openNotification(n),
-                onLongPress: () => _rowOptions(n),
+            for (final n in items) ...[
+              Dismissible(
+                key: ValueKey(n.id ?? identityHashCode(n)),
+                background: swipe(
+                  const Color(0xFF0060FE),
+                  n.unread ? LucideIcons.mailOpen : LucideIcons.mail,
+                  Alignment.centerLeft,
+                ),
+                secondaryBackground: swipe(
+                  const Color(0xFFD73C2B),
+                  LucideIcons.trash2,
+                  Alignment.centerRight,
+                ),
+                confirmDismiss: (direction) async {
+                  if (direction == DismissDirection.startToEnd) {
+                    _toggleRead(n);
+                    return false;
+                  }
+                  return true;
+                },
+                onDismissed: (_) => _delete(n),
+                child: _NotificationRow(
+                  notification: n,
+                  onTap: () => app.openNotification(n),
+                  onLongPress: () => _rowOptions(n),
+                  onOptions: () => _rowOptions(n),
+                ),
               ),
-              if (n != shown.last) Divider(height: 1, color: context.c.border),
+              if (n != items.last) Divider(height: 1, color: context.c.border),
             ],
         ],
       ),
@@ -555,10 +588,12 @@ class _NotificationRow extends StatelessWidget {
     required this.notification,
     required this.onTap,
     this.onLongPress,
+    this.onOptions,
   });
   final DriverNotification notification;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final VoidCallback? onOptions;
 
   static (IconData, Color, Color) _style(NotificationKind kind) =>
       switch (kind) {
@@ -668,6 +703,13 @@ class _NotificationRow extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onOptions != null)
+                IconButton(
+                  tooltip: L.notificationOptions,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(LucideIcons.ellipsisVertical, size: 20),
+                  onPressed: onOptions,
+                ),
             ],
           ),
         ),

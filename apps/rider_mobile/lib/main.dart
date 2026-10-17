@@ -1,6 +1,8 @@
 import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/material.dart';
 
+import 'ui/scroll_physics.dart';
+
 import 'core/keep_signed_in.dart';
 
 import 'package:flutter/scheduler.dart';
@@ -254,6 +256,7 @@ class _DriverMobileAppState extends State<DriverMobileApp> {
     child: AnimatedBuilder(
       animation: app,
       builder: (context, _) => MaterialApp(
+        scrollBehavior: const CefScrollBehavior(),
         debugShowCheckedModeBanner: false,
         title: L.ceffloDriver,
         // BM + EN (Founder 2026-09-27). Country never selects language.
@@ -340,6 +343,7 @@ class ConfigurationErrorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    scrollBehavior: const CefScrollBehavior(),
     debugShowCheckedModeBanner: false,
     theme: buildRiderTheme(),
     home: Scaffold(

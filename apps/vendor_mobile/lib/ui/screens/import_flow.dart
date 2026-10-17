@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
@@ -30,8 +31,6 @@ enum _ImportSource {
 
   const _ImportSource(this.assetPath);
   final String assetPath;
-
-  bool get needsGoogle => this != _ImportSource.excel;
 
   String get label => switch (this) {
     _ImportSource.googleSheets => L.googleSheets,
@@ -66,8 +65,30 @@ class ImportOrdersScreen extends StatefulWidget {
   @visibleForTesting
   static Future<({String name, List<int> bytes})?> Function()? debugPickFile;
 
+  /// A file already chosen before the screen opened (Integrations →
+  /// CSV & Excel goes straight to the device picker, Founder 2026-10-15).
+  static ({String name, List<int> bytes})? _pending;
+
+  /// Opens the device file picker at once and, when a file is chosen, the
+  /// import flow at its Match columns step. Cancelling stays where it was.
+  static Future<void> pickAndOpen(AppState app) async {
+    final picked = await (debugPickFile ?? _pickDeviceFile)();
+    if (picked == null) return;
+    _pending = picked;
+    app.go(VRoute.importOrders);
+  }
+
   @override
   State<ImportOrdersScreen> createState() => _ImportOrdersScreenState();
+}
+
+Future<({String name, List<int> bytes})?> _pickDeviceFile() async {
+  final f = await FilePicker.pickFile(
+    type: FileType.custom,
+    allowedExtensions: const ['csv', 'xlsx'],
+  );
+  if (f == null) return null;
+  return (name: f.name, bytes: await f.readAsBytes());
 }
 
 class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
@@ -89,13 +110,16 @@ class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
     (LucideIcons.circleCheck, L.howStepImport),
   ];
 
-  Future<({String name, List<int> bytes})?> _pickNative() async {
-    final f = await FilePicker.pickFile(
-      type: FileType.custom,
-      allowedExtensions: const ['csv', 'xlsx'],
-    );
-    if (f == null) return null;
-    return (name: f.name, bytes: await f.readAsBytes());
+  @override
+  void initState() {
+    super.initState();
+    final pending = ImportOrdersScreen._pending;
+    ImportOrdersScreen._pending = null;
+    if (pending != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _read(pending);
+      });
+    }
   }
 
   Future<void> _chooseFile() async {
@@ -104,8 +128,91 @@ class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
       _error = null;
     });
     try {
-      final picked = await (ImportOrdersScreen.debugPickFile ?? _pickNative)();
+      final picked =
+          await (ImportOrdersScreen.debugPickFile ?? _pickDeviceFile)();
       if (picked == null) return;
+      _read(picked);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Reads a Google Sheet shared as "anyone with the link can view" through
+  /// its CSV export; no Google sign-in needed.
+  Future<void> _fromSheetLink() async {
+    final link = TextEditingController();
+    final url = await showCefSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.c.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Sizes.cardRadius),
+        ),
+      ),
+      builder: (sheet) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg + MediaQuery.viewInsetsOf(sheet).bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(L.googleSheets, style: Theme.of(sheet).textTheme.titleMedium),
+            const SizedBox(height: Gap.xs),
+            Text(L.sheetLinkHint, style: Theme.of(sheet).textTheme.bodySmall),
+            const SizedBox(height: Gap.md),
+            CefField(
+              controller: link,
+              hint: 'https://docs.google.com/spreadsheets/d/…',
+              prefixIcon: LucideIcons.link,
+            ),
+            const SizedBox(height: Gap.md),
+            CefButton(
+              L.continueText,
+              onTap: () => Navigator.of(sheet).pop(link.text.trim()),
+            ),
+          ],
+        ),
+      ),
+    );
+    link.dispose();
+    if (url == null || url.isEmpty || !mounted) return;
+    final id = RegExp(r'/spreadsheets/d/([a-zA-Z0-9_-]+)').firstMatch(url);
+    if (id == null) {
+      setState(() => _error = L.sheetLinkInvalid);
+      return;
+    }
+    final gid = RegExp(r'[#&?]gid=(\d+)').firstMatch(url)?.group(1) ?? '0';
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final res = await http.get(
+        Uri.parse(
+          'https://docs.google.com/spreadsheets/d/${id.group(1)}'
+          '/export?format=csv&gid=$gid',
+        ),
+      );
+      final type = res.headers['content-type'] ?? '';
+      if (res.statusCode != 200 || type.contains('text/html')) {
+        setState(() => _error = L.sheetNotShared);
+        return;
+      }
+      _read((name: 'Google Sheet.csv', bytes: res.bodyBytes));
+    } catch (_) {
+      if (mounted) setState(() => _error = L.sheetNotShared);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _read(({String name, List<int> bytes}) picked) {
+    try {
       final table = parseImportFile(
         picked.name,
         Uint8List.fromList(picked.bytes),
@@ -126,8 +233,6 @@ class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
       );
     } catch (_) {
       setState(() => _error = L.importReadFailed);
-    } finally {
-      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -263,16 +368,13 @@ class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
           title: source.label,
           subtitle: source.description,
           subtitleMaxLines: 2,
-          trailing: source.needsGoogle
-              ? _Pill(L.connectGoogle)
-              : _busy
-              ? const CefDots()
-              : null,
-          showChevron: !source.needsGoogle,
+          trailing: _busy ? const CefDots() : null,
+          // Sheets: paste the sheet's link; Drive: the phone's file picker
+          // (Google Drive is one of its sources). Founder 2026-10-16.
           onTap: _busy
               ? null
-              : source.needsGoogle
-              ? () => showCefToast(context, L.googleConnectPending)
+              : source == _ImportSource.googleSheets
+              ? _fromSheetLink
               : _chooseFile,
         ),
       if (_error != null) _errorLine(context),
@@ -449,24 +551,6 @@ class _ImportOrdersScreenState extends State<ImportOrdersScreen> {
       ],
     );
   }
-}
-
-class _Pill extends StatelessWidget {
-  const _Pill(this.label);
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: Gap.md,
-      vertical: Gap.xs + 2,
-    ),
-    decoration: BoxDecoration(
-      border: Border.all(color: context.c.border),
-      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-    ),
-    child: Text(label, style: Theme.of(context).textTheme.labelMedium),
-  );
 }
 
 class _ImportSourceMark extends StatelessWidget {

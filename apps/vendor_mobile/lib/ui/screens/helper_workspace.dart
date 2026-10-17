@@ -154,7 +154,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
   /// action means the membership changed (removed / not active): the
   /// session is resolved again, which shows the no-access state.
   String _friendly(Object e) {
-    final m = e is RepositoryError ? e.message : '$e';
+    final m = e is RepositoryError ? e.raw : '$e';
     if (m.contains('forbidden')) {
       AppScope.read(context).loadSession();
     }
@@ -169,7 +169,7 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
       if (mounted) setState(() => _board = b);
       return b;
     } on RepositoryError catch (e) {
-      final m = e.message;
+      final m = e.raw;
       if (m.contains('forbidden') && mounted) {
         app.loadSession();
       }
@@ -762,6 +762,14 @@ class _HelperWorkspaceScreenState extends State<HelperWorkspaceScreen>
             () => _push(
               L.privacy,
               buildScreen(context, const VendorLocation(VRoute.privacyPolicy)),
+            ),
+          ),
+          row(
+            LucideIcons.fileText,
+            L.termsService,
+            () => _push(
+              L.termsService,
+              buildScreen(context, const VendorLocation(VRoute.termsOfService)),
             ),
           ),
           row(

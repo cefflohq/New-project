@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'map_pin.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -147,8 +149,9 @@ class _RunMapState extends State<RunMap> {
                 for (final (n, stop, at) in pins)
                   Marker(
                     point: at,
-                    width: 34,
-                    height: 34,
+                    width: ZoomPin.pinBox,
+                    height: ZoomPin.pinBox,
+                    alignment: Alignment.topCenter,
                     child: _StopDot(
                       n: n,
                       done: stop.status == StopStatus.delivered,
@@ -213,29 +216,14 @@ class _StopDot extends StatelessWidget {
   final int n;
   final bool done, focus;
 
+  // Cefflo map pins, same on every surface: blue stop, mustard next, green
+  // done with a check; sized by zoom (Founder 2026-10-16).
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      // Cefflo map pins, same on every surface: stop #01265E, next
-      // #FFC93C, done #16A34A with a check.
-      color: done
-          ? const Color(0xFF16A34A)
-          : (focus ? const Color(0xFFFFC93C) : const Color(0xFF01265E)),
-      border: Border.all(color: Colors.white, width: 2),
-      boxShadow: const [BoxShadow(color: Color(0x33101C33), blurRadius: 6)],
-    ),
-    alignment: Alignment.center,
-    child: done
-        ? const Icon(LucideIcons.check, size: 16, color: Colors.white)
-        : Text(
-            '$n',
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 13,
-              color: focus ? const Color(0xFF01265E) : Colors.white,
-            ),
-          ),
+  Widget build(BuildContext context) => ZoomPin(
+    color: done
+        ? const Color(0xFF16A34A)
+        : (focus ? const Color(0xFFFFC93C) : CefPin.pinBlue),
+    label: done ? '✓' : '$n',
   );
 }
 

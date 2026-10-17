@@ -8,6 +8,7 @@ import 'toast.dart';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:cefflo_phone/cefflo_phone.dart';
 import 'package:flutter/material.dart';
 
 import 'bottom_surface.dart';
@@ -70,34 +71,31 @@ class CeffloPrimaryButton extends StatelessWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context) => CefPageLoaderWhile(
-    active: busy,
-    child: SizedBox(
-      width: double.infinity,
-      height: height,
-      child: Material(
-        color: onTap == null && !busy
-            ? CefColors.accent.withValues(alpha: 0.45)
-            : CefColors.accent,
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    height: height,
+    child: Material(
+      color: onTap == null && !busy
+          ? CefColors.accent.withValues(alpha: 0.45)
+          : CefColors.accent,
+      borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+      child: InkWell(
         borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-          onTap: busy ? null : onTap,
-          child: Center(
-            child: busy
-                ? const CefDots(onBlue: false)
-                : Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: CefColors.onAccent,
-                      letterSpacing: -0.2,
-                    ),
+        onTap: busy ? null : onTap,
+        child: Center(
+          child: busy
+              ? const CefDots(onBlue: false)
+              : Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: CefColors.onAccent,
+                    letterSpacing: -0.2,
                   ),
-          ),
+                ),
         ),
       ),
     ),
@@ -447,6 +445,7 @@ class CeffloAuthScaffold extends StatelessWidget {
     ),
     this.scrollable = true,
     this.headerChild,
+    this.centerSheet = false,
   });
 
   final VoidCallback? onBack;
@@ -467,6 +466,9 @@ class CeffloAuthScaffold extends StatelessWidget {
   /// Fully custom navy content, used when a screen's header is not the
   /// standard title/subtitle pair (D06, D08).
   final Widget? headerChild;
+
+  /// A short sheet sits in the middle of the white area, not at its top.
+  final bool centerSheet;
 
   final Widget sheet;
   final EdgeInsets sheetPadding;
@@ -506,7 +508,7 @@ class CeffloAuthScaffold extends StatelessWidget {
       padding: sheetPadding.copyWith(
         bottom: sheetPadding.bottom + MediaQuery.of(context).padding.bottom,
       ),
-      child: sheet,
+      child: centerSheet ? Center(child: sheet) : sheet,
     );
 
     return CefBottomSurface(
@@ -600,7 +602,9 @@ class CeffloAuthScaffold extends StatelessWidget {
                                 top: -38,
                                 child: CeffloAuthWatermark(),
                               ),
-                              header,
+                              // Header content is centred on every auth surface (Founder
+                              // 2026-10-16).
+                              SizedBox(width: double.infinity, child: header),
                             ],
                           ),
                         ),
@@ -669,7 +673,11 @@ class CeffloNavySheetScaffold extends StatelessWidget {
     this.footer,
     this.sheetRadius = Sizes.sheetRadius,
     this.onRefresh,
+    this.loading = false,
   });
+
+  /// First load: the loader centred in the white surface instead of [body].
+  final bool loading;
 
   /// Pull-to-refresh on data screens; null keeps the body static.
   final Future<void> Function()? onRefresh;
@@ -687,6 +695,48 @@ class CeffloNavySheetScaffold extends StatelessWidget {
   final Widget? footer;
   final double sheetRadius;
 
+  /// A body that ends in an empty / error state: the state is centred in
+  /// the space left below the screen's own controls, as on Vendor.
+  bool get _endsInState {
+    final b = body;
+    if (b is! Column || b.children.isEmpty) return false;
+    final last = b.children.last;
+    return last is StateBlock;
+  }
+
+  Widget _scroll(Widget child) => onRefresh == null
+      ? SingleChildScrollView(child: child)
+      : RefreshIndicator(
+          onRefresh: onRefresh!,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: child,
+          ),
+        );
+
+  Widget _centredState() {
+    final col = body as Column;
+    return LayoutBuilder(
+      builder: (context, box) => _scroll(
+        ConstrainedBox(
+          constraints: BoxConstraints(minHeight: box.maxHeight),
+          child: IntrinsicHeight(
+            child: Padding(
+              padding: bodyPadding,
+              child: Column(
+                crossAxisAlignment: col.crossAxisAlignment,
+                children: [
+                  ...col.children.take(col.children.length - 1),
+                  Expanded(child: Center(child: col.children.last)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sheetChild = Padding(padding: bodyPadding, child: body);
@@ -701,7 +751,9 @@ class CeffloNavySheetScaffold extends StatelessWidget {
             const ChevronWatermark(),
             Column(
               children: [
-                header,
+                // Header content is centred on every auth surface (Founder
+                // 2026-10-16).
+                SizedBox(width: double.infinity, child: header),
                 // No lift shadow: the surface is attached to the header rather
                 // than floating over it, and an upward shadow only paints a
                 // dark seam line (and a dark arc in the corner notches) along
@@ -719,26 +771,24 @@ class CeffloNavySheetScaffold extends StatelessWidget {
                     child: Column(
                       children: [
                         Expanded(
-                          child: !scrollable
+                          child: loading
+                              ? const CefPageLoader()
+                              : !scrollable
                               ? sheetChild
-                              : onRefresh == null
-                              ? SingleChildScrollView(child: sheetChild)
-                              : RefreshIndicator(
-                                  onRefresh: onRefresh!,
-                                  child: SingleChildScrollView(
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(),
-                                    child: sheetChild,
-                                  ),
-                                ),
+                              : _endsInState
+                              ? _centredState()
+                              : _scroll(sheetChild),
                         ),
                         if (footer != null)
                           Padding(
+                            // Same breathing room as every pinned action:
+                            // a step above, lifted off the bottom edge
+                            // (Founder 2026-10-16).
                             padding: const EdgeInsets.fromLTRB(
                               Gap.gutter,
-                              Gap.sm,
+                              Gap.md,
                               Gap.gutter,
-                              Gap.lg,
+                              24,
                             ),
                             child: footer!,
                           ),
@@ -925,8 +975,8 @@ class _CeffloPasswordFieldState extends State<CeffloPasswordField> {
   );
 }
 
-/// Phone input with the Malaysian flag + dial-code prefix shown in D04,
-/// D12, D12.1 and D35.
+/// Phone input led by a country flag + dial-code picker (D04, D12, D12.1,
+/// D35).
 class CeffloPhoneField extends StatelessWidget {
   const CeffloPhoneField({
     super.key,
@@ -946,65 +996,22 @@ class CeffloPhoneField extends StatelessWidget {
     hint: hint ?? L.enterPhoneNumber,
     icon: LucideIcons.phone,
     keyboardType: TextInputType.phone,
-    // Malaysia launch: every reference phone field leads with the MY flag
-    // and +60.
-    prefix: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const _MalaysiaFlag(),
-        const SizedBox(width: 8),
-        Text(
-          '+60',
-          style: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: context.c.textPrimary,
-          ),
-        ),
-      ],
+    // Every phone field leads with a country flag + dial code; picking one
+    // writes the code into the number (Founder 2026-10-16).
+    prefix: PhoneCountryButton(
+      controller: controller,
+      style: PhonePickerStyle(
+        surface: context.c.card,
+        text: context.c.textPrimary,
+        muted: context.c.textSecondary,
+        border: context.c.border,
+        selected: const Color(0xFF0060FE).withValues(alpha: .08),
+        accent: const Color(0xFF0060FE),
+        title: L.countryCodeTitle,
+        searchHint: L.searchCountryOrCode,
+      ),
     ),
   );
-}
-
-/// Small Malaysia flag (Jalur Gemilang), drawn so no image or emoji font is
-/// needed: red/white stripes, a blue canton with a yellow crescent and star.
-class _MalaysiaFlag extends StatelessWidget {
-  const _MalaysiaFlag();
-
-  @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(2),
-    child: CustomPaint(size: const Size(26, 13), painter: _MyFlagPainter()),
-  );
-}
-
-class _MyFlagPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final stripe = size.height / 14;
-    for (var i = 0; i < 14; i++) {
-      canvas.drawRect(
-        Rect.fromLTWH(0, i * stripe, size.width, stripe + .2),
-        Paint()..color = i.isEven ? const Color(0xFFCC0001) : Colors.white,
-      );
-    }
-    final canton = Rect.fromLTWH(0, 0, size.width / 2, stripe * 8);
-    canvas.drawRect(canton, Paint()..color = const Color(0xFF010066));
-    final yellow = Paint()..color = const Color(0xFFFFCC00);
-    final c = canton.center;
-    final r = canton.height * .36;
-    canvas.drawCircle(c.translate(-r * .25, 0), r, yellow);
-    canvas.drawCircle(
-      c.translate(-r * .05, 0),
-      r * .82,
-      Paint()..color = const Color(0xFF010066),
-    );
-    canvas.drawCircle(c.translate(r * .95, 0), r * .32, yellow);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Select-style control with a trailing chevron (Vehicle Type in D12/D12.2/
@@ -2241,9 +2248,10 @@ class StateBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.c;
     if (kind == StateKind.loading) {
+      // The one loader (ring, 88px) on every screen.
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 48),
-        child: Center(child: CefDots()),
+        child: CefPageLoader(),
       );
     }
     final (icon, color) = switch (kind) {
@@ -2253,6 +2261,8 @@ class StateBlock extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: Gap.gutter),
       child: Column(
+        // Content-sized, so the screen can centre it in the free space.
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 28, color: color),
           const SizedBox(height: Gap.md),

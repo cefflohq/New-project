@@ -18,8 +18,13 @@ void main() {
     final picks = RegExp(r'pickImage\(').allMatches(src).length;
     expect(picks, 1, reason: 'only liveCapture() may call pickImage');
     expect(src, contains('source: ImageSource.camera'));
-    expect(RegExp(r'liveCapture\(\)').allMatches(src).length, 3,
-        reason: 'definition + licence sides + vehicle');
+    expect(
+      RegExp(r'liveCapture\(\)').allMatches(src).length,
+      2,
+      reason: 'definition + vehicle',
+    );
+    // The licence sides use the card camera (no gallery).
+    expect(src, contains('captureIdCard('));
   });
 
   test('licence needs exactly front + back before Continue', () {

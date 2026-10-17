@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
+import '../../core/legal_content.dart';
 import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../core/dial.dart';
 import '../../data/demo_data.dart';
 import '../../data/driver_models.dart';
+import '../../data/rider_repository.dart' show RepositoryError;
 import '../widgets.dart';
+import 'driver_faq.dart';
 
 import 'package:cefflo_rider_mobile/l10n/l10n.dart';
 
@@ -128,7 +132,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       child: _TopicCard(
                         icon: topics[row * 2].$2,
                         topic: topics[row * 2].$1,
-                        onTap: () => showContactSupportSheet(context, app),
+                        onTap: () => _faq(context, app, topics[row * 2].$1),
                       ),
                     ),
                     const SizedBox(width: Gap.md),
@@ -138,7 +142,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                               icon: topics[row * 2 + 1].$2,
                               topic: topics[row * 2 + 1].$1,
                               onTap: () =>
-                                  showContactSupportSheet(context, app),
+                                  _faq(context, app, topics[row * 2 + 1].$1),
                             )
                           : const SizedBox.shrink(),
                     ),
@@ -158,6 +162,13 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           ),
           const SizedBox(height: Gap.md),
           _HelpRow(
+            icon: LucideIcons.shieldAlert,
+            title: L.cmpTitle,
+            subtitle: L.cmpLead,
+            onTap: () => app.go(DRoute.complaints),
+          ),
+          const SizedBox(height: Gap.md),
+          _HelpRow(
             icon: LucideIcons.fileText,
             title: L.mySupportTickets,
             subtitle: L.checkTicketStatus,
@@ -168,22 +179,98 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     );
   }
 
+  /// A topic opens its answers; "Still need help?" goes to Contact Support.
+  void _faq(BuildContext context, AppState app, SupportTopic topic) {
+    final i = DemoData.supportTopics.indexWhere((t) => t.title == topic.title);
+    showDriverFaq(
+      context,
+      index: i < 0 ? 0 : i,
+      title: topic.title,
+      onContact: () => showContactSupportSheet(context, app),
+    );
+  }
+
   void _showTickets(BuildContext context) => showCeffloSheet<void>(
     context,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(Gap.gutter, 0, Gap.gutter, Gap.xl),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SheetGrabber(),
-          const SizedBox(height: 6),
-          Text(L.mySupportTickets, style: context.t.titleLarge),
-          const SizedBox(height: Gap.lg),
-          StateBlock.empty(L.haveNoSupportTicketsYetSubmit),
-        ],
+      child: FutureBuilder<List<Map<String, dynamic>>>(
+        future: AppScope.read(context).repo.mySupportTickets(),
+        builder: (context, snap) {
+          final list = snap.data ?? const [];
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SheetGrabber(),
+              const SizedBox(height: 6),
+              Text(L.mySupportTickets, style: context.t.titleLarge),
+              const SizedBox(height: Gap.lg),
+              if (snap.connectionState != ConnectionState.done)
+                const StateBlock.loading()
+              else if (snap.hasError)
+                StateBlock.error(L.couldNotLoad)
+              else if (list.isEmpty)
+                StateBlock.empty(L.haveNoSupportTicketsYetSubmit)
+              else
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.6,
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: list.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: Gap.sm),
+                    itemBuilder: (context, i) => _TicketCard(t: list[i]),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     ),
   );
+}
+
+/// One ticket: what was sent, its status and the reply once there is one.
+class _TicketCard extends StatelessWidget {
+  const _TicketCard({required this.t});
+  final Map<String, dynamic> t;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = t['status'] == 'resolved';
+    final reply = t['reply'] as String?;
+    final when = DateTime.tryParse('${t['created_at']}')?.toLocal();
+    return CeffloCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  when == null ? '' : '${when.day}/${when.month}/${when.year}',
+                  style: context.t.labelMedium,
+                ),
+              ),
+              CeffloStatusChip(
+                resolved ? L.ticketAnswered : L.ticketOpen,
+                tone: resolved ? ChipTone.success : ChipTone.warning,
+              ),
+            ],
+          ),
+          const SizedBox(height: Gap.xs),
+          Text('${t['description']}', style: context.t.bodyMedium),
+          if (reply != null && reply.isNotEmpty) ...[
+            const SizedBox(height: Gap.sm),
+            Text(L.ticketReply, style: context.t.labelMedium),
+            Text(reply, style: context.t.bodyMedium),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _TopicCard extends StatelessWidget {
@@ -359,12 +446,7 @@ class VendorSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
-    // Live: the Driver's own business; Call uses its phone on record.
-    final demo = app.repo.isDemo;
-    final vendor = demo
-        ? DemoData.supportVendor
-        : (app.business ??
-              DriverBusiness(name: L.business, category: '', location: ''));
+    final vendor = DemoData.supportVendor;
     final c = context.c;
     return CeffloNavySheetScaffold(
       header: CeffloScreenHeader(
@@ -373,9 +455,9 @@ class VendorSupportScreen extends StatelessWidget {
         onBell: () => app.go(DRoute.notifications),
       ),
       bodyPadding: const EdgeInsets.fromLTRB(
-        Gap.sheet,
+        Gap.gutter,
         Gap.xl,
-        Gap.sheet,
+        Gap.gutter,
         Gap.lg,
       ),
       body: Column(
@@ -459,34 +541,29 @@ class VendorSupportScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                // Live: Call dials the business's own number when it has
-                // one; chat has no channel yet, so it stays prototype-only.
-                if (demo || (vendor.phone ?? '').isNotEmpty) ...[
-                  const SizedBox(height: Gap.md),
-                  Divider(height: 1, color: c.border),
-                  _ContactRow(
-                    icon: LucideIcons.phone,
-                    title: L.call,
-                    subtitle: vendor.phone ?? '',
-                    onTap: demo
-                        ? () => _toast(context, L.calling2(vendor.name))
-                        : () async {
-                            if (!await dialPhone(vendor.phone) &&
-                                context.mounted) {
-                              showCefToast(context, L.phoneNotAvailable);
-                            }
-                          },
-                  ),
-                ],
-                if (demo) ...[
-                  Divider(height: 1, color: c.border),
-                  _ContactRow(
-                    icon: LucideIcons.messageSquare,
-                    title: L.chat,
-                    subtitle: L.appMessageVendor,
-                    onTap: () => _toast(context, L.openingVendorChat),
-                  ),
-                ],
+                const SizedBox(height: Gap.md),
+                Divider(height: 1, color: c.border),
+                _ContactRow(
+                  icon: LucideIcons.phone,
+                  title: L.call,
+                  subtitle: vendor.phone ?? '',
+                  onTap: () async {
+                    if (!await dialPhone(vendor.phone) && context.mounted) {
+                      showCefToast(context, L.phoneNotAvailable);
+                    }
+                  },
+                ),
+                Divider(height: 1, color: c.border),
+                _ContactRow(
+                  icon: LucideIcons.messageSquare,
+                  title: L.chat,
+                  subtitle: 'WhatsApp',
+                  onTap: () async {
+                    if (!await openWhatsApp(vendor.phone) && context.mounted) {
+                      showCefToast(context, L.phoneNotAvailable);
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -505,9 +582,6 @@ class VendorSupportScreen extends StatelessWidget {
       ),
     );
   }
-
-  void _toast(BuildContext context, String message) =>
-      showCefToast(context, message);
 }
 
 class _ContactRow extends StatelessWidget {
@@ -567,8 +641,9 @@ class SubmitTicketScreen extends StatefulWidget {
 
 class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
   final _description = TextEditingController();
+  bool _sending = false;
   late SupportCategory _category = AppScope.read(context).supportCategory;
-  bool _photoAdded = false;
+  final _photos = <List<int>>[];
 
   @override
   void initState() {
@@ -644,67 +719,81 @@ class _SubmitTicketScreenState extends State<SubmitTicketScreen> {
             hint: L.pleaseProvideMuchDetailPossibleE,
             maxLines: 4,
           ),
+          // Up to 3 photos, stored with the ticket (cefflo-support-photos).
           const SizedBox(height: Gap.lg),
           CeffloFieldLabel(L.addScreenshotPhotoOptional),
           const SizedBox(height: 6),
-          Material(
-            color: c.card,
-            borderRadius: BorderRadius.circular(Sizes.cardRadius),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(Sizes.cardRadius),
-              onTap: () => setState(() => _photoAdded = !_photoAdded),
-              child: DottedBorderBox(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Gap.lg),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _photoAdded ? LucideIcons.imageUp : LucideIcons.image,
-                        size: 26,
-                        color: c.textLabel,
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _photoAdded ? L.photoAttached : L.tapAddPhoto,
-                            style: context.t.titleSmall,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(L.pngJpgMax5mbEach, style: context.t.bodySmall),
-                        ],
-                      ),
-                    ],
-                  ),
+          Wrap(
+            spacing: Gap.sm,
+            runSpacing: Gap.sm,
+            children: [
+              for (var i = 0; i < _photos.length; i++)
+                InputChip(
+                  label: Text('${i + 1}'),
+                  avatar: const Icon(LucideIcons.image, size: 16),
+                  onDeleted: () => setState(() => _photos.removeAt(i)),
                 ),
-              ),
-            ),
+              if (_photos.length < 3)
+                ActionChip(
+                  avatar: Icon(
+                    LucideIcons.imageUp,
+                    size: 16,
+                    color: c.textLabel,
+                  ),
+                  label: Text(L.tapAddPhoto),
+                  onPressed: () async {
+                    final files = await ImagePicker().pickMultiImage(
+                      maxWidth: 1600,
+                      imageQuality: 82,
+                      limit: 3 - _photos.length,
+                    );
+                    for (final f in files.take(3 - _photos.length)) {
+                      _photos.add(await f.readAsBytes());
+                    }
+                    if (mounted) setState(() {});
+                  },
+                ),
+            ],
           ),
         ],
       ),
-      // Support tickets have no backend yet: the live app says so instead of
-      // confirming a request that was never sent.
-      footer: !app.repo.isDemo
-          ? CeffloNote(
-              icon: LucideIcons.info,
-              body: L.supportTicketsNotConnectedYet,
-            )
-          : CeffloPrimaryButton(
-              L.submitTicket,
-              pill: false,
-              onTap: _description.text.trim().isEmpty
-                  ? null
-                  : () async {
-                      await showCeffloSubmitFlow(
-                        context,
-                        successTitle: L.requestSubmitted,
-                        successBody: L.wellGetBackSoon,
-                        onDone: () => app.resetTo(DRoute.helpSupport),
-                      );
-                    },
-            ),
+      // Sent to the vendor (customer / delivery / business issues) or to
+      // Cefflo (app, account, other) by submit_support_ticket.
+      footer: CeffloPrimaryButton(
+        L.submitTicket,
+        pill: false,
+        busy: _sending,
+        onTap: _description.text.trim().isEmpty || _sending
+            ? null
+            : () async {
+                if (!app.repo.isDemo) {
+                  setState(() => _sending = true);
+                  try {
+                    await app.repo.submitSupportTicket(
+                      category: _category.wire,
+                      description: _description.text.trim(),
+                      riderId: app.active?.id,
+                      photos: _photos,
+                    );
+                  } on RepositoryError catch (e) {
+                    if (mounted) {
+                      setState(() => _sending = false);
+                      showCefToast(this.context, e.message, error: true);
+                    }
+                    return;
+                  }
+                  if (!mounted) return;
+                  setState(() => _sending = false);
+                }
+                if (!context.mounted) return;
+                await showCeffloSubmitFlow(
+                  context,
+                  successTitle: L.requestSubmitted,
+                  successBody: L.wellGetBackSoon,
+                  onDone: () => app.resetTo(DRoute.helpSupport),
+                );
+              },
+      ),
     );
   }
 }
@@ -748,4 +837,39 @@ class _DashedRectPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _DashedRectPainter oldDelegate) =>
       oldDelegate.color != color;
+}
+
+/// D40.2 / D40.3: the shared Privacy Policy or Terms of Service
+/// (shared/legal), identical to the website, Vendor app and Vendor Web.
+class LegalScreen extends StatelessWidget {
+  const LegalScreen({super.key, required this.privacy});
+  final bool privacy;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final lang = L.localeName == 'ms' ? 'ms' : 'en';
+    final sections = (privacy ? legalPrivacy : legalTerms)[lang]!;
+    return CeffloNavySheetScaffold(
+      header: CeffloScreenHeader(
+        title: privacy ? L.legalPrivacyPolicy : L.legalTerms,
+        onBack: app.back,
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${L.legalLastUpdated}: ${legalUpdated[lang]}',
+            style: context.t.bodySmall,
+          ),
+          for (final (i, s) in sections.indexed) ...[
+            const SizedBox(height: Gap.lg),
+            Text('${i + 1}. ${s.h}', style: context.t.titleSmall),
+            const SizedBox(height: 4),
+            Text(s.p, style: context.t.bodyMedium?.copyWith(height: 1.6)),
+          ],
+        ],
+      ),
+    );
+  }
 }

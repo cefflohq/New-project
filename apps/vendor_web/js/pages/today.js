@@ -7,11 +7,12 @@ import { mountPinsMap, hasPin } from '../map.js';
 import { esc, icon, chip, orderStatus, itemsText, avatar, loadingRows, emptyState, errorState, gatedNote } from '../ui.js';
 import { openAddOrder, openImport, openPlanDelivery } from './order_actions.js';
 import { openAddRider } from './riders.js';
+import { verificationBanner } from '../trust.js';
 
 export default function today({ el, setHeader }) {
   setHeader(t('today.title'));
   let tab = 'all', query = '';
-  el.innerHTML = `
+  el.innerHTML = `<div data-verify></div>
   <div class="grid-today">
     <div class="stack">
       <div class="card map-slot is-live">
@@ -38,6 +39,7 @@ export default function today({ el, setHeader }) {
       <div class="card"><div class="card-h"><h2>${esc(t('today.attention'))}</h2><span data-attn-count></span><a class="link" href="#/orders">${esc(t('c.viewAll'))}</a></div><div class="card-b" data-attn>${loadingRows(3)}</div></div>
     </div>
   </div>`;
+  verificationBanner().then(h => { const v = el.querySelector('[data-verify]'); if (v) v.innerHTML = h; });
 
   let orders = [], prep = new Map(), riders = new Map();
   const $ = s => el.querySelector(s);

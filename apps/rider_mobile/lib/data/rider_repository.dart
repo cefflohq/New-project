@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cefflo_push/cefflo_push.dart';
+import 'package:cefflo_server_messages/cefflo_server_messages.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/env.dart';
@@ -41,8 +43,18 @@ String webAuthRedirectUrl(Uri base) {
 class EmailAlreadyRegistered implements Exception {}
 
 class RepositoryError implements Exception {
-  RepositoryError(this.message, {this.isMissingContract = false, this.code});
+  RepositoryError(
+    this.message, {
+    this.isMissingContract = false,
+    this.code,
+    String? raw,
+  }) : raw = raw ?? message;
+
+  /// What the screen shows: in the app's language, never raw server text.
   final String message;
+
+  /// The backend's own text, for code that branches on it (never shown).
+  final String raw;
 
   /// True when the canonical RPC does not exist on the connected backend.
   /// The UI must show a blocked state instead of pretending the action worked.
@@ -91,11 +103,29 @@ class RiderRepository {
     (currentUser?.userMetadata?['driver_registration'] as Map?) ?? const {},
   );
 
+  /// The vehicle model (e.g. "Yamaha Y15ZR"), kept with the driver's
+  /// registration details. Free to change, unlike the vehicle type or plate.
+  Future<void> saveVehicleModel(String model) async {
+    if (isDemo) return;
+    await _run(
+      () => _db.auth.updateUser(
+        UserAttributes(
+          data: {
+            'driver_registration': {...registration, 'vehicle_model': model.trim()},
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> saveRegistration({
     required String vehicleType,
     required String fullName,
     required String phone,
     required String plate,
+    String? dateOfBirth,
+    String? address,
+    String? emergencyContact,
   }) async {
     if (isDemo) return;
     await _run(
@@ -104,10 +134,18 @@ class RiderRepository {
           data: {
             'full_name': fullName,
             'driver_registration': {
+              // Keep keys saved elsewhere (e.g. vehicle_model).
+              ...registration,
               'vehicle_type': vehicleType,
               'full_name': fullName,
               'phone': phone,
               'vehicle_plate': plate,
+              // D12 onboarding (Founder 2026-10-16).
+              if (dateOfBirth != null && dateOfBirth.isNotEmpty)
+                'date_of_birth': dateOfBirth,
+              if (address != null && address.isNotEmpty) 'address': address,
+              if (emergencyContact != null && emergencyContact.isNotEmpty)
+                'emergency_contact': emergencyContact,
             },
           },
         ),
@@ -167,6 +205,8 @@ class RiderRepository {
         password: password,
         emailRedirectTo: authRedirectUrl,
         data: {
+          // Ticked on Create Account (2026-10-16).
+          'terms_accepted_at': DateTime.now().toUtc().toIso8601String(),
           if (fullName != null && fullName.trim().isNotEmpty)
             'full_name': fullName.trim(),
           if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
@@ -192,14 +232,57 @@ class RiderRepository {
     ),
   );
 
-  /// Continue with Google (Founder, 2026-10-04): the same Supabase OAuth
-  /// contract as Vendor App; returns to this app via [authRedirectUrl].
-  Future<void> signInWithGoogle() => _run(
-    () => _db.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: authRedirectUrl,
-    ),
-  );
+  /// Continue with Google. On Android it stays inside the app (Founder
+  /// 2026-10-15): the system Google account sheet returns an ID token that
+  /// Supabase exchanges for the session, so the browser and the project
+  /// domain never show. Web, and builds without the Google web client id,
+  /// keep the browser OAuth flow through [authRedirectUrl].
+  /// Returns quietly when the user closes the account sheet.
+  Future<void> signInWithGoogle() async {
+    if (kIsWeb || Env.googleWebClientId.isEmpty) {
+      return _run(
+        () => _db.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: authRedirectUrl,
+        ),
+      );
+    }
+    final GoogleSignInAccount account;
+    try {
+      await _googleReady();
+      // Bottom-sheet account chooser (Founder 2026-10-15: slides up, not a
+      // centred dialog). Falls back to the full flow only when the device
+      // has no Google account to offer.
+      account =
+          await GoogleSignIn.instance.attemptLightweightAuthentication(
+            reportAllExceptions: true,
+          ) ??
+          await GoogleSignIn.instance.authenticate();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled ||
+          e.code == GoogleSignInExceptionCode.interrupted) {
+        return;
+      }
+      throw RepositoryError(
+        serverMessage('', L.localeName),
+        raw: e.description ?? '$e',
+      );
+    }
+    final idToken = account.authentication.idToken;
+    if (idToken == null) {
+      throw RepositoryError(serverMessage('', L.localeName));
+    }
+    await _run(
+      () => _db.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      ),
+    );
+  }
+
+  static Future<void>? _googleInit;
+  Future<void> _googleReady() => _googleInit ??= GoogleSignIn.instance
+      .initialize(serverClientId: Env.googleWebClientId);
 
   Future<void> sendPasswordReset(String email) => _run(
     () => _db.auth.resetPasswordForEmail(
@@ -244,6 +327,74 @@ class RiderRepository {
     try {
       await _db.auth.updateUser(UserAttributes(data: {'ui_locale': code}));
     } catch (_) {}
+  }
+
+  /// Whether this account has agreed to the Terms and Privacy Policy
+  /// (email sign-up ticks it; a new Google account confirms once after its
+  /// first sign-in, Founder 2026-10-16).
+  bool get termsAccepted =>
+      currentUser?.userMetadata?['terms_accepted_at'] != null;
+
+  Future<void> acceptTerms() => _run(
+    () => _db.auth.updateUser(
+      UserAttributes(
+        data: {'terms_accepted_at': DateTime.now().toUtc().toIso8601String()},
+      ),
+    ),
+  );
+
+  // ------------------------------------------------------------- avatar
+  // The same private cefflo-avatars bucket and profiles.avatar_url as the
+  // Vendor app: '<uid>/avatar', replaced in place.
+
+  /// Uploads the photo and returns a short-lived URL to show it.
+  Future<String?> uploadAvatar(List<int> bytes) async {
+    if (isDemo) return null;
+    final uid = _db.auth.currentUser!.id;
+    await _run(
+      () => _db.storage
+          .from('cefflo-avatars')
+          .uploadBinary(
+            '$uid/avatar',
+            Uint8List.fromList(bytes),
+            fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+          ),
+    );
+    await _run(
+      () => _db.from('profiles').upsert({'id': uid, 'avatar_url': '$uid/avatar'}),
+    );
+    return myAvatarUrl();
+  }
+
+  /// A signed URL for the driver's own photo, or null when there is none.
+  Future<String?> myAvatarUrl() async {
+    if (isDemo || currentUser == null) return null;
+    try {
+      final row = await _db
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', currentUser!.id)
+          .maybeSingle();
+      final path = row?['avatar_url'] as String?;
+      if (path == null || path.isEmpty) return null;
+      // Bust the cache so a replaced photo shows at once.
+      final url = await _db.storage.from('cefflo-avatars').createSignedUrl(path, 3600);
+      return '$url&v=${DateTime.now().millisecondsSinceEpoch}';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Closes the signed-in account (request_account_deletion): signed out
+  /// everywhere now, personal details erased after 30 days.
+  Future<void> deleteAccount(String? reason) async {
+    if (isDemo) return;
+    await _run(
+      () => _db.rpc(
+        'request_account_deletion',
+        params: {'p_reason': reason},
+      ),
+    );
   }
 
   Future<void> signOut() async {
@@ -362,7 +513,7 @@ class RiderRepository {
       () => _db
           .from('orders')
           .select(
-            '*,delivery_stops(id,sequence,sequence_locked_at,assignment_id,rider_assignments(status,accepted_at))',
+            '*,delivery_stops(id,sequence,sequence_locked_at,assignment_id,preparation_status,rider_assignments(status,accepted_at))',
           )
           .eq('assigned_rider_id', riderId)
           .order('created_at'),
@@ -762,6 +913,141 @@ class RiderRepository {
     return Map<String, dynamic>.from(res as Map);
   }
 
+  // ---------------------------------------------------------------- complaints
+  // Prosedur Aduan (Founder 2026-10-16): the driver reports a business (not
+  // paid, behaviour, safety, fraud) or answers a report about them. Photos
+  // go to the driver's own folder in a private bucket.
+
+  Future<String> fileComplaint({
+    required String category,
+    required String description,
+    required String riderId,
+    List<List<int>> photos = const [],
+  }) async {
+    if (isDemo) return 'CF-00043';
+    final paths = await _uploadComplaintPhotos(photos);
+    final r = await _run(
+      () => _db.rpc(
+        'file_complaint',
+        params: {
+          'p_category': category,
+          'p_description': description,
+          'p_rider_id': riderId,
+          'p_photos': paths,
+        },
+      ),
+    );
+    return (r as Map)['ref'] as String;
+  }
+
+  Future<List<String>> _uploadComplaintPhotos(List<List<int>> photos) async {
+    final uid = _db.auth.currentUser!.id;
+    final paths = <String>[];
+    for (final bytes in photos.take(5)) {
+      final path = '$uid/complaints/${_idempotencyKey()}.jpg';
+      await _run(
+        () => _db.storage
+            .from('cefflo-complaint-evidence')
+            .uploadBinary(
+              path,
+              Uint8List.fromList(bytes),
+              fileOptions: const FileOptions(contentType: 'image/jpeg'),
+            ),
+      );
+      paths.add(path);
+    }
+    return paths;
+  }
+
+  /// Complaints the driver made or received, each with its visible thread.
+  Future<List<Map<String, dynamic>>> myComplaints() async {
+    if (isDemo) return demoDriverComplaints();
+    final list = _rows(await _run(() => _db.rpc('my_complaints')));
+    for (final c in list) {
+      for (final e in (c['entries'] as List? ?? const [])) {
+        final path = (e as Map)['file_path'] as String?;
+        if (path == null) continue;
+        try {
+          e['url'] = await _db.storage
+              .from('cefflo-complaint-evidence')
+              .createSignedUrl(path, 600);
+        } catch (_) {}
+      }
+    }
+    return list;
+  }
+
+  Future<void> replyComplaint(
+    String id,
+    String body, {
+    List<List<int>> photos = const [],
+  }) async {
+    if (isDemo) return;
+    final paths = await _uploadComplaintPhotos(photos);
+    await _run(
+      () => _db.rpc(
+        'reply_complaint',
+        params: {'p_id': id, 'p_body': body, 'p_photos': paths},
+      ),
+    );
+  }
+
+  /// driver's vendor, app and account issues reach Cefflo.
+  Future<void> submitSupportTicket({
+    required String category,
+    required String description,
+    String? riderId,
+    List<List<int>> photos = const [],
+  }) async {
+    final uid = _db.auth.currentUser!.id;
+    final paths = <String>[];
+    for (final bytes in photos.take(3)) {
+      final path = '$uid/${_idempotencyKey()}.jpg';
+      await _run(
+        () => _db.storage
+            .from('cefflo-support-photos')
+            .uploadBinary(
+              path,
+              Uint8List.fromList(bytes),
+              fileOptions: const FileOptions(contentType: 'image/jpeg'),
+            ),
+      );
+      paths.add(path);
+    }
+    await _run(
+      () => _db.rpc(
+        'submit_support_ticket',
+        params: {
+          'p_category': category,
+          'p_description': description,
+          'p_rider_id': riderId,
+          'p_photos': paths,
+        },
+      ),
+    );
+  }
+
+  /// The driver's own support tickets with Cefflo's (or the business's)
+  /// reply, newest first.
+  Future<List<Map<String, dynamic>>> mySupportTickets() async {
+    if (isDemo) {
+      final now = DateTime.now();
+      return [
+        {'id': 'demo-t1', 'category': 'cefflo_app', 'description': 'The map does not load on my phone.', 'status': 'resolved', 'created_at': now.subtract(const Duration(days: 2)).toIso8601String(), 'reply': 'Fixed in the latest update. Please update the app.'},
+        {'id': 'demo-t2', 'category': 'account_documents', 'description': 'I uploaded the wrong licence photo.', 'status': 'open', 'created_at': now.subtract(const Duration(hours: 3)).toIso8601String()},
+      ];
+    }
+    return _rows(await _run(() => _db.rpc('my_support_tickets')));
+  }
+
+  /// Releases one day of a booking (release_job_day).
+  Future<void> releaseJobDay(String requestId, int day) => _run(
+    () => _db.rpc(
+      'release_job_day',
+      params: {'p_request_id': requestId, 'p_day': day},
+    ),
+  );
+
   Future<void> withdrawJobRequest(String requestId) => _run(
     () => _db.rpc('withdraw_job_request', params: {'p_request_id': requestId}),
   );
@@ -855,6 +1141,9 @@ class RiderRepository {
   Future<void> markNotificationUnread(String id) =>
       _run(() => _db.rpc('mark_notification_unread', params: {'p_id': id}));
 
+  Future<void> deleteNotification(String id) =>
+      _run(() => _db.from('notifications').delete().eq('id', id));
+
   Future<NotificationPrefs> notificationPrefs() async {
     final uid = currentUser?.id;
     if (uid == null) return const NotificationPrefs();
@@ -923,17 +1212,71 @@ class RiderRepository {
     } on PostgrestException catch (e) {
       final missing = _isMissingFunction(e);
       throw RepositoryError(
-        missing ? L.actionNeedsBackendContractThatNot(e.message) : e.message,
+        missing
+            ? L.actionNeedsBackendContractThatNot(e.message)
+            : serverMessage(e.message, L.localeName),
         isMissingContract: missing,
+        raw: e.message,
       );
     } on AuthException catch (e) {
-      throw RepositoryError(e.message, code: e.code);
+      // Auth errors (e.g. a suspended account) get the friendly sentence
+      // when one exists; otherwise the server's own text.
+      throw RepositoryError(
+        knownServerMessage(e.message, L.localeName) ?? e.message,
+        code: e.code,
+      );
+    } on RepositoryError {
+      rethrow;
     } catch (e) {
-      throw RepositoryError('$e');
+      // Network and other client failures: a plain sentence on screen.
+      throw RepositoryError(serverMessage('', L.localeName), raw: '$e');
     }
   }
 
   List<Map<String, dynamic>> _rows(dynamic raw) => raw is List
       ? raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList()
       : const [];
+}
+
+/// Prototype data: one report about the driver, one the driver made.
+List<Map<String, dynamic>> demoDriverComplaints() {
+  final now = DateTime.now();
+  return [
+    {
+      'id': 'demo-d1',
+      'ref': 'CF-00041',
+      'category': 'damaged_lost',
+      'status': 'awaiting_reply',
+      'side': 'respondent',
+      'complainant_role': 'vendor',
+      'respondent_role': 'driver',
+      'business_name': 'Kedai Ali',
+      'order_ref': 'CF-4639390A',
+      'reply_due_at': now.add(const Duration(hours: 20)).toIso8601String(),
+      'created_at': now.subtract(const Duration(hours: 28)).toIso8601String(),
+      'replied': false,
+      'entries': [
+        {'kind': 'statement', 'author_role': 'complainant', 'body': 'Customer says the cake box was crushed on arrival.', 'created_at': now.subtract(const Duration(hours: 28)).toIso8601String()},
+      ],
+    },
+    {
+      'id': 'demo-d2',
+      'ref': 'CF-00039',
+      'category': 'unpaid',
+      'status': 'resolved',
+      'side': 'complainant',
+      'complainant_role': 'driver',
+      'respondent_role': 'vendor',
+      'business_name': 'Kedai Ali',
+      'reply_due_at': now.subtract(const Duration(days: 3)).toIso8601String(),
+      'created_at': now.subtract(const Duration(days: 5)).toIso8601String(),
+      'replied': true,
+      'decision': 'settled',
+      'decision_note': 'The business paid the outstanding RM120 on 14 Oct.',
+      'entries': [
+        {'kind': 'statement', 'author_role': 'complainant', 'body': 'Delivered 12 orders last week, not paid yet.', 'created_at': now.subtract(const Duration(days: 5)).toIso8601String()},
+        {'kind': 'reply', 'author_role': 'respondent', 'body': 'Payment was delayed by the bank. Paid now.', 'created_at': now.subtract(const Duration(days: 4)).toIso8601String()},
+      ],
+    },
+  ];
 }

@@ -148,6 +148,7 @@ class RiderOrder {
     this.sequenceLocked = false,
     this.latitude,
     this.longitude,
+    this.packed = false,
   });
 
   final String id;
@@ -175,6 +176,10 @@ class RiderOrder {
   /// Customer-pinned drop point (orders.latitude/longitude), if any.
   final double? latitude;
   final double? longitude;
+
+  /// The business has finished packing it (delivery_stops
+  /// .preparation_status = ready): the pickup checklist can open.
+  final bool packed;
 
   bool get isDelivered => status == DeliveryStatus.delivered;
   bool get hasIssue => status == DeliveryStatus.issue;
@@ -213,6 +218,9 @@ class RiderOrder {
       status: DeliveryStatus.parse(row['delivery_status']?.toString()),
       deliverySessionId: row['delivery_session_id']?.toString(),
       stopId: stop?['id']?.toString(),
+      packed:
+          stop?['preparation_status'] == 'ready' ||
+          row['delivery_status'] == 'ready_for_pickup',
       sequence: stop?['sequence'] is int ? stop!['sequence'] as int : null,
       sequenceLocked: stop?['sequence_locked_at'] != null,
       assignmentStatus: assignment?['status']?.toString(),

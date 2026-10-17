@@ -265,7 +265,7 @@ function unavailableScreen(vm) {
 function loadingScreen(vm) {
   return `
     <section class="unavailable">
-      ${window.cfLoader.markup('Memuatkan penghantaran')}
+      ${window.cfLoader.markup('Loading your delivery')}
       ${statusHead(vm)}
     </section>`;
 }
@@ -393,7 +393,7 @@ sheet.addEventListener('click', (event) => {
 function retryTracking(trigger) {
   trigger.disabled = true;
   trigger.classList.add('is-busy');
-  window.showPageLoader('Memuatkan penghantaran');
+  window.showPageLoader('Loading your delivery');
   setTimeout(() => location.reload(), prefersReducedMotion() ? 0 : 200);
 }
 

@@ -185,6 +185,7 @@ function renderSignUp(root, opts) {
     <div class="field"><label for="em">${esc(t('auth.email'))}</label><input class="input" id="em" type="email" autocomplete="email"></div>
     <div class="field"><label for="p1">${esc(t('auth.password'))}</label><input class="input" id="p1" type="password" autocomplete="new-password"><small class="hint">${esc(t('auth.pwRule'))}</small></div>
     <div class="field"><label for="p2">${esc(t('auth.confirmPw'))}</label><input class="input" id="p2" type="password" autocomplete="new-password"></div>
+    <label class="consent" style="display:flex;gap:10px;align-items:flex-start;margin:4px 0 14px;font-size:13.5px;line-height:1.5"><input type="checkbox" data-agree style="margin-top:3px;width:18px;height:18px"><span>${esc(t('legal.agreeLead'))}<a href="${t('legal.termsUrl')}" target="_blank" rel="noopener">${esc(t('legal.terms2'))}</a>${esc(t('legal.and'))}<a href="${t('legal.privacyUrl')}" target="_blank" rel="noopener">${esc(t('legal.privacy2'))}</a>.</span></label>
     <div class="err" data-err hidden role="alert"></div>
     <button class="btn primary" type="submit" style="width:100%">${esc(t('auth.create'))}</button>
     <p class="auth-foot">${esc(t('auth.haveAccount'))} <button class="link-btn" type="button" data-signin>${esc(t('auth.signIn'))}</button></p>
@@ -197,6 +198,8 @@ function renderSignUp(root, opts) {
     if (!EMAIL.test(email)) return showErr(err, t('c.invalidEmail'));
     if (p1.length < 8) return showErr(err, t('sec.short'));
     if (p1 !== p2) return showErr(err, t('sec.mismatch'));
+    // Sign-up ticks the agreement (PDPA notice, Founder 2026-10-16).
+    if (!root.querySelector('[data-agree]').checked) return showErr(err, t('legal.required'));
     err.hidden = true;
     try {
       const needsVerification = await busy(form.querySelector('[type=submit]'), () => api.signUp(email, p1), t('c.loading'));

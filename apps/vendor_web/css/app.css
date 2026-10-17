@@ -340,7 +340,7 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .modal-h p { margin: 4px 0 0; color: var(--muted); font-size: var(--t-label); }
 .modal-h .x { margin-left: auto; }
 .modal-b { padding: 12px 20px; display: grid; gap: 12px; }
-.modal-f { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); background: var(--surface-2); border-radius: 0 0 var(--r-lg) var(--r-lg); }
+.modal-f { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px 20px; background: transparent; border-radius: 0 0 var(--r-lg) var(--r-lg); }
 .modal-f.center { justify-content: center; }
 .modal-f .btn[style*="min-width"] { min-width: 160px !important; }
 @keyframes fade { from { opacity: 0; } }
@@ -455,7 +455,7 @@ table.t .sub { display: block; color: var(--muted); font-size: var(--t-meta); ma
 .np-head, .np-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; }
 .np-head { border-bottom: 1px solid var(--border); }
 .np-head b { font-size: var(--t-body); }
-.np-foot { border-top: 1px solid var(--border); justify-content: flex-start; }
+.np-foot { justify-content: flex-start; }
 .menu .np-head .btn, .menu .np-foot .btn { width: auto; min-height: 0; padding: 0 8px; }
 .np-list { overflow-y: auto; padding: 4px; }
 .np-item { display: flex; align-items: flex-start; gap: 2px; border-radius: var(--r-sm); }

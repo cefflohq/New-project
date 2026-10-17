@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/app_state.dart';
@@ -23,6 +24,19 @@ import '../../core/ui_locale.dart';
 /// Initials avatar. No stock portrait is bundled with the prototype, so the
 /// reference's photo slot is drawn as the Driver's initials on the brand
 /// navy instead of a fabricated likeness.
+/// The signed-in driver's photo URL, shared by Profile and Edit Profile.
+final ValueNotifier<String?> driverAvatarUrl = ValueNotifier(null);
+String? _avatarFor;
+
+/// Loads the driver's photo once per signed-in account (live builds).
+void loadDriverAvatar(AppState app) {
+  final uid = app.repo.currentUser?.id;
+  if (app.repo.isDemo || uid == null || _avatarFor == uid) return;
+  _avatarFor = uid;
+  driverAvatarUrl.value = null;
+  app.repo.myAvatarUrl().then((u) => driverAvatarUrl.value = u);
+}
+
 class DriverAvatar extends StatelessWidget {
   const DriverAvatar({super.key, required this.name, this.size = 72});
 
@@ -38,7 +52,22 @@ class DriverAvatar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => ValueListenableBuilder<String?>(
+    valueListenable: driverAvatarUrl,
+    builder: (context, url, _) => url != null
+        ? ClipOval(
+            child: Image.network(
+              url,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _initialsCircle(),
+            ),
+          )
+        : _initialsCircle(),
+  );
+
+  Widget _initialsCircle() => Container(
     width: size,
     height: size,
     alignment: Alignment.center,
@@ -120,8 +149,15 @@ class OutlinedNavRow extends StatelessWidget {
 
 /// The "About • v1.2.0 (Driver)" / "About | v1.2.0 | Term" footer line.
 class AppVersionFooter extends StatelessWidget {
-  const AppVersionFooter({super.key, required this.items});
+  const AppVersionFooter({
+    super.key,
+    required this.items,
+    this.taps = const {},
+  });
   final List<String> items;
+
+  /// Items that open something (Privacy, Terms), by index.
+  final Map<int, VoidCallback> taps;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -133,7 +169,22 @@ class AppVersionFooter extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text('•', style: context.t.labelSmall),
           ),
-        Text(items[i], style: context.t.labelSmall),
+        if (taps[i] == null)
+          Text(items[i], style: context.t.labelSmall)
+        else
+          InkWell(
+            onTap: taps[i],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Text(
+                items[i],
+                style: context.t.labelSmall?.copyWith(
+                  color: const Color(0xFF0060FE),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
       ],
     ],
   );
@@ -149,6 +200,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    loadDriverAvatar(app);
     final profile = app.profile;
     final c = context.c;
     return CeffloNavySheetScaffold(
@@ -280,38 +332,57 @@ class ProfileScreen extends StatelessWidget {
             label: L.helpSupport,
             onTap: () => app.go(DRoute.helpSupport),
           ),
-        ],
-      ),
-      footer: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Divider(height: 1, color: c.border),
-          const SizedBox(height: Gap.md),
-          InkWell(
-            onTap: () => showLogOutConfirm(context, app),
-            borderRadius: BorderRadius.circular(Sizes.buttonRadius),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(LucideIcons.logOut, size: 20, color: c.attention),
-                  const SizedBox(width: 10),
-                  Text(
-                    L.logOut,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: c.attention,
+          // Log out and the version line scroll with the menu: one white
+          // card, no pinned strip or edge above them (Founder 2026-10-17).
+          const SizedBox(height: Gap.lg),
+          Center(
+            child: InkWell(
+              onTap: () => showLogOutConfirm(context, app),
+              borderRadius: BorderRadius.circular(Sizes.buttonRadius),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(LucideIcons.logOut, size: 20, color: c.attention),
+                    const SizedBox(width: 10),
+                    Text(
+                      L.logOut,
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: c.attention,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          const SizedBox(height: Gap.sm),
-          AppVersionFooter(items: [L.about, L.v120Driver]),
+          Center(
+            child: TextButton(
+              onPressed: () => showDeleteAccount(context, app),
+              child: Text(
+                L.delLink,
+                style: context.t.labelMedium?.copyWith(
+                  color: context.c.textSecondary,
+                ),
+              ),
+            ),
+          ),
+          // Privacy and Terms sit with About, keeping the menu short
+          // (Founder 2026-10-16).
+          AppVersionFooter(
+            items: [L.legalPrivacyShort, L.legalTermsShort, L.v120Driver],
+            taps: {
+              0: () => app.go(DRoute.privacyPolicy),
+              1: () => app.go(DRoute.termsOfService),
+            },
+          ),
         ],
       ),
     );
@@ -320,6 +391,66 @@ class ProfileScreen extends StatelessWidget {
 
 /// Log-out: prototype returns to the locked D02 Sign In surface; the real
 /// build revokes the Supabase session through [AppState.signOut].
+/// Delete account (Google Play / PDPA): explained, then closed for good.
+Future<void> showDeleteAccount(BuildContext context, AppState app) {
+  final reason = TextEditingController();
+  return showCeffloModal<void>(
+    context,
+    Builder(
+      builder: (modalContext) => CeffloModal(
+        child: Column(
+          children: [
+            Icon(LucideIcons.userX, size: 34, color: modalContext.c.attention),
+            const SizedBox(height: Gap.lg),
+            Text(
+              L.delTitle,
+              style: modalContext.t.displaySmall?.copyWith(fontSize: 20),
+            ),
+            const SizedBox(height: Gap.sm),
+            Text(
+              L.delBody,
+              textAlign: TextAlign.center,
+              style: modalContext.t.bodyMedium,
+            ),
+            const SizedBox(height: Gap.md),
+            CeffloTextField(
+              label: L.delReasonHint,
+              controller: reason,
+              maxLines: 2,
+            ),
+            const SizedBox(height: Gap.lg),
+            CeffloPrimaryButton(
+              L.delConfirm,
+              height: 52,
+              pill: false,
+              onTap: () async {
+                final why = reason.text.trim();
+                Navigator.of(modalContext).pop();
+                if (app.repo.isDemo) return app.signOutPrototype();
+                try {
+                  await app.repo.deleteAccount(why.isEmpty ? null : why);
+                  if (context.mounted) showCefToast(context, L.delDone);
+                  await app.signOut();
+                } on RepositoryError catch (e) {
+                  if (context.mounted) {
+                    showCefToast(context, e.message, error: true);
+                  }
+                }
+              },
+            ),
+            const SizedBox(height: Gap.sm),
+            CeffloSecondaryButton(
+              L.cancel,
+              pill: false,
+              onTap: () => Navigator.of(modalContext).pop(),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 Future<void> showLogOutConfirm(BuildContext context, AppState app) =>
     showCeffloModal<void>(
       context,
@@ -382,6 +513,32 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late final AppState _app = AppScope.read(context);
+
+  /// A new profile photo: camera or gallery, square-cropped by the circle.
+  Future<void> _changePhoto(bool live) async {
+    if (!live) {
+      showCefToast(context, L.photoUploadNotWiredUpPreview);
+      return;
+    }
+    final f = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      imageQuality: 85,
+    );
+    if (f == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      driverAvatarUrl.value = await _app.repo.uploadAvatar(
+        await f.readAsBytes(),
+      );
+      if (mounted) showCefToast(context, L.detailsSaved);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   late final _name = TextEditingController(text: _app.profile.fullName);
   late final _phone = TextEditingController(text: _app.profile.phone);
   late final _email = TextEditingController(text: _app.profile.email);
@@ -421,32 +578,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               clipBehavior: Clip.none,
               children: [
                 DriverAvatar(name: _name.text, size: 100),
-                if (!live)
-                  Positioned(
-                    right: -2,
-                    bottom: -2,
-                    child: Material(
-                      color: CefColors.navy,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => showCefToast(
-                          context,
-                          L.photoUploadNotWiredUpPreview,
-                          error: false,
-                        ),
-                        child: const SizedBox(
-                          width: 34,
-                          height: 34,
-                          child: Icon(
-                            LucideIcons.camera,
-                            size: 17,
-                            color: Colors.white,
-                          ),
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: Material(
+                    color: CefColors.navy,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => _changePhoto(live),
+                      child: const SizedBox(
+                        width: 34,
+                        height: 34,
+                        child: Icon(
+                          LucideIcons.camera,
+                          size: 17,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -514,7 +666,7 @@ class VehicleDetailsScreen extends StatefulWidget {
 class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   late final AppState _app = AppScope.read(context);
   late String _type = _app.myVehicleType;
-  final bool _busy = false;
+  bool _busy = false;
   late final _model = TextEditingController(text: _app.profile.vehicleModel);
   late final _plate = TextEditingController(text: _app.profile.plateNumber);
 
@@ -541,6 +693,65 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         Gap.sheet,
         Gap.lg,
       ),
+      footer: CeffloPrimaryButton(
+        L.save,
+        busy: _busy,
+        onTap: _busy
+            ? null
+            : () async {
+                if (!live) {
+                  app.updateProfile(
+                    app.profile.copyWith(
+                      vehicleType: _type,
+                      vehicleModel: _model.text.trim(),
+                      plateNumber: _plate.text.trim(),
+                    ),
+                  );
+                  app.back();
+                  return;
+                }
+                // The model is free: save it on its own first.
+                final model = _model.text.trim();
+                if (model != app.profile.vehicleModel) {
+                  setState(() => _busy = true);
+                  try {
+                    await app.repo.saveVehicleModel(model);
+                    app.updateProfile(
+                      app.profile.copyWith(vehicleModel: model),
+                    );
+                  } on RepositoryError catch (e) {
+                    if (context.mounted) {
+                      showCefToast(context, e.message, error: true);
+                    }
+                    return;
+                  } finally {
+                    if (mounted) setState(() => _busy = false);
+                  }
+                }
+                if (!context.mounted) return;
+                // Founder 2026-10-06: a vehicle / plate change is paid
+                // (RM50). It goes through the change-fee screen and is
+                // applied only after a confirmed payment.
+                final plate = _plate.text.trim();
+                if (_type == app.myVehicleType &&
+                    plate == app.profile.plateNumber) {
+                  showCefToast(context, L.detailsSaved);
+                  app.back();
+                  return;
+                }
+                final paid = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => VehicleChangePaymentScreen(
+                      fromVehicle: app.myVehicleType,
+                      toVehicle: _type,
+                      fromPlate: app.profile.plateNumber,
+                      toPlate: plate,
+                    ),
+                  ),
+                );
+                if (paid == true && context.mounted) app.back();
+              },
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -556,57 +767,15 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
             optionLabel: vehicleTypeLabel,
             onChanged: (v) => setState(() => _type = v),
           ),
-          // No model is stored on the server: prototype only.
-          if (!live) ...[
-            const SizedBox(height: Gap.lg),
-            CeffloTextField(label: L.model, controller: _model),
-          ],
+          // Model: free to change, kept with the registration details.
+          const SizedBox(height: Gap.lg),
+          CeffloTextField(label: L.model, controller: _model),
           const SizedBox(height: Gap.lg),
           CeffloTextField(label: L.registrationPlateNumber, controller: _plate),
           if (live) ...[
             const SizedBox(height: Gap.md),
             CeffloNote(icon: LucideIcons.wallet, body: L.vehicleChangePaidNote),
           ],
-          const SizedBox(height: Gap.xl),
-          CeffloPrimaryButton(
-            L.save,
-            busy: _busy,
-            onTap: _busy
-                ? null
-                : () async {
-                    if (!live) {
-                      app.updateProfile(
-                        app.profile.copyWith(
-                          vehicleType: _type,
-                          vehicleModel: _model.text.trim(),
-                          plateNumber: _plate.text.trim(),
-                        ),
-                      );
-                      app.back();
-                      return;
-                    }
-                    // Founder 2026-10-06: a vehicle / plate change is paid
-                    // (RM50). It goes through the change-fee screen and is
-                    // applied only after a confirmed payment.
-                    final plate = _plate.text.trim();
-                    if (_type == app.myVehicleType &&
-                        plate == app.profile.plateNumber) {
-                      app.back();
-                      return;
-                    }
-                    final paid = await Navigator.of(context).push<bool>(
-                      MaterialPageRoute(
-                        builder: (_) => VehicleChangePaymentScreen(
-                          fromVehicle: app.myVehicleType,
-                          toVehicle: _type,
-                          fromPlate: app.profile.plateNumber,
-                          toPlate: plate,
-                        ),
-                      ),
-                    );
-                    if (paid == true && context.mounted) app.back();
-                  },
-          ),
         ],
       ),
     );

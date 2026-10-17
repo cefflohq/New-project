@@ -164,7 +164,7 @@ class _CefPageLoaderState extends State<CefPageLoader> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CefRingLoader(tile: 88),
+                const CefRingLoader(),
                 const SizedBox(height: CefLoaderTokens.labelGap),
                 ExcludeSemantics(
                   child: Text(
@@ -390,7 +390,11 @@ class CefMark extends StatelessWidget {
 
 /// Blue ring + Cefflo mark on a rounded dark glass tile.
 class CefRingLoader extends StatefulWidget {
-  const CefRingLoader({super.key, this.tile = 112});
+  const CefRingLoader({super.key, this.tile = ringTile});
+
+  /// The one loader size on every surface (Founder 2026-10-15): the small
+  /// in-page tile. Web twin: `.cf-ring-box` in shared/loader/loader.css.
+  static const ringTile = 88.0;
 
   /// Tile edge; ring and mark scale with it.
   final double tile;

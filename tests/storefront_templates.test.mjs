@@ -53,9 +53,9 @@ const screens = (k, c) => {
 // sample copy must never ship inside a template.
 const FORBIDDEN = /xefag|nike|psg|barça|barca|syntha|endorush|bsn\b|jmd[af]|northen|arobix|pashaya|mediplus|panadol|strepsils|cetaphil|scott|ensure|omron|azuki|closesea|harbani|cappuccino|matcha latte|iced matcha|clearance sales|powerful boost|winter essentials|run better|buy 1 get 3|spotless attire|jenny wilson|mie ayam|delicious seafood|fried prawns|face recovery|ultra run pro|velocity boost|everyday healthcare|los vegas|new york|\$\s?\d|£|₽|rp\s?\d/i;
 
-test('the library offers the 10 business templates; earlier ones still render; each has home + product', () => {
-  assert.deepEqual(ORDER, ['homefood', 'bakery', 'eatery', 'cafe', 'catering', 'frozen', 'florist', 'laundry', 'retail', 'outlets']);
-  assert.equal(LEGACY.length, 18);
+test('the library offers the five templates; earlier ones still render; each has home + product', () => {
+  assert.deepEqual(ORDER, ['warung', 'tailor', 'care', 'service', 'pour']);
+  assert.equal(LEGACY.length, 23);
   assert.deepEqual([...ALL].sort(), JSON.parse(JSON.stringify(Object.keys(T))).sort());
   for (const k of ALL) {
     assert.equal(typeof T[k].home, 'function', k);

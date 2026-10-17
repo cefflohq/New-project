@@ -25,11 +25,11 @@ void main() {
       );
 
       test(
-        '$brightness global default fontFamilyFallback covers SC and Tamil',
+        '$brightness global default fontFamilyFallback covers Tamil (CJK from the phone)',
         () {
           expect(
             theme.textTheme.bodyLarge?.fontFamilyFallback,
-            containsAll(['Noto Sans SC', 'Noto Sans Tamil']),
+            containsAll(['Noto Sans Tamil']),
           );
         },
       );
@@ -52,7 +52,7 @@ void main() {
           );
           expect(
             entry.value?.fontFamilyFallback,
-            containsAll(['Noto Sans SC', 'Noto Sans Tamil']),
+            containsAll(['Noto Sans Tamil']),
             reason:
                 '${entry.key} should fall back to the bundled '
                 'multilingual fonts, not tofu boxes or a network fetch',
@@ -83,7 +83,7 @@ void main() {
     test('kFontFamily/kFontFamilyFallback constants match the bundled '
         'pubspec.yaml font declarations', () {
       expect(kFontFamily, 'Inter');
-      expect(kFontFamilyFallback, ['Noto Sans SC', 'Noto Sans Tamil']);
+      expect(kFontFamilyFallback, ['Noto Sans Tamil']);
     });
   });
 }

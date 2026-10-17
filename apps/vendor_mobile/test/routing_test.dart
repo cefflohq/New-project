@@ -9,13 +9,13 @@ void main() {
           .map((s) => s.id)
           .where((id) => id.startsWith('V-'))
           .toList();
-      expect(ids.toSet(), hasLength(55));
+      expect(ids.toSet(), hasLength(54));
       for (var i = 1; i <= 60; i++) {
         final id = 'V-${i.toString().padLeft(2, '0')}';
-        if (const {18, 30, 42, 48, 53}.contains(i)) {
+        if (const {18, 30, 42, 44, 48, 53}.contains(i)) {
           // V-42 merged into Settings (D-46); V-18 / V-30 consolidated
           // into Zone detail (D-49); V-53 is the payment success modal
-          // (D-54).
+          // (D-54); V-44 Security removed (Founder 2026-10-16).
           expect(ids, isNot(contains(id)), reason: '$id was removed');
         } else {
           expect(ids, contains(id));
@@ -50,12 +50,10 @@ void main() {
       expect(routeSpecs[VRoute.settings]!.title, 'More');
       expect(routeSpecs[VRoute.settings]!.parent, isNull);
       expect(routeSpecs[VRoute.settings]!.tab, NavTab.more);
-      expect(routeSpecs[VRoute.security]!.tab, NavTab.more);
     });
 
     test('account settings have one canonical parent: Settings', () {
       expect(routeSpecs[VRoute.editProfile]!.parent, VRoute.settings);
-      expect(routeSpecs[VRoute.security]!.parent, VRoute.settings);
       expect(routeSpecs[VRoute.notificationSettings]!.parent, VRoute.settings);
     });
   });
@@ -68,7 +66,7 @@ void main() {
       expect(routeSpecs[VRoute.teamMemberDetail]!.parent, VRoute.team);
       expect(routeSpecs[VRoute.zoneDetail]!.parent, VRoute.zones);
       expect(routeSpecs[VRoute.productDetail]!.parent, VRoute.products);
-      expect(routeSpecs[VRoute.changePassword]!.parent, VRoute.security);
+      expect(routeSpecs[VRoute.changePassword]!.parent, VRoute.settings);
     });
 
     test('subpages keep the owning tab active', () {

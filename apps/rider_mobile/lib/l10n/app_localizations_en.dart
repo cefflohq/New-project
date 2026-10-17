@@ -1964,7 +1964,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mvIntro =>
-      'To apply for jobs in Find Jobs, add your licence and your vehicle. Deliveries from businesses that invited you do not need this.';
+      'Add your licence and your vehicle. Businesses that invite you, and jobs you apply for in Find Jobs, need these before you can start. Your IC and licence photos stay private to Cefflo.';
 
   @override
   String get mvChecking => 'Checking';
@@ -2212,4 +2212,321 @@ class AppLocalizationsEn extends AppLocalizations {
   String pickupOpensAt(String time, int minutes) {
     return 'Opens at $time · $minutes min before pickup';
   }
+
+  @override
+  String get loaderDefault => 'Loading…';
+
+  @override
+  String get loaderSlow => 'Still loading, please wait a moment';
+
+  @override
+  String get youreAllCaughtUp => 'You\'re all caught up.';
+
+  @override
+  String get notificationDeleted => 'Notification deleted';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get ntDelete => 'Delete';
+
+  @override
+  String get notificationOptions => 'Notification options';
+
+  @override
+  String pickupLockArrive(String business) {
+    return 'Arrive at $business to open the checklist';
+  }
+
+  @override
+  String pickupLockPacking(String business) {
+    return 'Waiting for $business to finish packing';
+  }
+
+  @override
+  String get pickupCheckAgain => 'Check again';
+
+  @override
+  String get countryCodeTitle => 'Country code';
+
+  @override
+  String get searchCountryOrCode => 'Search country or code';
+
+  @override
+  String get legalLastUpdated => 'Last updated';
+
+  @override
+  String get legalPrivacyPolicy => 'Privacy Policy';
+
+  @override
+  String get legalTerms => 'Terms of Service';
+
+  @override
+  String get legalConsentLead => 'By creating an account, you agree to the ';
+
+  @override
+  String get legalConsentAnd => ' and ';
+
+  @override
+  String get legalAgreeLead => 'I agree to the ';
+
+  @override
+  String get legalAgreeRequired =>
+      'Tick the box to agree to the Terms of Service and Privacy Policy first.';
+
+  @override
+  String get legalWelcomeTitle => 'Welcome to Cefflo';
+
+  @override
+  String get legalWelcomeBody =>
+      'Before you continue, please agree to how Cefflo works and how we handle your data.';
+
+  @override
+  String get legalAgreeContinue => 'Agree and continue';
+
+  @override
+  String get legalDecline => 'Not now';
+
+  @override
+  String get legalPrivacyShort => 'Privacy';
+
+  @override
+  String get legalTermsShort => 'Terms';
+
+  @override
+  String get docsRequiredShort => 'Required';
+
+  @override
+  String get docsRequiredBody =>
+      'Upload your IC, driving licence and vehicle photo. The business can only approve you once these are in.';
+
+  @override
+  String get uploadDocuments => 'Upload documents';
+
+  @override
+  String get cmpReportProblem => 'Report a problem';
+
+  @override
+  String get cmpReportLead =>
+      'Not paid, behaviour, safety or fraud. Cefflo hears both sides.';
+
+  @override
+  String get cmpWhatHappened => 'What happened?';
+
+  @override
+  String get cmpDescribe => 'Describe what happened';
+
+  @override
+  String get cmpDescribeHint => 'What happened, when, and which order';
+
+  @override
+  String get cmpPhotos => 'Photos (up to 5)';
+
+  @override
+  String get cmpAddPhoto => 'Add photo';
+
+  @override
+  String get cmpSend => 'Send report';
+
+  @override
+  String get cmpTooShort => 'Tell us a little more (at least 10 characters).';
+
+  @override
+  String cmpSent(String ref) {
+    return 'Report sent. Case $ref.';
+  }
+
+  @override
+  String get cmpCatDamaged => 'Item damaged or lost';
+
+  @override
+  String get cmpCatConduct => 'Behaviour';
+
+  @override
+  String get cmpCatSafety => 'Safety';
+
+  @override
+  String get cmpCatUnpaid => 'Not paid';
+
+  @override
+  String get cmpCatFraud => 'Fraud or scam';
+
+  @override
+  String get cmpCatOther => 'Something else';
+
+  @override
+  String get cmpTitle => 'Complaints';
+
+  @override
+  String get cmpLead => 'Reports you made and reports about you.';
+
+  @override
+  String get cmpEmpty =>
+      'No complaints. Reports you make or receive appear here.';
+
+  @override
+  String get cmpTabOpen => 'Open';
+
+  @override
+  String get cmpTabResolved => 'Resolved';
+
+  @override
+  String get cmpYouReported => 'You reported';
+
+  @override
+  String get cmpAboutYou => 'About you';
+
+  @override
+  String get cmpStatusAwaiting => 'Waiting for reply';
+
+  @override
+  String get cmpStatusReview => 'Cefflo is reviewing';
+
+  @override
+  String get cmpStatusResolved => 'Resolved';
+
+  @override
+  String cmpReplyBy(String date) {
+    return 'Reply by $date';
+  }
+
+  @override
+  String get cmpTheirSide => 'Their side';
+
+  @override
+  String get cmpYourSide => 'Your side';
+
+  @override
+  String get cmpCefflo => 'Cefflo';
+
+  @override
+  String get cmpNoReplyYet => 'No reply yet.';
+
+  @override
+  String get cmpGiveYourSide => 'Give your side';
+
+  @override
+  String get cmpReplyHint => 'Explain what happened from your side';
+
+  @override
+  String get cmpSendReply => 'Send reply';
+
+  @override
+  String get cmpReplySent => 'Reply sent to Cefflo';
+
+  @override
+  String get cmpOutcome => 'Outcome';
+
+  @override
+  String get cmpDecSettled => 'Settled between both sides';
+
+  @override
+  String get cmpDecNoFault => 'No fault found';
+
+  @override
+  String get cmpDecWarning => 'A warning was given';
+
+  @override
+  String get cmpDecDriver => 'The driver was at fault';
+
+  @override
+  String get cmpDecVendor => 'The business was at fault';
+
+  @override
+  String get cmpDecCustomer => 'The customer was at fault';
+
+  @override
+  String get cmpDecFalse => 'The report was found to be false';
+
+  @override
+  String get cmpFromCustomer => 'Customer';
+
+  @override
+  String get cmpFromDriver => 'Driver';
+
+  @override
+  String get cmpFromBusiness => 'Business';
+
+  @override
+  String cmpOrder(String ref) {
+    return 'Order $ref';
+  }
+
+  @override
+  String get cmpBusiness => 'Business';
+
+  @override
+  String get cmpNoBusiness => 'Join a business first to report a problem.';
+
+  @override
+  String get ticketAnswered => 'Answered';
+
+  @override
+  String get ticketOpen => 'Waiting';
+
+  @override
+  String get ticketReply => 'Reply';
+
+  @override
+  String get couldNotLoad => 'Could not load. Pull to try again.';
+
+  @override
+  String get idCamTipFrame => 'Fit the whole card inside the yellow frame';
+
+  @override
+  String get idCamTipLight => 'Use bright, even light; avoid shadows';
+
+  @override
+  String get idCamTipGlare => 'Tilt slightly if there is glare on the card';
+
+  @override
+  String get idCamCheck => 'Is the text sharp and readable?';
+
+  @override
+  String get idCamUse => 'Use this photo';
+
+  @override
+  String get idCamUnavailable =>
+      'The camera is not available. Allow camera access in your phone settings.';
+
+  @override
+  String get idCamFailed => 'Could not take the photo. Try again.';
+
+  @override
+  String get idCamFindCard => 'Place the card inside the frame';
+
+  @override
+  String get idCamHold => 'Hold still…';
+
+  @override
+  String get idCamTaking => 'Taking the photo…';
+
+  @override
+  String get idCamSnap => 'Take photo';
+
+  @override
+  String get idCamRetake => 'Retake';
+
+  @override
+  String get delTitle => 'Delete account';
+
+  @override
+  String get delLink => 'Delete account';
+
+  @override
+  String get delBody =>
+      'Your account closes now: you are signed out and cannot sign in again. After 30 days your name, phone, email and documents are erased. Order records stay for 7 years without your name, as the Privacy Policy says.';
+
+  @override
+  String get delOwner => 'If you own a business, its team loses access too.';
+
+  @override
+  String get delReasonHint => 'Why are you leaving? (optional)';
+
+  @override
+  String get delConfirm => 'Delete my account';
+
+  @override
+  String get delDone => 'Your account is closed.';
 }

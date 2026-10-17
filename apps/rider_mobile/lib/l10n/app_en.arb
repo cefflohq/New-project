@@ -807,7 +807,13 @@
     }
   },
   "jobDrops": "{count, plural, =1{1 drop} other{{count} drops}}",
-  "@jobDrops": {"placeholders": {"count": {"type": "int"}}},
+  "@jobDrops": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "jobAway": "{km} km away",
   "@jobAway": {
     "placeholders": {
@@ -913,7 +919,7 @@
     }
   },
   "mvTitle": "Marketplace verification",
-  "mvIntro": "To apply for jobs in Find Jobs, add your licence and your vehicle. Deliveries from businesses that invited you do not need this.",
+  "mvIntro": "Add your licence and your vehicle. Businesses that invite you, and jobs you apply for in Find Jobs, need these before you can start. Your IC and licence photos stay private to Cefflo.",
   "mvChecking": "Checking",
   "mvPendingBody": "We are checking your documents. This usually takes a moment.",
   "mvVerifiedBody": "You are verified for Find Jobs.",
@@ -1084,5 +1090,146 @@
         "type": "int"
       }
     }
-  }
+  },
+  "loaderDefault": "Loading…",
+  "loaderSlow": "Still loading, please wait a moment",
+  "@loaderDefault": {
+    "description": "Label under the page loader ring."
+  },
+  "@loaderSlow": {
+    "description": "Loader label after a long wait."
+  },
+  "youreAllCaughtUp": "You're all caught up.",
+  "notificationDeleted": "Notification deleted",
+  "undo": "Undo",
+  "ntDelete": "Delete",
+  "notificationOptions": "Notification options",
+  "pickupLockArrive": "Arrive at {business} to open the checklist",
+  "@pickupLockArrive": {
+    "placeholders": {
+      "business": {
+        "type": "String"
+      }
+    }
+  },
+  "pickupLockPacking": "Waiting for {business} to finish packing",
+  "@pickupLockPacking": {
+    "placeholders": {
+      "business": {
+        "type": "String"
+      }
+    }
+  },
+  "pickupCheckAgain": "Check again",
+  "countryCodeTitle": "Country code",
+  "searchCountryOrCode": "Search country or code",
+  "legalLastUpdated": "Last updated",
+  "legalPrivacyPolicy": "Privacy Policy",
+  "legalTerms": "Terms of Service",
+  "legalConsentLead": "By creating an account, you agree to the ",
+  "legalConsentAnd": " and ",
+  "legalAgreeLead": "I agree to the ",
+  "legalAgreeRequired": "Tick the box to agree to the Terms of Service and Privacy Policy first.",
+  "legalWelcomeTitle": "Welcome to Cefflo",
+  "legalWelcomeBody": "Before you continue, please agree to how Cefflo works and how we handle your data.",
+  "legalAgreeContinue": "Agree and continue",
+  "legalDecline": "Not now",
+  "legalPrivacyShort": "Privacy",
+  "legalTermsShort": "Terms",
+  "docsRequiredShort": "Required",
+  "docsRequiredBody": "Upload your IC, driving licence and vehicle photo. The business can only approve you once these are in.",
+  "uploadDocuments": "Upload documents",
+  "cmpReportProblem": "Report a problem",
+  "cmpReportLead": "Not paid, behaviour, safety or fraud. Cefflo hears both sides.",
+  "cmpWhatHappened": "What happened?",
+  "cmpDescribe": "Describe what happened",
+  "cmpDescribeHint": "What happened, when, and which order",
+  "cmpPhotos": "Photos (up to 5)",
+  "cmpAddPhoto": "Add photo",
+  "cmpSend": "Send report",
+  "cmpTooShort": "Tell us a little more (at least 10 characters).",
+  "cmpSent": "Report sent. Case {ref}.",
+  "@cmpSent": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "cmpCatDamaged": "Item damaged or lost",
+  "cmpCatConduct": "Behaviour",
+  "cmpCatSafety": "Safety",
+  "cmpCatUnpaid": "Not paid",
+  "cmpCatFraud": "Fraud or scam",
+  "cmpCatOther": "Something else",
+  "cmpTitle": "Complaints",
+  "cmpLead": "Reports you made and reports about you.",
+  "cmpEmpty": "No complaints. Reports you make or receive appear here.",
+  "cmpTabOpen": "Open",
+  "cmpTabResolved": "Resolved",
+  "cmpYouReported": "You reported",
+  "cmpAboutYou": "About you",
+  "cmpStatusAwaiting": "Waiting for reply",
+  "cmpStatusReview": "Cefflo is reviewing",
+  "cmpStatusResolved": "Resolved",
+  "cmpReplyBy": "Reply by {date}",
+  "@cmpReplyBy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cmpTheirSide": "Their side",
+  "cmpYourSide": "Your side",
+  "cmpCefflo": "Cefflo",
+  "cmpNoReplyYet": "No reply yet.",
+  "cmpGiveYourSide": "Give your side",
+  "cmpReplyHint": "Explain what happened from your side",
+  "cmpSendReply": "Send reply",
+  "cmpReplySent": "Reply sent to Cefflo",
+  "cmpOutcome": "Outcome",
+  "cmpDecSettled": "Settled between both sides",
+  "cmpDecNoFault": "No fault found",
+  "cmpDecWarning": "A warning was given",
+  "cmpDecDriver": "The driver was at fault",
+  "cmpDecVendor": "The business was at fault",
+  "cmpDecCustomer": "The customer was at fault",
+  "cmpDecFalse": "The report was found to be false",
+  "cmpFromCustomer": "Customer",
+  "cmpFromDriver": "Driver",
+  "cmpFromBusiness": "Business",
+  "cmpOrder": "Order {ref}",
+  "@cmpOrder": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "cmpBusiness": "Business",
+  "cmpNoBusiness": "Join a business first to report a problem.",
+  "ticketAnswered": "Answered",
+  "ticketOpen": "Waiting",
+  "ticketReply": "Reply",
+  "couldNotLoad": "Could not load. Pull to try again.",
+  "idCamTipFrame": "Fit the whole card inside the yellow frame",
+  "idCamTipLight": "Use bright, even light; avoid shadows",
+  "idCamTipGlare": "Tilt slightly if there is glare on the card",
+  "idCamCheck": "Is the text sharp and readable?",
+  "idCamUse": "Use this photo",
+  "idCamUnavailable": "The camera is not available. Allow camera access in your phone settings.",
+  "idCamFailed": "Could not take the photo. Try again.",
+  "idCamFindCard": "Place the card inside the frame",
+  "idCamHold": "Hold still…",
+  "idCamTaking": "Taking the photo…",
+  "idCamSnap": "Take photo",
+  "idCamRetake": "Retake",
+  "delTitle": "Delete account",
+  "delLink": "Delete account",
+  "delBody": "Your account closes now: you are signed out and cannot sign in again. After 30 days your name, phone, email and documents are erased. Order records stay for 7 years without your name, as the Privacy Policy says.",
+  "delOwner": "If you own a business, its team loses access too.",
+  "delReasonHint": "Why are you leaving? (optional)",
+  "delConfirm": "Delete my account",
+  "delDone": "Your account is closed."
 }

@@ -1,0 +1,11 @@
+name: cefflo_phone
+description: Country dial-code picker (flag + code) for every Cefflo phone field.
+publish_to: none
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  country_code_picker: ^3.4.1

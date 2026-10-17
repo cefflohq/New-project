@@ -28,6 +28,7 @@ class DriverStop {
     this.etaMinutes,
     this.distanceMetres,
     this.deliveryStatus,
+    this.packed = true,
     this.latitude,
     this.longitude,
     this.note,
@@ -49,6 +50,9 @@ class DriverStop {
   /// (null in the prototype). Drives which execution step is next.
   final String? deliveryStatus;
 
+  /// Packed and ready for pickup by the business.
+  final bool packed;
+
   /// Exact drop point pinned by the customer (Storefront GPS pin), if any.
   final double? latitude;
   final double? longitude;
@@ -69,6 +73,7 @@ class DriverStop {
     etaMinutes: etaMinutes,
     distanceMetres: distanceMetres,
     deliveryStatus: deliveryStatus,
+    packed: packed,
     latitude: latitude,
     longitude: longitude,
     note: note,
@@ -416,6 +421,15 @@ enum SupportCategory {
   ceffloAppIssue,
   accountDocuments,
   other;
+
+  /// The wire value submit_support_ticket accepts.
+  String get wire => switch (this) {
+    SupportCategory.deliveryRunIssue => 'delivery_run',
+    SupportCategory.vendorBusinessIssue => 'vendor_business',
+    SupportCategory.ceffloAppIssue => 'cefflo_app',
+    SupportCategory.accountDocuments => 'account_documents',
+    SupportCategory.other => 'other',
+  };
 
   String get title => switch (this) {
     SupportCategory.deliveryRunIssue => L.deliveryRunIssue,

@@ -11,3 +11,9 @@ coverage/
 __pycache__/
 *.py[cod]
 dist-surfaces/
+
+# Firebase client config
+google-services.json
+GoogleService-Info.plist
+.vercel
+.env*

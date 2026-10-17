@@ -7,6 +7,7 @@ import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/vendor_repository.dart';
+import '../address_suggest.dart';
 import '../async_view.dart';
 import '../delivery_pin.dart';
 import '../share_link.dart';
@@ -365,6 +366,7 @@ class _SetupAddressScreenState extends State<SetupAddressScreen> {
         prefixIcon: LucideIcons.search,
         errorText: errors['address'],
       ),
+      AddressSuggestions(controller: address),
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -693,11 +695,29 @@ class OrderDetailScreen extends StatelessWidget {
             order.assignedRiderId == null;
         final zone = zones.where((z) => z.id == order.zoneId).firstOrNull;
         final phone = order.customerPhone.trim();
+        // Report issue / recover sit in the header's ⋯ (Founder 2026-10-16).
+        final extras = <(String, IconData, VoidCallback)>[
+          if (_issueFrom.contains(order.status))
+            (
+              L.reportIssue,
+              LucideIcons.triangleAlert,
+              () => _reportIssue(context, order, reload),
+            ),
+          if (order.assignedRiderId != null &&
+              (_issueFrom.contains(order.status) ||
+                  order.status == DeliveryStatus.issue))
+            (
+              L.recoverDelivery,
+              LucideIcons.rotateCcw,
+              () => _reportIssue(context, order, reload, recover: true),
+            ),
+        ];
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => orderMenuExtras.value = extras,
+        );
         Widget itemRow((int, OrderItem) entry) => CefListRow(
           title: entry.$2.name,
-          subtitle:
-              '${entry.$2.quantity} × '
-              'RM${(entry.$2.unitPrice ?? 0).toStringAsFixed(2)}',
+          subtitle: orderItemLine(entry.$2),
           icon: _itemIcons[entry.$1 % _itemIcons.length],
         );
         final hidden = items.length - _previewItems;
@@ -738,35 +758,11 @@ class OrderDetailScreen extends StatelessWidget {
             ],
           ),
           // Delivery progression (On the Way, Delivered) is driven by the
-          // Rider app and only reflected here (D-53): the vendor gets no
-          // delivery-status action. The existing Edit Order action is kept
-          // where it was shown before; a Ready order has no bottom action.
-          bottomAction: order.status == DeliveryStatus.readyForPickup
-              ? null
-              : planning && order.approvedAt == null
-              ? Row(
-                  children: [
-                    Expanded(
-                      child: CefButton(
-                        L.editOrder2,
-                        secondary: true,
-                        onTap: () =>
-                            app.go(VRoute.editOrder, entityId: order.id),
-                      ),
-                    ),
-                    const SizedBox(width: Gap.md),
-                    Expanded(
-                      child: _ApproveOrderButton(
-                        orderId: order.id,
-                        onApproved: reload,
-                      ),
-                    ),
-                  ],
-                )
-              : CefButton(
-                  L.editOrder2,
-                  onTap: () => app.go(VRoute.editOrder, entityId: order.id),
-                ),
+          // Rider app and only reflected here (D-53). Edit sits behind the
+          // header's ⋯; an unapproved order still shows Approve.
+          bottomAction: planning && order.approvedAt == null
+              ? _ApproveOrderButton(orderId: order.id, onApproved: reload)
+              : null,
           children: [
             CefListRow(
               title: L.customer,
@@ -790,6 +786,7 @@ class OrderDetailScreen extends StatelessWidget {
                   order.hasPin
                       ? '${order.latitude},${order.longitude}'
                       : order.deliveryAddress,
+                  placeId: order.hasPin ? null : order.placeId,
                 ),
               ),
             ),
@@ -844,25 +841,6 @@ class OrderDetailScreen extends StatelessWidget {
                   ? () => _pickZone(context, order, zones, reload)
                   : null,
             ),
-            if (_issueFrom.contains(order.status))
-              CefListRow(
-                title: L.reportIssue,
-                subtitle: L.reportIssueLead,
-                subtitleMaxLines: 2,
-                icon: LucideIcons.triangleAlert,
-                onTap: () => _reportIssue(context, order, reload),
-              ),
-            if (order.assignedRiderId != null &&
-                (_issueFrom.contains(order.status) ||
-                    order.status == DeliveryStatus.issue))
-              CefListRow(
-                title: L.recoverDelivery,
-                subtitle: L.recoverDeliveryLead,
-                subtitleMaxLines: 2,
-                icon: LucideIcons.rotateCcw,
-                onTap: () =>
-                    _reportIssue(context, order, reload, recover: true),
-              ),
             if ((order.notes ?? '').isNotEmpty)
               CefListRow(
                 title: L.deliveryInstruction,
@@ -871,10 +849,10 @@ class OrderDetailScreen extends StatelessWidget {
                 icon: LucideIcons.fileText,
               ),
             SectionHeading(L.deliveryActivity),
-            if (events.isEmpty)
+            if (!events.any(_isActivity))
               StateBlock.empty(L.noDeliveryActivity)
             else
-              for (final e in events)
+              for (final e in events.where(_isActivity))
                 CefListRow(
                   title: _eventLabel(e),
                   subtitle: _formatTime(
@@ -888,7 +866,7 @@ class OrderDetailScreen extends StatelessWidget {
               trailing: CefLink(
                 L.viewReceipt,
                 icon: LucideIcons.fileText,
-                onTap: () => showNotWiredYetSnackBar(context, L.receiptView),
+                onTap: () => showOrderReceipt(context, order, items),
               ),
             ),
             if (items.isEmpty)
@@ -918,6 +896,17 @@ class OrderDetailScreen extends StatelessWidget {
 }
 
 /// One `delivery_events` row in Vendor wording (Web SOT §2/§5.8).
+/// Status changes and the named events only; system bookkeeping (e.g.
+/// `order.location_resolved`, no to_status) would otherwise repeat the
+/// order's first status.
+bool _isActivity(Map<String, dynamic> e) =>
+    e['to_status'] != null ||
+    const {
+      'delivery.issue_reported',
+      'delivery.recovery_initiated',
+      'order.declined',
+    }.contains(e['event_type']);
+
 String _eventLabel(Map<String, dynamic> e) =>
     switch (e['event_type'] as String?) {
       'delivery.issue_reported' => L.issue,
@@ -959,6 +948,8 @@ Future<void> _reportIssue(
         ('access_problem', L.issueAccessProblem),
         ('vendor_not_ready', L.issueVendorNotReady),
         ('rider_unable_to_proceed', L.issueRiderUnableToProceed),
+        ('customer_rescheduled', L.issueCustomerRescheduled),
+        ('other', L.issueOther),
       ])
         Builder(
           builder: (sheet) => CefListRow(
@@ -1177,6 +1168,9 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   final errors = <String, String>{};
   PinPoint? _initialPin;
 
+  /// Line items sent with the order (create_delivery / update_order_details).
+  final _items = <OrderItem>[];
+
   /// Set only when the vendor located or moved the map; an untouched picker
   /// never writes a pin.
   PinPoint? _pickedPin;
@@ -1196,6 +1190,9 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       phone.text = o.customerPhone;
       address.text = o.deliveryAddress;
       notes.text = o.notes ?? '';
+      _items
+        ..clear()
+        ..addAll(o.items);
       if (o.hasPin) _initialPin = (lat: o.latitude!, lng: o.longitude!);
     } catch (e) {
       error = '$e';
@@ -1253,6 +1250,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           customerPhone: phone.text.trim(),
           deliveryAddress: address.text.trim(),
           notes: notes.text.trim(),
+          items: List.of(_items),
         );
         await _savePin(created.id);
         if (!mounted) return;
@@ -1266,6 +1264,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           customerPhone: phone.text.trim(),
           deliveryAddress: address.text.trim(),
           notes: notes.text.trim(),
+          items: List.of(_items),
         );
         await _savePin(widget.orderId!);
         if (!mounted) return;
@@ -1344,8 +1343,16 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           controller: address,
           hint: L.enterDeliveryAddress,
           prefixIcon: LucideIcons.mapPin,
-          maxLines: 2,
+          minLines: 1,
+          maxLines: 3,
           errorText: errors['address'],
+        ),
+        AddressSuggestions(
+          controller: address,
+          onPicked: (p) {
+            if (p == null) return;
+            setState(() => _initialPin = _pickedPin = p);
+          },
         ),
         SectionHeading(
           L.pinLocation,
@@ -1353,6 +1360,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           subtitle: _pickedPin == null ? L.pinLocationHint : L.pinLocationSet,
         ),
         DeliveryPinPicker(
+          // A picked suggestion re-centres the map on that place.
+          key: ValueKey(_initialPin),
           initial: _initialPin,
           onChanged: (p) => setState(() => _pickedPin = p),
         ),
@@ -1361,10 +1370,32 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           icon: LucideIcons.package,
           subtitle: L.addOrderItems,
         ),
+        for (final (i, item) in _items.indexed)
+          CefListRow(
+            title: item.name,
+            subtitle: orderItemLine(item),
+            icon: LucideIcons.package,
+            onTap: () async {
+              final edited = await showOrderItemSheet(context, initial: item);
+              if (edited == null || !mounted) return;
+              setState(() {
+                if (edited == removedOrderItem) {
+                  _items.removeAt(i);
+                } else {
+                  _items[i] = edited;
+                }
+              });
+            },
+          ),
         CefActionRow(
           icon: LucideIcons.plus,
           label: L.addItemsOrder,
-          onTap: () => showNotWiredYetSnackBar(context, L.addingOrderItems),
+          onTap: () async {
+            final added = await showOrderItemSheet(context);
+            if (added != null && added != removedOrderItem && mounted) {
+              setState(() => _items.add(added));
+            }
+          },
         ),
         SectionHeading(
           L.instructions,
@@ -1728,4 +1759,250 @@ class _OrderProgress extends StatelessWidget {
       }),
     );
   }
+}
+
+/// "2 × RM5.00", or just "× 2" when the vendor gave no price.
+String orderItemLine(OrderItem item) => item.unitPrice == null
+    ? '× ${item.quantity}'
+    : '${item.quantity} × RM${item.unitPrice!.toStringAsFixed(2)}';
+
+/// Returned by [showOrderItemSheet] when the vendor removes the item.
+const removedOrderItem = OrderItem(name: '', quantity: 0);
+
+/// Add / edit one order line: name, quantity, optional unit price. Returns
+/// the item, [removedOrderItem] when removed, or null when dismissed.
+Future<OrderItem?> showOrderItemSheet(
+  BuildContext context, {
+  OrderItem? initial,
+}) {
+  final c = context.c;
+  return showCefSheet<OrderItem>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: c.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(Sizes.cardRadius),
+      ),
+    ),
+    builder: (sheet) => _OrderItemSheet(initial: initial),
+  );
+}
+
+class _OrderItemSheet extends StatefulWidget {
+  const _OrderItemSheet({this.initial});
+  final OrderItem? initial;
+
+  @override
+  State<_OrderItemSheet> createState() => _OrderItemSheetState();
+}
+
+class _OrderItemSheetState extends State<_OrderItemSheet> {
+  late final name = TextEditingController(text: widget.initial?.name);
+  late final qty = TextEditingController(
+    text: '${widget.initial?.quantity ?? 1}',
+  );
+  late final price = TextEditingController(
+    text: widget.initial?.unitPrice?.toStringAsFixed(2),
+  );
+  final errors = <String, String>{};
+
+  @override
+  void dispose() {
+    name.dispose();
+    qty.dispose();
+    price.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    errors.clear();
+    final n = name.text.trim();
+    final q = int.tryParse(qty.text.trim());
+    final rawPrice = price.text.trim().replaceAll(',', '.');
+    final p = rawPrice.isEmpty ? null : num.tryParse(rawPrice);
+    if (n.isEmpty) errors['name'] = L.itemNameRequired;
+    if (q == null || q < 1) errors['qty'] = L.quantityInvalid;
+    if (rawPrice.isNotEmpty && (p == null || p < 0)) {
+      errors['price'] = L.priceInvalid;
+    }
+    if (errors.isNotEmpty) {
+      setState(() {});
+      return;
+    }
+    Navigator.of(context).pop(OrderItem(name: n, quantity: q!, unitPrice: p));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final editing = widget.initial != null;
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          Gap.gutter,
+          Gap.xl,
+          Gap.gutter,
+          Gap.lg + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                editing ? L.editItem : L.addItem,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: Gap.md),
+              CefField(
+                label: L.itemNameLabel,
+                controller: name,
+                errorText: errors['name'],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: CefField(
+                      label: L.quantityLabel,
+                      controller: qty,
+                      keyboardType: TextInputType.number,
+                      errorText: errors['qty'],
+                    ),
+                  ),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    flex: 2,
+                    child: CefField(
+                      label: L.unitPriceOptional,
+                      controller: price,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      errorText: errors['price'],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gap.lg),
+              CefButton(editing ? L.save : L.addItem, onTap: _save),
+              if (editing) ...[
+                const SizedBox(height: Gap.sm),
+                CefButton(
+                  L.remove2,
+                  destructive: true,
+                  onTap: () => Navigator.of(context).pop(removedOrderItem),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The order's receipt: every line with its amount and the total, from the
+/// items and prices the vendor recorded on the order.
+void showOrderReceipt(
+  BuildContext context,
+  VendorOrder order,
+  List<OrderItem> items,
+) {
+  final c = context.c;
+  final priced = items.any((i) => i.unitPrice != null);
+  final total = items.fold<num>(
+    0,
+    (sum, i) => sum + (i.unitPrice ?? 0) * i.quantity,
+  );
+  String rm(num v) => 'RM${v.toStringAsFixed(2)}';
+  showCefSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: c.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(Sizes.cardRadius),
+      ),
+    ),
+    builder: (sheet) {
+      final text = Theme.of(sheet).textTheme;
+      Widget line(String label, String? amount, {bool strong = false}) =>
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: Gap.sm),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: strong ? text.titleSmall : text.bodyMedium,
+                  ),
+                ),
+                if (amount != null)
+                  Text(
+                    amount,
+                    style: strong ? text.titleSmall : text.bodyMedium,
+                  ),
+              ],
+            ),
+          );
+      return SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheet).height * .85,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              Gap.gutter,
+              Gap.xl,
+              Gap.gutter,
+              Gap.lg,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(L.receipt, style: text.titleMedium),
+                const SizedBox(height: Gap.xs),
+                Text(
+                  '${order.reference} · ${order.customerName}',
+                  style: text.bodySmall?.copyWith(color: c.textSecondary),
+                ),
+                const SizedBox(height: Gap.md),
+                Divider(color: c.border, height: 1),
+                for (final i in items)
+                  line(
+                    '${i.name}  × ${i.quantity}',
+                    i.unitPrice == null ? null : rm(i.unitPrice! * i.quantity),
+                  ),
+                if (items.isNotEmpty) Divider(color: c.border, height: Gap.lg),
+                if (items.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: Gap.md),
+                    child: Text(
+                      L.noItemsOrder,
+                      style: text.bodySmall?.copyWith(color: c.textSecondary),
+                    ),
+                  )
+                else if (priced)
+                  line(L.subtotal, rm(total), strong: true)
+                else
+                  Text(
+                    L.receiptNoPrices,
+                    style: text.bodySmall?.copyWith(color: c.textSecondary),
+                  ),
+                const SizedBox(height: Gap.lg),
+                CefButton(
+                  L.close,
+                  secondary: true,
+                  onTap: () => Navigator.of(sheet).pop(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }

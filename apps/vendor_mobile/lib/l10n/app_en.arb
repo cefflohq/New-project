@@ -588,7 +588,7 @@
   "updatingOrder": "Updating your order",
   "newOrderHasBeenCreatedSuccessfully": "Your new order has been created successfully.",
   "orderHasBeenUpdatedSuccessfully": "Your order has been updated successfully.",
-  "reviewCreate": "Review & Create",
+  "reviewCreate": "Create",
   "updateOrder": "Update Order",
   "createNewOrderStepByStep": "Create a new order step by step.",
   "updateOrderDetails": "Update order details.",
@@ -1888,7 +1888,7 @@
   },
   "openingPosted": "Opening posted",
   "openingClosed": "Opening closed",
-  "newOpening": "New opening",
+  "newOpening": "Hiring",
   "openingFixFields": "Fill in the area, days, a valid time and pay.",
   "turnOffHiringTitle": "Stop looking for drivers?",
   "turnOffHiringBody": "All your open openings will close. Requests already sent stay in Pending.",
@@ -2157,5 +2157,269 @@
   "drawZoneBoundaryHint": "Tap the map to add the corners of this zone. Add at least 3.",
   "hrProfileRequiredTitle": "Complete your Business profile",
   "hrProfileRequiredBody": "Drivers find posts by your pickup location. Add your business address and pickup location before posting a job.",
-  "hrProfileDone": "Done"
+  "hrProfileDone": "Done",
+  "loaderDefault": "Loading…",
+  "loaderSlow": "Still loading, please wait a moment",
+  "@loaderDefault": {
+    "description": "Label under the page loader ring."
+  },
+  "@loaderSlow": {
+    "description": "Loader label after a long wait."
+  },
+  "itemNameLabel": "Item name",
+  "quantityLabel": "Quantity",
+  "unitPriceOptional": "Price per unit (RM, optional)",
+  "itemNameRequired": "Enter the item name.",
+  "quantityInvalid": "Enter a quantity of 1 or more.",
+  "priceInvalid": "Enter a valid price.",
+  "addItem": "Add item",
+  "editItem": "Edit item",
+  "receipt": "Receipt",
+  "receiptNoPrices": "No prices were entered for these items.",
+  "fullScreen": "Full screen",
+  "exitFullScreen": "Exit full screen",
+  "zonesSelect": "Select",
+  "zonesSelectAll": "Select all",
+  "zonesDeselectAll": "Deselect all",
+  "zonesSelected": "{count} selected",
+  "@zonesSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zonesDeleteSelected": "Delete ({count})",
+  "@zonesDeleteSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zonesDeleteSelectedTitle": "Delete {count} zones?",
+  "@zonesDeleteSelectedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zonesDeleteSelectedBody": "They will be removed from your delivery setup. Past orders keep their zone.",
+  "zonesDeleted": "{count} zones deleted",
+  "@zonesDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zonesNotDeleted": "{count} zones still have orders in progress and were kept",
+  "@zonesNotDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countryCodeTitle": "Country code",
+  "searchCountryOrCode": "Search country or code",
+  "issueCustomerRescheduled": "Customer asked to reschedule",
+  "issueOther": "Other",
+  "ntDriverSupport": "Support request from {name}",
+  "@ntDriverSupport": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noFaqResults": "No matching questions.",
+  "sheetLinkHint": "Paste the link of your Google Sheet. Share it first as \"Anyone with the link can view\".",
+  "sheetLinkInvalid": "That isn't a Google Sheets link.",
+  "sheetNotShared": "Couldn't open that sheet. Share it as \"Anyone with the link can view\" and try again.",
+  "legalLastUpdated": "Last updated",
+  "legalPrivacyPolicy": "Privacy Policy",
+  "legalTerms": "Terms of Service",
+  "legalConsentLead": "By creating an account, you agree to the ",
+  "legalConsentAnd": " and ",
+  "legalAgreeLead": "I agree to the ",
+  "legalAgreeRequired": "Tick the box to agree to the Terms of Service and Privacy Policy first.",
+  "legalWelcomeTitle": "Welcome to Cefflo",
+  "legalWelcomeBody": "Before you continue, please agree to how Cefflo works and how we handle your data.",
+  "legalAgreeContinue": "Agree and continue",
+  "legalDecline": "Not now",
+  "confirmApproveTitle": "Approve {name}?",
+  "confirmRejectTitle": "Reject {name}?",
+  "confirmApproveBody": "They will get access to your business and be told by email.",
+  "confirmRejectBody": "Their request will be declined. This can't be undone.",
+  "confirmApproveYes": "Yes, approve",
+  "confirmRejectYes": "Yes, reject",
+  "@confirmApproveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@confirmRejectTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "licenceSubmittedPrivate": "Submitted and kept private by Cefflo",
+  "icNumber": "IC number",
+  "reportIncident": "Report an incident",
+  "reportIncidentLead": "Theft, fraud or a safety issue with this driver",
+  "reportIncidentBody": "Cefflo reviews the report. Only for a real incident can Cefflo open this driver's private documents, and the driver is told.",
+  "reportIncidentHint": "What happened, when, and the order involved",
+  "reportIncidentSend": "Send report",
+  "reportIncidentTooShort": "Describe what happened first.",
+  "reportIncidentSent": "Report sent to Cefflo",
+  "cmpReportProblem": "Report a problem",
+  "cmpReportLead": "Damage, conduct or safety. Cefflo hears both sides.",
+  "cmpWhatHappened": "What happened?",
+  "cmpDescribe": "Describe what happened",
+  "cmpDescribeHint": "What happened, when, and which order",
+  "cmpPhotos": "Photos (up to 5)",
+  "cmpAddPhoto": "Add photo",
+  "cmpSend": "Send report",
+  "cmpTooShort": "Tell us a little more (at least 10 characters).",
+  "cmpSent": "Report sent. Case {ref}.",
+  "@cmpSent": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "cmpCatDamaged": "Item damaged or lost",
+  "cmpCatConduct": "Behaviour",
+  "cmpCatSafety": "Safety",
+  "cmpCatUnpaid": "Not paid",
+  "cmpCatFraud": "Fraud or scam",
+  "cmpCatOther": "Something else",
+  "cmpTitle": "Complaints",
+  "cmpLead": "Reports you made and reports about your business.",
+  "cmpEmpty": "No complaints. Reports you make or receive appear here.",
+  "cmpTabOpen": "Open",
+  "cmpTabResolved": "Resolved",
+  "cmpYouReported": "You reported",
+  "cmpAboutYou": "About your business",
+  "cmpStatusAwaiting": "Waiting for reply",
+  "cmpStatusReview": "Cefflo is reviewing",
+  "cmpStatusResolved": "Resolved",
+  "cmpReplyBy": "Reply by {date}",
+  "@cmpReplyBy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cmpTheirSide": "Their side",
+  "cmpYourSide": "Your side",
+  "cmpCefflo": "Cefflo",
+  "cmpNoReplyYet": "No reply yet.",
+  "cmpGiveYourSide": "Give your side",
+  "cmpReplyHint": "Explain what happened from your side",
+  "cmpSendReply": "Send reply",
+  "cmpReplySent": "Reply sent to Cefflo",
+  "cmpOutcome": "Outcome",
+  "cmpDecSettled": "Settled between both sides",
+  "cmpDecNoFault": "No fault found",
+  "cmpDecWarning": "A warning was given",
+  "cmpDecDriver": "The driver was at fault",
+  "cmpDecVendor": "The business was at fault",
+  "cmpDecCustomer": "The customer was at fault",
+  "cmpDecFalse": "The report was found to be false",
+  "cmpFromCustomer": "Customer",
+  "cmpFromDriver": "Driver",
+  "cmpFromBusiness": "Business",
+  "cmpOrder": "Order {ref}",
+  "@cmpOrder": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "bvTitle": "Business verification",
+  "bvLead": "Cefflo checks your SSM registration and the owner's IC. Documents stay sealed after review.",
+  "bvSsm": "SSM registration number",
+  "bvSsmHint": "e.g. 202301012345 (1234567-X)",
+  "bvOwner": "Owner's full name (as on IC)",
+  "bvIc": "Owner's IC number",
+  "bvIcHint": "Only the last 4 digits are kept",
+  "bvSsmDoc": "SSM certificate (photo or PDF)",
+  "bvIcFront": "Owner's IC (front)",
+  "bvIcBack": "Owner's IC (back)",
+  "bvChoose": "Choose file",
+  "bvChosen": "Added",
+  "bvSubmit": "Submit for review",
+  "bvMissing": "Fill in every field and add all three documents.",
+  "bvIcInvalid": "Enter the full 12-digit IC number.",
+  "bvSent": "Sent. Cefflo reviews it within 2 working days.",
+  "bvPending": "Under review",
+  "bvVerified": "Verified",
+  "bvRejected": "Not approved",
+  "bvNone": "Not verified",
+  "bvRejectedBecause": "Reason: {reason}",
+  "@bvRejectedBecause": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "bvPendingBody": "Cefflo is checking your documents.",
+  "bvVerifiedBody": "Your business is verified.",
+  "bvOwnerOnly": "Only the business owner can submit verification.",
+  "bvBannerTitle": "Verify your business to receive orders",
+  "bvBannerBody": "Orders are blocked until Cefflo verifies your SSM and owner IC.",
+  "bvBannerPending": "Verification under review. Orders open once approved.",
+  "bvBannerStaff": "Ask the business owner to complete verification.",
+  "bvSsmOptional": "SSM certificate (optional)",
+  "bvSnap": "Take photo",
+  "bvRetake": "Retake",
+  "bvAddFile": "Add",
+  "bvAutoRead": "Take photos of both sides of the owner's IC with the camera. The name and IC number are read from the photo.",
+  "bvReadResult": "Read from IC: {name} · IC ••••{last4}",
+  "@bvReadResult": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "last4": {
+        "type": "String"
+      }
+    }
+  },
+  "bvReadLater": "Cefflo will read the IC details during review.",
+  "bvIcMissing": "Take photos of both sides of the IC.",
+  "idCamTipFrame": "Fit the whole IC inside the yellow frame",
+  "idCamTipLight": "Use bright, even light; avoid shadows",
+  "idCamTipGlare": "Tilt slightly if there is glare on the card",
+  "idCamCheck": "Is the text sharp and readable?",
+  "idCamUse": "Use this photo",
+  "idCamUnavailable": "The camera is not available. Allow camera access in your phone settings.",
+  "idCamFailed": "Could not take the photo. Try again.",
+  "idCamFindCard": "Place the IC inside the frame",
+  "idCamHold": "Hold still…",
+  "idCamTaking": "Taking the photo…",
+  "delTitle": "Delete account",
+  "delLink": "Delete account",
+  "delBody": "Your account closes now: you are signed out and cannot sign in again. After 30 days your name, phone, email and documents are erased. Order records stay for 7 years without your name, as the Privacy Policy says.",
+  "delOwner": "If you own a business, its team loses access too.",
+  "delReasonHint": "Why are you leaving? (optional)",
+  "delConfirm": "Delete my account",
+  "delDone": "Your account is closed.",
+  "dsLead": "How many orders Cefflo puts in one run when it plans deliveries for a driver.",
+  "dsRunSize": "Orders per run",
+  "dsMin": "At least",
+  "dsMax": "At most",
+  "dsHint": "Smaller runs finish sooner; bigger runs use fewer drivers. 1 to 50.",
+  "dsSaved": "Delivery settings saved"
 }

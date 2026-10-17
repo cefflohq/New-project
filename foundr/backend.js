@@ -230,9 +230,10 @@
   const getLicence = async userId => (await get(`/rest/v1/driver_licences?user_id=eq.${encodeURIComponent(userId)}&select=user_id,ic_last4,front_path,back_path,submitted_at`))?.[0] || null;
   // Private bucket: a short-lived signed URL per document (storage policy
   // driver_documents_own_read allows the platform admin); never a public URL.
-  async function signDocument(path, expiresIn = 300) {
+  const signDocument = (path, expiresIn = 300) => signObject('cefflo-driver-documents', path, expiresIn);
+  async function signObject(bucket, path, expiresIn = 300) {
     return call(async () => {
-      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/sign/cefflo-driver-documents/${path.split('/').map(encodeURIComponent).join('/')}`, {
+      const res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/sign/${bucket}/${path.split('/').map(encodeURIComponent).join('/')}`, {
         method: 'POST',
         headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${base.session()?.access_token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ expiresIn }),
@@ -243,6 +244,32 @@
     });
   }
   const decideVerification = (userId, decision, reason) => rpc('decide_marketplace_verification', { p_user_id: userId, p_decision: decision, p_reason: reason || null });
+
+  // ----- Driver incidents (sealed documents) -----
+  // A case is reported by a business; opening it with a written reason
+  // unseals the driver's IC/licence images for 72 h (server-enforced).
+  const listIncidents = () => rpc('admin_list_incidents');
+  const openIncident = (caseId, reason) => rpc('open_driver_incident', { p_case_id: caseId, p_reason: reason });
+  const closeIncident = (caseId, note) => rpc('admin_close_incident', { p_case_id: caseId, p_note: note });
+  const logIncidentView = caseId => rpc('admin_log_incident_view', { p_case_id: caseId });
+
+  // ----- Complaints and disputes (Prosedur Aduan) -----
+  const listComplaints = () => rpc('admin_list_complaints');
+  const complaintDetail = id => rpc('admin_complaint_detail', { p_id: id });
+  const addComplaintNote = (id, note) => rpc('admin_add_complaint_note', { p_id: id, p_note: note });
+  const decideComplaint = (id, decision, action, note, target, days) => rpc('admin_decide_complaint', { p_id: id, p_decision: decision, p_action: action, p_note: note, p_target: target || null, p_suspend_days: days || 7 });
+  const escalateComplaint = (id, reason) => rpc('admin_escalate_complaint', { p_id: id, p_reason: reason });
+  const listAccountDeletions = () => rpc('admin_list_account_deletions');
+  const closeAccountByEmail = (email, note) => rpc('admin_close_account_by_email', { p_email: email, p_note: note });
+  const listRestrictions = () => rpc('admin_list_restrictions');
+  const liftRestriction = (id, note) => rpc('admin_lift_restriction', { p_id: id, p_note: note });
+  const rereadBusinessIc = businessId => call(() => base.request('/functions/v1/business-verification', { method: 'POST', body: { business_id: businessId, reread: true } }));
+  const listBusinessVerifications = () => rpc('admin_list_business_verifications');
+  const decideBusinessVerification = (businessId, verified, reason) => rpc('admin_decide_business_verification', { p_business_id: businessId, p_verified: verified, p_reason: reason || null });
+
+  // ----- Support tickets sent to Cefflo -----
+  const listSupportTickets = () => rpc('admin_list_support_tickets');
+  const resolveSupportTicket = (id, note) => rpc('admin_resolve_support_ticket', { p_id: id, p_note: note });
 
   // ----- Notification broadcasts (in-app notification centre fan-out) -----
   const broadcastNotification = (title, body, audience, businessId, reason) =>
@@ -266,5 +293,8 @@
     activeAnnouncements, listAnnouncements, createAnnouncement, setAnnouncementActive,
     broadcastNotification, listBroadcasts, broadcastAudienceSize,
     listVerifications, getLicence, signDocument, decideVerification,
+    listIncidents, openIncident, closeIncident, logIncidentView,
+    listSupportTickets, resolveSupportTicket,
+    listComplaints, complaintDetail, addComplaintNote, decideComplaint, escalateComplaint, listAccountDeletions, closeAccountByEmail, listRestrictions, liftRestriction, listBusinessVerifications, decideBusinessVerification, rereadBusinessIc, signObject,
   });
 })();

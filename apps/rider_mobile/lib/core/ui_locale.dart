@@ -1,5 +1,3 @@
-import 'dart:ui' show PlatformDispatcher;
-
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,15 +9,15 @@ const supportedUiLocales = [Locale('en'), Locale('ms')];
 /// Native names shown in the language picker; never translated.
 const uiLanguageNames = {'en': 'English', 'ms': 'Bahasa Melayu'};
 
-/// First-launch rule: the first supported device language, else English.
-Locale resolveDeviceLocale([List<Locale>? device]) {
-  for (final l in device ?? PlatformDispatcher.instance.locales) {
-    for (final s in supportedUiLocales) {
-      if (s.languageCode == l.languageCode) return s;
-    }
-  }
-  return const Locale('en');
-}
+/// First-launch rule (Founder 2026-10-16): English until the user
+/// picks a language, whatever the device language is.
+Locale resolveDeviceLocale([List<Locale>? device]) => firstLaunchLocale;
+
+const defaultUiLocale = Locale('en');
+
+/// [defaultUiLocale]; tests written in English pin it to English.
+@visibleForTesting
+Locale firstLaunchLocale = defaultUiLocale;
 
 Locale? parseUiLocale(Object? code) {
   for (final s in supportedUiLocales) {

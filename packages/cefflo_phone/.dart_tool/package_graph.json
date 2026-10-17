@@ -1,0 +1,75 @@
+{
+  "roots": [
+    "cefflo_phone"
+  ],
+  "packages": [
+    {
+      "name": "cefflo_phone",
+      "version": "1.0.0",
+      "dependencies": [
+        "country_code_picker",
+        "flutter"
+      ],
+      "devDependencies": []
+    },
+    {
+      "name": "country_code_picker",
+      "version": "3.4.1",
+      "dependencies": [
+        "collection",
+        "diacritic",
+        "flutter"
+      ]
+    },
+    {
+      "name": "flutter",
+      "version": "0.0.0",
+      "dependencies": [
+        "characters",
+        "collection",
+        "material_color_utilities",
+        "meta",
+        "sky_engine",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "collection",
+      "version": "1.19.1",
+      "dependencies": []
+    },
+    {
+      "name": "sky_engine",
+      "version": "0.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "material_color_utilities",
+      "version": "0.13.0",
+      "dependencies": [
+        "collection"
+      ]
+    },
+    {
+      "name": "characters",
+      "version": "1.4.1",
+      "dependencies": []
+    },
+    {
+      "name": "diacritic",
+      "version": "0.1.6",
+      "dependencies": []
+    },
+    {
+      "name": "meta",
+      "version": "1.19.0",
+      "dependencies": []
+    },
+    {
+      "name": "vector_math",
+      "version": "2.4.3",
+      "dependencies": []
+    }
+  ],
+  "configVersion": 1
+}

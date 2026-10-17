@@ -1,9 +1,11 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show VoidCallback, kIsWeb;
 import 'package:cefflo_push/cefflo_push.dart';
+import 'package:cefflo_server_messages/cefflo_server_messages.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/env.dart';
@@ -41,8 +43,18 @@ String webAuthRedirectUrl(Uri base) {
 class EmailAlreadyRegistered implements Exception {}
 
 class RepositoryError implements Exception {
-  RepositoryError(this.message, {this.isMissingContract = false, this.code});
+  RepositoryError(
+    this.message, {
+    this.isMissingContract = false,
+    this.code,
+    String? raw,
+  }) : raw = raw ?? message;
+
+  /// What the screen shows: in the app's language, never raw server text.
   final String message;
+
+  /// The backend's own text, for code that branches on it (never shown).
+  final String raw;
 
   /// True when the canonical RPC does not exist on the connected backend.
   /// The UI must show a blocked state instead of pretending the action worked.
@@ -121,6 +133,8 @@ class VendorRepository {
         email: email.trim(),
         password: password,
         emailRedirectTo: authRedirectUrl,
+        // Ticked on Create Account (2026-10-16).
+        data: {'terms_accepted_at': DateTime.now().toUtc().toIso8601String()},
       ),
     );
     // GoTrue answers a sign-up for an existing account with a user that has
@@ -184,18 +198,57 @@ class VendorRepository {
   Future<void> updatePassword(String newPassword) =>
       _run(() => _db!.auth.updateUser(UserAttributes(password: newPassword)));
 
-  /// Continue with Google (Founder-locked V1: Vendor Android and the web
-  /// QA harness only). Opens Google in the browser and returns through the
-  /// same auth callback as the emailed links; supabase_flutter exchanges
-  /// the code and the app root loads the session. Until the Google
-  /// provider is enabled for the project, the provider's real error is
-  /// shown -- never a fabricated success.
-  Future<void> signInWithGoogle() => _run(
-    () => _db!.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: authRedirectUrl,
-    ),
-  );
+  /// Continue with Google. On Android it stays inside the app (Founder
+  /// 2026-10-15): the system Google account sheet returns an ID token that
+  /// Supabase exchanges for the session, so the browser and the project
+  /// domain never show. Web, and builds without the Google web client id,
+  /// keep the browser OAuth flow through [authRedirectUrl].
+  /// Returns quietly when the user closes the account sheet.
+  Future<void> signInWithGoogle() async {
+    if (kIsWeb || Env.googleWebClientId.isEmpty) {
+      return _run(
+        () => _db!.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: authRedirectUrl,
+        ),
+      );
+    }
+    final GoogleSignInAccount account;
+    try {
+      await _googleReady();
+      // Bottom-sheet account chooser (Founder 2026-10-15: slides up, not a
+      // centred dialog). Falls back to the full flow only when the device
+      // has no Google account to offer.
+      account =
+          await GoogleSignIn.instance.attemptLightweightAuthentication(
+            reportAllExceptions: true,
+          ) ??
+          await GoogleSignIn.instance.authenticate();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled ||
+          e.code == GoogleSignInExceptionCode.interrupted) {
+        return;
+      }
+      throw RepositoryError(
+        serverMessage('', L.localeName),
+        raw: e.description ?? '$e',
+      );
+    }
+    final idToken = account.authentication.idToken;
+    if (idToken == null) {
+      throw RepositoryError(serverMessage('', L.localeName));
+    }
+    await _run(
+      () => _db!.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      ),
+    );
+  }
+
+  static Future<void>? _googleInit;
+  Future<void> _googleReady() => _googleInit ??= GoogleSignIn.instance
+      .initialize(serverClientId: Env.googleWebClientId);
 
   /// Per-user UI language (en / ms), kept in the user's own auth metadata.
   /// Best-effort: the device choice still applies if this fails.
@@ -204,6 +257,29 @@ class VendorRepository {
     try {
       await _db!.auth.updateUser(UserAttributes(data: {'ui_locale': code}));
     } catch (_) {}
+  }
+
+  /// Whether this account has agreed to the Terms and Privacy Policy
+  /// (email sign-up ticks it; a new Google account confirms once after its
+  /// first sign-in, Founder 2026-10-16).
+  bool get termsAccepted =>
+      currentUser?.userMetadata?['terms_accepted_at'] != null;
+
+  Future<void> acceptTerms() => _run(
+    () => _db!.auth.updateUser(
+      UserAttributes(
+        data: {'terms_accepted_at': DateTime.now().toUtc().toIso8601String()},
+      ),
+    ),
+  );
+
+  /// Closes the signed-in account (request_account_deletion): signed out
+  /// everywhere now, personal details erased after 30 days.
+  Future<void> deleteAccount(String? reason) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc('request_account_deletion', params: {'p_reason': reason}),
+    );
   }
 
   Future<void> signOut() async {
@@ -1115,34 +1191,293 @@ class VendorRepository {
     await _run(() => _db!.rpc('delete_zone', params: {'p_zone_id': zoneId}));
   }
 
-  /// Takes one delivery off today's plan (swipe to delete on Zone detail).
-  /// There is no server contract for this yet, so outside the demo it
-  /// fails loudly instead of pretending to succeed.
-  Future<void> removeFromTodaysDeliveries(String orderId) async {
-    if (!_demo) {
+  /// What the business may see about a driver (driver_basic_profile):
+  /// basic details only -- never IC or licence images or the full IC number
+  /// (Founder 2026-10-16). Empty when the server has not answered.
+  Future<Map<String, dynamic>> driverBasicProfile(String riderId) async {
+    if (_demo) {
+      return const {
+        'address': 'Taman Melati, Kuala Lumpur',
+        'ic_last4': '4821',
+        'licence_submitted': true,
+        'verification': 'verified',
+      };
+    }
+    try {
+      final r = await _run(
+        () => _db!.rpc('driver_basic_profile', params: {'p_rider_id': riderId}),
+      );
+      final m = r is Map ? Map<String, dynamic>.from(r) : <String, dynamic>{};
+      // The vehicle photo is basic profile; storage lets the driver's
+      // businesses read just that file (sealed documents migration).
+      final path = m['vehicle_photo_path'] as String?;
+      if (path != null) {
+        try {
+          m['vehicle_photo_url'] = await _db!.storage
+              .from('cefflo-driver-documents')
+              .createSignedUrl(path, 600);
+        } catch (_) {}
+      }
+      return m;
+    } on RepositoryError {
+      return const {};
+    }
+  }
+
+  // ------------------------------------------------------ delivery settings
+  /// Orders per run the planner aims for: (min, max).
+  Future<(int, int)> runSize(String businessId) async {
+    if (_demo) return (10, 15);
+    final r = await _run(
+      () => _db!
+          .from('businesses')
+          .select('run_size_min, run_size_max')
+          .eq('id', businessId)
+          .single(),
+    );
+    return (
+      (r['run_size_min'] as num).toInt(),
+      (r['run_size_max'] as num).toInt(),
+    );
+  }
+
+  Future<void> setRunSize(String businessId, int min, int max) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'set_business_run_size',
+        params: {'p_business_id': businessId, 'p_min': min, 'p_max': max},
+      ),
+    );
+  }
+
+  // ------------------------------------------------------ business verification
+  // SSM number, SSM certificate and the owner's IC (Founder 2026-10-17).
+  // Files go to the business folder of a sealed bucket; only the last 4 IC
+  // digits are stored as data.
+
+  /// {status, ssm_number, reject_reason, ...} or null when never submitted.
+  Future<Map<String, dynamic>?> businessVerification(String businessId) async {
+    // The prototype business is treated as verified (no Today banner).
+    if (_demo) return const {'status': 'verified'};
+    final r = await _run(
+      () => _db!.rpc(
+        'my_business_verification',
+        params: {'p_business_id': businessId},
+      ),
+    );
+    return r is Map ? Map<String, dynamic>.from(r) : null;
+  }
+
+  /// Uploads the IC photos (and the optional SSM certificate) and asks the
+  /// server to read the owner's name and IC number from the IC front.
+  /// Returns {status, read, owner_name, owner_ic_last4}.
+  Future<Map<String, dynamic>> submitBusinessVerification({
+    required String businessId,
+    required ({List<int> bytes, String type}) icFront,
+    required ({List<int> bytes, String type}) icBack,
+    ({List<int> bytes, String type})? ssm,
+  }) async {
+    if (_demo) {
+      return const {
+        'status': 'pending',
+        'read': true,
+        'owner_name': 'AHMAD BIN ALI',
+        'owner_ic_last4': '1234',
+      };
+    }
+    Future<String> up(({List<int> bytes, String type}) f, String name) async {
+      final ext = switch (f.type) {
+        'application/pdf' => 'pdf',
+        'image/png' => 'png',
+        _ => 'jpg',
+      };
+      final path = '$businessId/${newIdempotencyKey()}-$name.$ext';
+      await _run(
+        () => _db!.storage
+            .from('cefflo-business-documents')
+            .uploadBinary(
+              path,
+              Uint8List.fromList(f.bytes),
+              fileOptions: FileOptions(contentType: f.type),
+            ),
+      );
+      return path;
+    }
+
+    final front = await up(icFront, 'ic-front');
+    final back = await up(icBack, 'ic-back');
+    final ssmPath = ssm == null ? null : await up(ssm, 'ssm');
+    try {
+      final res = await _db!.functions.invoke(
+        'business-verification',
+        body: {
+          'business_id': businessId,
+          'ic_front_path': front,
+          'ic_back_path': back,
+          'ssm_path': ssmPath,
+        },
+      );
+      return Map<String, dynamic>.from(res.data as Map);
+    } on FunctionException catch (e) {
+      final d = e.details;
       throw RepositoryError(
-        L.removingDeliveryFromTodaysPlanNot,
-        isMissingContract: true,
+        serverMessage(d is Map ? '${d['error']}' : '', L.localeName),
       );
     }
-    _demoPlan = PlanProposal(
-      groups: [
-        for (final g in _demoPlan.groups)
-          PlanGroup(
-            groupKey: g.groupKey,
-            zoneId: g.zoneId,
-            candidateRiderId: g.candidateRiderId,
-            candidateRiderName: g.candidateRiderName,
-            candidateRiderVehicleType: g.candidateRiderVehicleType,
-            requiredVehicle: g.requiredVehicle,
-            totalDistanceKm: g.totalDistanceKm,
-            stops: [
-              for (final stop in g.stops)
-                if (stop.orderId != orderId) stop,
-            ],
-          ),
-      ],
-      unplannable: _demoPlan.unplannable,
+  }
+
+  // ---------------------------------------------------------------- complaints
+  // Prosedur Aduan (Founder 2026-10-16): a business reports a driver, or
+  // answers a report about it; Cefflo decides with both sides and the order
+  // records. Photos go to the caller's own folder in a private bucket.
+
+  /// Files a complaint about [riderId] (optionally for [orderId]).
+  Future<String> fileComplaint({
+    required String category,
+    required String description,
+    String? riderId,
+    String? orderId,
+    List<({List<int> bytes, String type})> photos = const [],
+  }) async {
+    if (_demo) return 'CF-00042';
+    final paths = await _uploadComplaintPhotos(photos);
+    final r = await _run(
+      () => _db!.rpc(
+        'file_complaint',
+        params: {
+          'p_category': category,
+          'p_description': description,
+          'p_rider_id': riderId,
+          'p_order_id': orderId,
+          'p_photos': paths,
+        },
+      ),
+    );
+    return (r as Map)['ref'] as String;
+  }
+
+  Future<List<String>> _uploadComplaintPhotos(
+    List<({List<int> bytes, String type})> photos,
+  ) async {
+    final uid = currentUser!.id;
+    final paths = <String>[];
+    for (final p in photos.take(5)) {
+      final ext = p.type == 'image/png' ? 'png' : 'jpg';
+      final path = '$uid/complaints/${newIdempotencyKey()}.$ext';
+      await _run(
+        () => _db!.storage
+            .from('cefflo-complaint-evidence')
+            .uploadBinary(
+              path,
+              Uint8List.fromList(p.bytes),
+              fileOptions: FileOptions(contentType: p.type),
+            ),
+      );
+      paths.add(path);
+    }
+    return paths;
+  }
+
+  /// Complaints this business made or received, newest first, each with
+  /// its visible thread (statements, replies, photo URLs).
+  Future<List<Map<String, dynamic>>> myComplaints() async {
+    if (_demo) return demoComplaints();
+    final r = await _run(() => _db!.rpc('my_complaints'));
+    final list = [
+      for (final x in (r as List? ?? const []))
+        Map<String, dynamic>.from(x as Map),
+    ];
+    for (final c in list) {
+      for (final e in (c['entries'] as List? ?? const [])) {
+        final path = (e as Map)['file_path'] as String?;
+        if (path == null) continue;
+        try {
+          e['url'] = await _db!.storage
+              .from('cefflo-complaint-evidence')
+              .createSignedUrl(path, 600);
+        } catch (_) {}
+      }
+    }
+    return list;
+  }
+
+  /// The business gives its side of a complaint about it.
+  Future<void> replyComplaint(
+    String id,
+    String body, {
+    List<({List<int> bytes, String type})> photos = const [],
+  }) async {
+    if (_demo) return;
+    final paths = await _uploadComplaintPhotos(photos);
+    await _run(
+      () => _db!.rpc(
+        'reply_complaint',
+        params: {'p_id': id, 'p_body': body, 'p_photos': paths},
+      ),
+    );
+  }
+
+  /// case Cefflo can review; sealed documents open only through it.
+  Future<void> reportDriverIncident(String riderId, String report) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'report_driver_incident',
+        params: {'p_rider_id': riderId, 'p_report': report},
+      ),
+    );
+  }
+
+  /// Business profile figures: products, orders, average customer rating
+  /// (business_stats).
+  Future<({int products, int orders, num? rating})> businessStats(
+    String businessId,
+  ) async {
+    if (_demo) return (products: 24, orders: 128, rating: 4.8);
+    final r = await _run(
+      () => _db!.rpc('business_stats', params: {'p_business': businessId}),
+    );
+    final m = r is Map ? r : const {};
+    return (
+      products: (m['products'] as num?)?.toInt() ?? 0,
+      orders: (m['orders'] as num?)?.toInt() ?? 0,
+      rating: m['rating'] as num?,
+    );
+  }
+
+  /// Takes one delivery off today's plan (swipe to delete on Zone detail):
+  /// remove_from_todays_plan returns it to the plannable pool. Refused once
+  /// the order is picked up.
+  Future<void> removeFromTodaysDeliveries(String orderId) async {
+    if (_demo) {
+      final p = _demoPlan;
+      _demoPlan = PlanProposal(
+        groups: [
+          for (final g in p.groups)
+            PlanGroup(
+              groupKey: g.groupKey,
+              stops: g.stops.where((s) => s.orderId != orderId).toList(),
+              zoneId: g.zoneId,
+              candidateRiderId: g.candidateRiderId,
+              candidateRiderName: g.candidateRiderName,
+              candidateRiderVehicleType: g.candidateRiderVehicleType,
+              requiredVehicle: g.requiredVehicle,
+              totalDistanceKm: g.totalDistanceKm,
+              part: g.part,
+              parts: g.parts,
+            ),
+        ],
+        unplannable: p.unplannable,
+        excludedRiders: p.excludedRiders,
+        planDate: p.planDate,
+        policy: p.policy,
+      );
+      return;
+    }
+    await _run(
+      () =>
+          _db!.rpc('remove_from_todays_plan', params: {'p_order_id': orderId}),
     );
   }
 
@@ -2061,13 +2396,24 @@ class VendorRepository {
     } on PostgrestException catch (e) {
       final missing = _isMissingFunction(e);
       throw RepositoryError(
-        missing ? L.actionNeedsBackendContractThatNot(e.message) : e.message,
+        missing
+            ? L.actionNeedsBackendContractThatNot(e.message)
+            : serverMessage(e.message, L.localeName),
         isMissingContract: missing,
+        raw: e.message,
       );
     } on AuthException catch (e) {
-      throw RepositoryError(e.message, code: e.code);
+      // Auth errors (e.g. a suspended account) get the friendly sentence
+      // when one exists; otherwise the server's own text.
+      throw RepositoryError(
+        knownServerMessage(e.message, L.localeName) ?? e.message,
+        code: e.code,
+      );
+    } on RepositoryError {
+      rethrow;
     } catch (e) {
-      throw RepositoryError('$e');
+      // Network and other client failures: a plain sentence on screen.
+      throw RepositoryError(serverMessage('', L.localeName), raw: '$e');
     }
   }
 
@@ -2582,3 +2928,66 @@ class _DemoFulfilment {
 
 /// Test hook for the stateful prototype workload.
 void resetDemoFulfilment() => _DemoFulfilment.reset();
+
+/// Prototype data: one report the business made, one about the business.
+List<Map<String, dynamic>> demoComplaints() {
+  final now = DateTime.now();
+  return [
+    {
+      'id': 'demo-c1',
+      'ref': 'CF-00041',
+      'category': 'damaged_lost',
+      'status': 'in_review',
+      'side': 'complainant',
+      'complainant_role': 'vendor',
+      'respondent_role': 'driver',
+      'rider_name': 'Aiman Hakim',
+      'order_ref': 'CF-4639390A',
+      'reply_due_at': now.add(const Duration(hours: 20)).toIso8601String(),
+      'created_at': now.subtract(const Duration(hours: 28)).toIso8601String(),
+      'replied': true,
+      'entries': [
+        {
+          'kind': 'statement',
+          'author_role': 'complainant',
+          'body': 'Customer says the cake box was crushed on arrival.',
+          'created_at': now
+              .subtract(const Duration(hours: 28))
+              .toIso8601String(),
+        },
+        {
+          'kind': 'reply',
+          'author_role': 'respondent',
+          'body': 'The box was intact at drop-off. The proof-of-delivery photo shows it.',
+          'created_at': now
+              .subtract(const Duration(hours: 6))
+              .toIso8601String(),
+        },
+      ],
+    },
+    {
+      'id': 'demo-c2',
+      'ref': 'CF-00042',
+      'category': 'conduct',
+      'status': 'awaiting_reply',
+      'side': 'respondent',
+      'complainant_role': 'driver',
+      'respondent_role': 'vendor',
+      'rider_name': 'Farid Osman',
+      'order_ref': null,
+      'reply_due_at': now.add(const Duration(hours: 40)).toIso8601String(),
+      'created_at': now.subtract(const Duration(hours: 8)).toIso8601String(),
+      'replied': false,
+      'entries': [
+        {
+          'kind': 'statement',
+          'author_role': 'complainant',
+          'body': 'Waited 50 minutes at pickup and was shouted at by staff.',
+          'created_at': now
+              .subtract(const Duration(hours: 8))
+              .toIso8601String(),
+        },
+      ],
+    },
+  ];
+}

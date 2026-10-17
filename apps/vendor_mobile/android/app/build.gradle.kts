@@ -12,12 +12,13 @@ val hasUploadKey = keystoreProperties.getProperty("storeFile") != null
 
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.cefflo.cefflo_vendor_mobile"
+    namespace = "com.cefflo.vendor"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -27,7 +28,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.cefflo.cefflo_vendor_mobile"
+        applicationId = "com.cefflo.vendor"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

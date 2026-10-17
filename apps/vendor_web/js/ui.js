@@ -155,6 +155,17 @@ export function confirmDialog({ title, body, confirmLabel, danger = false }) {
   });
 }
 
+// Approve / Reject double confirmation (Founder 2026-10-16): a mistaken
+// click can't decide a person's access.
+export function confirmDecision(approve, name) {
+  return confirmDialog({
+    title: t(approve ? 'dec.approveTitle' : 'dec.rejectTitle', { name: name || '' }),
+    body: t(approve ? 'dec.approveBody' : 'dec.rejectBody'),
+    confirmLabel: t(approve ? 'dec.approveYes' : 'dec.rejectYes'),
+    danger: !approve,
+  });
+}
+
 // Destructive confirmation that enables only once CONFIRM is typed exactly
 // (Security & Access Master Part III §19-20). UX protection only: the server
 // still authorises every removal.

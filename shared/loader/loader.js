@@ -3,8 +3,11 @@
 (function () {
   'use strict';
   if (window.showPageLoader) return;
-  var DEFAULT = 'Memuatkan…';
-  var SLOW = 'Masih memuatkan, sila tunggu sebentar';
+  // Default text follows the page language (<html lang>): English unless
+  // the page is in Bahasa Melayu.
+  function ms() { return /^ms/i.test(document.documentElement.lang || ''); }
+  function DEFAULT_() { return ms() ? 'Memuatkan…' : 'Loading…'; }
+  function SLOW_() { return ms() ? 'Masih memuatkan, sila tunggu sebentar' : 'Still loading, please wait a moment'; }
   var DELAY = 300, SLOW_AFTER = 8000, FADE = 200;
 
   var me = document.currentScript;
@@ -32,7 +35,7 @@
     return '<div class="cf-page-loader cf-page-loader--inline' + (extraClass ? ' ' + extraClass : '') +
       '" role="status" aria-live="polite" data-cf-loader-at="' + Date.now() + '">' +
       (ring() ? ringTile() : '<div class="cf-dots" aria-hidden="true"><i></i><i></i><i></i></div>') +
-      '<p class="cf-loader-label">' + esc(label || DEFAULT) + '</p></div>';
+      '<p class="cf-loader-label">' + esc(label || DEFAULT_()) + '</p></div>';
   }
 
   var el, showTimer, slowTimer, hideTimer, depth = 0;
@@ -50,7 +53,7 @@
   function show(label) {
     if (!el) build();
     depth++;
-    el.querySelector('.cf-loader-label').textContent = label || DEFAULT;
+    el.querySelector('.cf-loader-label').textContent = label || DEFAULT_();
     clearTimeout(hideTimer);
     if (depth > 1) return;
     clearTimeout(showTimer); clearTimeout(slowTimer);
@@ -58,7 +61,7 @@
       if (!el.isConnected) document.body.appendChild(el);
       requestAnimationFrame(function () { el.classList.add('is-visible'); });
     }, DELAY);
-    slowTimer = setTimeout(function () { el.querySelector('.cf-loader-label').textContent = SLOW; }, SLOW_AFTER);
+    slowTimer = setTimeout(function () { el.querySelector('.cf-loader-label').textContent = SLOW_(); }, SLOW_AFTER);
   }
   function hide(force) {
     if (!el) return;
@@ -80,12 +83,12 @@
     var now = Date.now();
     document.querySelectorAll('.cf-page-loader--inline[data-cf-loader-at]').forEach(function (n) {
       if (now - Number(n.getAttribute('data-cf-loader-at')) >= SLOW_AFTER) {
-        n.querySelector('.cf-loader-label').textContent = SLOW; n.removeAttribute('data-cf-loader-at');
+        n.querySelector('.cf-loader-label').textContent = SLOW_(); n.removeAttribute('data-cf-loader-at');
       }
     });
   }, 1000);
 
   window.showPageLoader = show;
   window.hidePageLoader = hide;
-  window.cfLoader = { show: show, hide: hide, wrap: withLoader, markup: markup, DEFAULT: DEFAULT, SLOW: SLOW };
+  window.cfLoader = { show: show, hide: hide, wrap: withLoader, markup: markup, get DEFAULT() { return DEFAULT_(); }, get SLOW() { return SLOW_(); } };
 })();

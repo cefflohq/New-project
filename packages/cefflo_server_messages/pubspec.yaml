@@ -1,0 +1,8 @@
+name: cefflo_server_messages
+description: Friendly English / Bahasa Melayu text for the backend's error messages, shared by the Cefflo Flutter apps.
+publish_to: none
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+dev_dependencies:
+  test: ^1.25.0

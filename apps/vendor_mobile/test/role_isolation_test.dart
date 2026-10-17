@@ -24,10 +24,13 @@ void main() {
     expect(scoped.first.isHelper, isTrue);
   });
 
-  test('Owner of A with no Operator role gets nothing under Operator Access', () {
-    expect(businessesForAccess(const [ownA], AuthAccess.operator), isEmpty);
-    expect(businessesForAccess(const [ownA], AuthAccess.helper), isEmpty);
-  });
+  test(
+    'Owner of A with no Operator role gets nothing under Operator Access',
+    () {
+      expect(businessesForAccess(const [ownA], AuthAccess.operator), isEmpty);
+      expect(businessesForAccess(const [ownA], AuthAccess.helper), isEmpty);
+    },
+  );
 
   test('Vendor entry keeps every membership (Owner behaviour unchanged)', () {
     expect(businessesForAccess(all, AuthAccess.vendor), all);

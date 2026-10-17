@@ -5,6 +5,8 @@ import 'ui/screens/helper_workspace.dart';
 
 import 'package:flutter/material.dart';
 
+import 'ui/scroll_physics.dart';
+
 import 'core/keep_signed_in.dart';
 
 import 'package:flutter/scheduler.dart';
@@ -212,6 +214,7 @@ class _VendorMobileAppState extends State<VendorMobileApp> {
       // accent icons) live, including while it is only being previewed.
       animation: Listenable.merge([app, liveAppearance]),
       builder: (context, _) => MaterialApp(
+        scrollBehavior: const CefScrollBehavior(),
         debugShowCheckedModeBanner: false,
         title: 'Cefflo Vendor',
         // BM + EN (Founder 2026-09-27). Country never selects language.
@@ -465,6 +468,7 @@ class ConfigurationErrorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    scrollBehavior: const CefScrollBehavior(),
     debugShowCheckedModeBanner: false,
     theme: buildVendorTheme(Brightness.light),
     home: CefSystemBars(

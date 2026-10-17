@@ -31,6 +31,15 @@ class _FakeRepo extends RiderRepository {
   @override
   Future<List<RiderOrder>> myOrders(String riderId) async => orders;
 
+  /// Ticks are saved on the account (set_pickup_tick); accepted here.
+  @override
+  Future<void> setPickupTick({
+    required String riderId,
+    required String sessionId,
+    required String orderId,
+    required bool ticked,
+  }) async {}
+
   @override
   Future<List<DeliverySession>> sessions(String businessId) async => const [
     DeliverySession(id: 's-1', name: 'Shah Alam Run'),
@@ -98,6 +107,8 @@ RiderOrder _order(
   assignmentStatus: assignment,
   items: const [RiderOrderItem(name: 'Brownie Box', quantity: 2)],
   sequenceLocked: locked,
+  // The business has packed it, so the pickup checklist is open.
+  packed: true,
 );
 
 Future<(AppState, _FakeRepo)> _hydrate(List<RiderOrder> orders) async {
@@ -258,14 +269,14 @@ void main() {
     await app.reportIssue('1', IssueReason.customerNotAvailable, 'No answer');
     expect(repo.calls, ['rider_report_delivery_issue 1 customer_unreachable']);
 
-    expect(
-      () => app.reportIssue(
-        '1',
-        IssueReason.customerRequestedReschedule,
-        'Later',
-      ),
-      throwsA(isA<RepositoryError>()),
+    // Reschedule is recordable since 2026-10-16.
+    repo.calls.clear();
+    await app.reportIssue(
+      '1',
+      IssueReason.customerRequestedReschedule,
+      'Later',
     );
+    expect(repo.calls, ['rider_report_delivery_issue 1 customer_rescheduled']);
   });
 
   test('with no open run, the most recently finished run is shown', () async {

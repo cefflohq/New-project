@@ -1,3 +1,4 @@
+import 'package:cefflo_loader/cefflo_loader.dart';
 import 'package:flutter/widgets.dart';
 
 import 'app_localizations.dart';
@@ -15,4 +16,7 @@ AppLocalizations _current = lookupAppLocalizations(const Locale('en'));
 /// Called by the app state whenever the UI locale changes.
 void applyUiLocale(Locale locale) {
   _current = lookupAppLocalizations(locale);
+  // The shared loader's own text follows the app language too.
+  CefLoaderTokens.defaultLabel = _current.loaderDefault;
+  CefLoaderTokens.slowLabel = _current.loaderSlow;
 }
