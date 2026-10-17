@@ -4940,4 +4940,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sdFeeNeeded => 'Enter the delivery fee per drop.';
+
+  @override
+  String get spTitle => 'Storefront payments';
+
+  @override
+  String get spLead =>
+      'Customers pay straight into your own CHIP account. Cefflo never holds the money.';
+
+  @override
+  String get spBrand => 'CHIP Brand ID';
+
+  @override
+  String get spSecret => 'CHIP secret key';
+
+  @override
+  String get spHint =>
+      'Find both in your CHIP portal under Developers. The key is stored securely.';
+
+  @override
+  String get spConnect => 'Connect CHIP';
+
+  @override
+  String get spConnected => 'CHIP connected. Customers can pay online.';
+
+  @override
+  String get spDisconnect => 'Disconnect';
+
+  @override
+  String get spCod => 'Cash on delivery';
+
+  @override
+  String get spCodHint => 'Let customers pay the driver in cash.';
+
+  @override
+  String get spCodOnly => 'Without CHIP, customers pay cash on delivery.';
 }

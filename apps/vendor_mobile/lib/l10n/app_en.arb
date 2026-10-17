@@ -2435,5 +2435,16 @@
   "sdBatchesHint": "Customers pick a batch, not an exact time. Up to 4.",
   "sdBatchName": "Batch name",
   "sdAddBatch": "Add batch",
-  "sdFeeNeeded": "Enter the delivery fee per drop."
+  "sdFeeNeeded": "Enter the delivery fee per drop.",
+  "spTitle": "Storefront payments",
+  "spLead": "Customers pay straight into your own CHIP account. Cefflo never holds the money.",
+  "spBrand": "CHIP Brand ID",
+  "spSecret": "CHIP secret key",
+  "spHint": "Find both in your CHIP portal under Developers. The key is stored securely.",
+  "spConnect": "Connect CHIP",
+  "spConnected": "CHIP connected. Customers can pay online.",
+  "spDisconnect": "Disconnect",
+  "spCod": "Cash on delivery",
+  "spCodHint": "Let customers pay the driver in cash.",
+  "spCodOnly": "Without CHIP, customers pay cash on delivery."
 }

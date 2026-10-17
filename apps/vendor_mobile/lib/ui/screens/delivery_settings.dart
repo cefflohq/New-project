@@ -101,6 +101,8 @@ class _DeliverySettingsScreenState extends State<DeliverySettingsScreen> {
             Text(L.dsHint, style: text.bodySmall),
             const SizedBox(height: Gap.xl),
             const StorefrontDeliverySection(),
+            const SizedBox(height: Gap.xl),
+            const StorefrontPaymentsSection(),
           ],
         );
       },
@@ -314,6 +316,131 @@ class _StorefrontDeliverySectionState extends State<StorefrontDeliverySection> {
         Text(L.sdBatchesHint, style: text.bodySmall),
         const SizedBox(height: Gap.md),
         CefButton(L.saveChanges, busy: _busy, onTap: _busy ? null : _save),
+      ],
+    );
+  }
+}
+
+/// Storefront payments (Founder 2026-10-17): connect the vendor's own CHIP
+/// account (write-only secret) and the cash-on-delivery switch.
+class StorefrontPaymentsSection extends StatefulWidget {
+  const StorefrontPaymentsSection({super.key});
+
+  @override
+  State<StorefrontPaymentsSection> createState() =>
+      _StorefrontPaymentsSectionState();
+}
+
+class _StorefrontPaymentsSectionState extends State<StorefrontPaymentsSection> {
+  final _brand = TextEditingController();
+  final _secret = TextEditingController();
+  Map<String, dynamic>? _s;
+  bool _busy = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_s == null) _load();
+  }
+
+  Future<void> _load() async {
+    final app = AppScope.read(context);
+    try {
+      final s = await app.repo.paymentSettings(app.business!.id);
+      if (mounted) setState(() => _s = s);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _s = {'connected': false, 'accept_cod': true});
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _brand.dispose();
+    _secret.dispose();
+    super.dispose();
+  }
+
+  Future<void> _do(Future<void> Function() f) async {
+    setState(() => _busy = true);
+    try {
+      await f();
+      await _load();
+      if (mounted) showCefToast(context, L.dsSaved);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final text = Theme.of(context).textTheme;
+    final s = _s;
+    if (s == null) return const SizedBox.shrink();
+    final connected = s['connected'] == true;
+    final id = app.business!.id;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeading(
+          L.spTitle,
+          icon: LucideIcons.creditCard,
+          subtitle: L.spLead,
+        ),
+        const SizedBox(height: Gap.md),
+        if (connected) ...[
+          Text(L.spConnected, style: text.bodyLarge),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: _busy
+                  ? null
+                  : () => _do(() => app.repo.disconnectChip(id)),
+              child: Text(L.spDisconnect),
+            ),
+          ),
+        ] else ...[
+          TextField(
+            controller: _brand,
+            decoration: InputDecoration(labelText: L.spBrand),
+          ),
+          const SizedBox(height: Gap.sm),
+          TextField(
+            controller: _secret,
+            obscureText: true,
+            decoration: InputDecoration(labelText: L.spSecret),
+          ),
+          const SizedBox(height: Gap.xs),
+          Text(L.spHint, style: text.bodySmall),
+          const SizedBox(height: Gap.sm),
+          CefButton(
+            L.spConnect,
+            busy: _busy,
+            onTap: _busy
+                ? null
+                : () => _do(
+                    () => app.repo.connectChip(
+                      id,
+                      _brand.text.trim(),
+                      _secret.text.trim(),
+                    ),
+                  ),
+          ),
+        ],
+        const SizedBox(height: Gap.md),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(L.spCod),
+          subtitle: Text(connected ? L.spCodHint : L.spCodOnly),
+          value: !connected || s['accept_cod'] != false,
+          onChanged: !connected || _busy
+              ? null
+              : (v) => _do(() => app.repo.setStorefrontCod(id, v)),
+        ),
       ],
     );
   }

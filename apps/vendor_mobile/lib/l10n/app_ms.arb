@@ -1479,5 +1479,16 @@
   "sdBatchesHint": "Pelanggan pilih batch, bukan jam tepat. Maksimum 4.",
   "sdBatchName": "Nama batch",
   "sdAddBatch": "Tambah batch",
-  "sdFeeNeeded": "Masukkan caj hantar setiap drop."
+  "sdFeeNeeded": "Masukkan caj hantar setiap drop.",
+  "spTitle": "Bayaran kedai",
+  "spLead": "Pelanggan bayar terus ke akaun CHIP anda sendiri. Cefflo tidak memegang wang.",
+  "spBrand": "CHIP Brand ID",
+  "spSecret": "Kunci rahsia CHIP",
+  "spHint": "Kedua-duanya ada dalam portal CHIP di bawah Developers. Kunci disimpan dengan selamat.",
+  "spConnect": "Sambung CHIP",
+  "spConnected": "CHIP disambung. Pelanggan boleh bayar online.",
+  "spDisconnect": "Putuskan",
+  "spCod": "Bayar semasa terima (COD)",
+  "spCodHint": "Benarkan pelanggan bayar tunai kepada pemandu.",
+  "spCodOnly": "Tanpa CHIP, pelanggan bayar tunai semasa terima."
 }

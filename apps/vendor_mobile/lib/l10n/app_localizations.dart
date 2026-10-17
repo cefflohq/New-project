@@ -8984,6 +8984,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter the delivery fee per drop.'**
   String get sdFeeNeeded;
+
+  /// No description provided for @spTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Storefront payments'**
+  String get spTitle;
+
+  /// No description provided for @spLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers pay straight into your own CHIP account. Cefflo never holds the money.'**
+  String get spLead;
+
+  /// No description provided for @spBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'CHIP Brand ID'**
+  String get spBrand;
+
+  /// No description provided for @spSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'CHIP secret key'**
+  String get spSecret;
+
+  /// No description provided for @spHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find both in your CHIP portal under Developers. The key is stored securely.'**
+  String get spHint;
+
+  /// No description provided for @spConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect CHIP'**
+  String get spConnect;
+
+  /// No description provided for @spConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'CHIP connected. Customers can pay online.'**
+  String get spConnected;
+
+  /// No description provided for @spDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get spDisconnect;
+
+  /// No description provided for @spCod.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on delivery'**
+  String get spCod;
+
+  /// No description provided for @spCodHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Let customers pay the driver in cash.'**
+  String get spCodHint;
+
+  /// No description provided for @spCodOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Without CHIP, customers pay cash on delivery.'**
+  String get spCodOnly;
 }
 
 class _AppLocalizationsDelegate

@@ -4949,4 +4949,39 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get sdFeeNeeded => 'Masukkan caj hantar setiap drop.';
+
+  @override
+  String get spTitle => 'Bayaran kedai';
+
+  @override
+  String get spLead =>
+      'Pelanggan bayar terus ke akaun CHIP anda sendiri. Cefflo tidak memegang wang.';
+
+  @override
+  String get spBrand => 'CHIP Brand ID';
+
+  @override
+  String get spSecret => 'Kunci rahsia CHIP';
+
+  @override
+  String get spHint =>
+      'Kedua-duanya ada dalam portal CHIP di bawah Developers. Kunci disimpan dengan selamat.';
+
+  @override
+  String get spConnect => 'Sambung CHIP';
+
+  @override
+  String get spConnected => 'CHIP disambung. Pelanggan boleh bayar online.';
+
+  @override
+  String get spDisconnect => 'Putuskan';
+
+  @override
+  String get spCod => 'Bayar semasa terima (COD)';
+
+  @override
+  String get spCodHint => 'Benarkan pelanggan bayar tunai kepada pemandu.';
+
+  @override
+  String get spCodOnly => 'Tanpa CHIP, pelanggan bayar tunai semasa terima.';
 }

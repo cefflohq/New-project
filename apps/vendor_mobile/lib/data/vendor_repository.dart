@@ -1305,6 +1305,54 @@ class VendorRepository {
     );
   }
 
+  /// Storefront payments: the vendor's own CHIP account and the COD switch.
+  /// The secret key is write-only; only a hint of the Brand ID comes back.
+  Future<Map<String, dynamic>> paymentSettings(String businessId) async {
+    if (_demo) return {'connected': false, 'accept_cod': true};
+    final r = await _run(
+      () => _db!.rpc('payment_settings', params: {'p_business_id': businessId}),
+    );
+    return Map<String, dynamic>.from(r as Map);
+  }
+
+  Future<void> connectChip(
+    String businessId,
+    String brandId,
+    String secret,
+  ) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'save_chip_account',
+        params: {
+          'p_business_id': businessId,
+          'p_brand_id': brandId,
+          'p_secret_key': secret,
+        },
+      ),
+    );
+  }
+
+  Future<void> disconnectChip(String businessId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'disconnect_chip_account',
+        params: {'p_business_id': businessId},
+      ),
+    );
+  }
+
+  Future<void> setStorefrontCod(String businessId, bool accept) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'set_storefront_cod',
+        params: {'p_business_id': businessId, 'p_accept': accept},
+      ),
+    );
+  }
+
   // ------------------------------------------------------ business verification
   // SSM number, SSM certificate and the owner's IC (Founder 2026-10-17).
   // Files go to the business folder of a sealed bucket; only the last 4 IC

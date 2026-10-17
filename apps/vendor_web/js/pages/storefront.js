@@ -63,7 +63,7 @@ function qrSvg(text) {
 export default function storefront({ el, setHeader }) {
   setHeader(t('sf.title'));
   el.innerHTML = loadingRows(4);
-  let dlv = {}, subs = [];
+  let dlv = {}, subs = [], pay = {};
   let sf = null, tpl = 'warung', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
   let frame = null, frameReady = false;
   const def = () => TEMPLATES.find(x => x.id === tpl) || LEGACY.find(x => x.id === tpl) || TEMPLATES[0];
@@ -115,6 +115,16 @@ export default function storefront({ el, setHeader }) {
       <div class="err" data-derr hidden></div>
       <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-dsave>${esc(t('c.save'))}</button></div></div>`;
   };
+  // Payments (Founder 2026-10-17): the vendor's own CHIP account; Cefflo never
+  // holds the money. Cash on delivery is a vendor switch (always on without CHIP).
+  const payCard = () => `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.pay'))}</h3><p class="desc">${esc(t('sf.payLead'))}</p>
+    ${pay.connected ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${chip('active')}<span>${esc(t('sf.chipOn', { id: pay.brand_id_hint || '' }))}</span><button class="btn sm" data-chipoff style="margin-left:auto">${esc(t('sf.chipOff'))}</button></div>`
+      : `<div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.brandId'))}</label><input class="input" data-brand placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off"></div>
+        <div class="field"><label>${esc(t('sf.secret'))}</label><input class="input" type="password" data-secret autocomplete="new-password"></div></div>
+        <small class="hint">${esc(t('sf.chipHint'))}</small>
+        <div class="err" data-perr hidden></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn primary" data-chipon>${esc(t('sf.chipConnect'))}</button></div>`}
+    <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input type="checkbox" data-cod ${pay.accept_cod !== false || !pay.connected ? 'checked' : ''} ${pay.connected ? '' : 'disabled'}><span><b>${esc(t('sf.cod'))}</b><br><small class="hint">${esc(t(pay.connected ? 'sf.codHint' : 'sf.codOnly'))}</small></span></label></div>`;
   const subsCard = () => {
     if (!subs.length) return '';
     return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.subs'))}</h3><p class="desc">${esc(t('sf.subsLead'))}</p>
@@ -170,6 +180,7 @@ export default function storefront({ el, setHeader }) {
               <small class="hint">${esc(t('sf.heroHint'))}</small></div>`}
             <div class="err" data-err hidden></div>
             <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">${sf.published ? `<small class="hint">${esc(t('sf.applyLive'))}</small>` : ''}<button class="btn primary" data-save>${esc(t('sf.apply'))}</button></div></div>
+          ${payCard()}
           ${deliveryCard()}
           ${subsCard()}</div>
         <div class="card" style="padding:16px;position:sticky;top:16px"><h3 style="margin:0 0 4px">${esc(t('sf.preview'))}</h3><p class="desc" style="margin-bottom:10px">${esc(t('sf.previewLead'))}</p>
@@ -191,6 +202,7 @@ export default function storefront({ el, setHeader }) {
       theme = { ...(sf.theme || {}) };
       dlv = { fee: sf.delivery_fee, days: sf.delivery_days, weeks: sf.package_weeks, shifts: sf.delivery_shifts || [] };
       subs = await api.rpc('list_storefront_subscriptions', { p_business_id: ctx.bid }).catch(() => []) || [];
+      pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }).catch(() => ({})) || {};
       paint();
     } catch (e) { el.innerHTML = errorState(e, 'storefront'); }
   };
@@ -198,6 +210,18 @@ export default function storefront({ el, setHeader }) {
   el.addEventListener('input', e => { if (e.target.closest('[data-accent],[data-secondary],[data-tagline]')) post(); });
   el.addEventListener('click', async e => {
     if (e.target.closest('[data-retry]')) { load(); return; }
+    const con = e.target.closest('[data-chipon]');
+    if (con) {
+      const err = el.querySelector('[data-perr]'); err.hidden = true;
+      const brand = el.querySelector('[data-brand]').value.trim(), secret = el.querySelector('[data-secret]').value.trim();
+      try { await busy(con, () => api.rpc('save_chip_account', { p_business_id: ctx.bid, p_brand_id: brand, p_secret_key: secret })); pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }); toast(t('c.saved')); paint(); }
+      catch (ex) { err.textContent = ex.message; err.hidden = false; }
+      return;
+    }
+    if (e.target.closest('[data-chipoff]')) {
+      try { await api.rpc('disconnect_chip_account', { p_business_id: ctx.bid }); pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }); paint(); } catch (ex) { toast(ex.message, 'error'); }
+      return;
+    }
     const dd = e.target.closest('[data-dday]');
     if (dd) { dlv = readDelivery(); const n = Number(dd.dataset.dday); const set = new Set(dlv.days || []); set.has(n) ? set.size > 1 && set.delete(n) : set.add(n); dlv.days = [...set].sort(); paint(); return; }
     const dw = e.target.closest('[data-dweek]');
@@ -281,7 +305,9 @@ export default function storefront({ el, setHeader }) {
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     }
   });
-  el.addEventListener('change', e => {
+  el.addEventListener('change', async e => {
+    const cod = e.target.closest('[data-cod]');
+    if (cod) { try { await api.rpc('set_storefront_cod', { p_business_id: ctx.bid, p_accept: cod.checked }); pay.accept_cod = cod.checked; toast(t('c.saved')); } catch (ex) { cod.checked = !cod.checked; toast(ex.message, 'error'); } return; }
     const lf = e.target.closest('[data-logofile]');
     if (lf && lf.files[0]) {
       const file = lf.files[0];

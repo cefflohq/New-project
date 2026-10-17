@@ -197,6 +197,7 @@
     if (a === 'cart') return { name: 'cart' };
     if (a === 'checkout') return { name: 'checkout' };
     if (a === 'done' && lastOrder) return { name: 'done' };
+    if ((a === 'paid' || a === 'payfail') && b) return { name: a, id: b };
     if (a === 'all') return { name: 'all' };
     return { name: 'home' };
   }
@@ -253,7 +254,8 @@
   const DAYN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   function plan() {
     const d = store.delivery;
-    if (!form.weeks || (form.weeks !== 'once' && !d.weeks.includes(Number(form.weeks)))) form.weeks = 'once';
+    // Packages are paid in full up front, so they need online payment.
+    if (!store.payOnline || !form.weeks || (form.weeks !== 'once' && !d.weeks.includes(Number(form.weeks)))) form.weeks = 'once';
     if (!Array.isArray(form.days)) form.days = [...d.days];
     form.days = form.days.filter(x => d.days.includes(x));
     if (d.shifts.length && !d.shifts.some(x => x.name === form.shift)) form.shift = d.shifts[0].name;
@@ -272,8 +274,10 @@
   function checkoutView(err) {
     const lines = [...cart].filter(([id]) => product(id));
     const methods = [
-      ...(store.payOnline ? [['duitnow', 'DuitNow QR', 'Any bank or e-wallet app'], ['fpx', 'Online banking (FPX)', 'Maybank2u, CIMB Clicks and more']] : []),
-      ...(store.payCod ? [['cod', 'Cash on delivery', 'Pay the rider when it arrives']] : []),
+      // One online choice: CHIP's page then offers DuitNow QR, FPX, e-wallets
+      // and Pay Later, whichever the vendor's CHIP account supports.
+      ...(store.payOnline ? [['online', 'Pay online', 'DuitNow QR, online banking (FPX), e-wallets, Pay Later']] : []),
+      ...(store.payCod && (form.weeks || 'once') === 'once' ? [['cod', 'Cash on delivery', 'Pay the rider when it arrives']] : []),
     ];
     if (!methods.some(m => m[0] === form.pay)) form.pay = methods[0]?.[0] || 'cod';
     const d = store.delivery, pl = plan();
@@ -303,7 +307,7 @@
           <ul class="co-items">${lines.map(([id, q]) => { const p = product(id); return `<li>${img(p, 'co-img')}<div><b>${esc(p.name)}</b><small>× ${q}</small></div><span>${money(p.price * q)}</span></li>`; }).join('')}</ul>
         </section>
         <section class="co-box"><h2>${icon('clock')} ${esc(t('Delivery schedule'))}</h2>
-          <div class="co-seg" role="radiogroup" aria-label="${esc(t('How often'))}">${[['once', t('Once')], ...d.weeks.map(w => [String(w), t(w === 1 ? '1 week' : '{n} weeks', { n: w })])].map(([k, l]) => `<button type="button" role="radio" aria-checked="${String(form.weeks) === k}" class="${String(form.weeks) === k ? 'on' : ''}" data-act="weeks" data-id="${k}">${esc(l)}</button>`).join('')}</div>
+          <div class="co-seg" role="radiogroup" aria-label="${esc(t('How often'))}">${[['once', t('Once')], ...(store.payOnline ? d.weeks : []).map(w => [String(w), t(w === 1 ? '1 week' : '{n} weeks', { n: w })])].map(([k, l]) => `<button type="button" role="radio" aria-checked="${String(form.weeks) === k}" class="${String(form.weeks) === k ? 'on' : ''}" data-act="weeks" data-id="${k}">${esc(l)}</button>`).join('')}</div>
           ${pl.once ? '' : `<div class="co-days" role="group" aria-label="${esc(t('Delivery days'))}">${[1, 2, 3, 4, 5, 6, 7].map(x => { const ok = d.days.includes(x), on = form.days.includes(x); return `<button type="button" aria-pressed="${on}" class="${on ? 'on' : ''}" data-act="day" data-id="${x}" ${ok ? '' : 'disabled'}>${esc(t(DAYN[x - 1]))}</button>`; }).join('')}</div>`}
           ${d.shifts.length ? `<div class="co-pay" role="radiogroup" aria-label="${esc(t('Delivery time'))}">${d.shifts.map(x => `<button type="button" role="radio" aria-checked="${form.shift === x.name}" class="${form.shift === x.name ? 'on' : ''}" data-act="shift" data-id="${esc(x.name)}"><span class="co-dot"></span><span><b>${esc(x.name)}</b><small>${esc(t('Arrives {from}–{to}', { from: x.from, to: x.to }))}</small></span></button>`).join('')}</div>` : ''}
           ${pl.once ? '' : `<p class="co-hint">${esc(t('{n} deliveries. Your items are sent on each day.', { n: pl.drops }))}</p>`}
@@ -317,13 +321,42 @@
       </form>
     </div>`;
   }
-  function doneView() {
+  // Online payment: CHIP's hosted page on the vendor's own account. The order
+  // is kept on this device so the customer lands back on their order.
+  const PAY_KEY = 'cefflo.sf.pay';
+  async function startPayment(key) {
+    window.showPageLoader(t('Opening payment…'));
+    try {
+      const res = await fetch(`${cfg.supabaseUrl}/functions/v1/storefront-pay`, {
+        method: 'POST', headers: { apikey: cfg.supabaseAnonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: store.slug, idempotency_key: key }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (out.checkout_url) { location.href = out.checkout_url; return true; }
+      if (out.paid) { go(`paid/${key}`); return true; }
+    } catch { /* offline */ }
+    finally { window.hidePageLoader(); }
+    return false;
+  }
+  function payResultView(r) {
+    let saved = null; try { saved = JSON.parse(sessionStorage.getItem(PAY_KEY) || 'null'); } catch { /* private mode */ }
+    if (saved?.key === r.id) lastOrder = { ref: saved.ref, token: saved.token };
+    if (r.name === 'paid') return doneView(t('Payment received'), t('{store} has your order. You will get updates on the tracking page.', { store: store.name }));
+    return `<div class="sf-flow sf-done">
+      <div class="sf-done-mark">${icon('clock')}</div>
+      <h1>${esc(t('Payment not completed'))}</h1>
+      <p>${esc(t('Your order {ref} is waiting for payment. It is cancelled if not paid within 5 minutes.', { ref: lastOrder?.ref || '' }))}</p>
+      <button type="button" class="sf-cta" data-act="repay" data-id="${esc(r.id)}">${esc(t('Pay now'))}</button>
+      <button type="button" class="sf-link" data-act="home">${esc(t('Back to the store'))}</button>
+    </div>`;
+  }
+  function doneView(title, note) {
     const link = lastOrder?.token && cfg.trackingBaseUrl ? `${cfg.trackingBaseUrl}?token=${encodeURIComponent(lastOrder.token)}` : null;
     return `<div class="sf-flow sf-done">
       <div class="sf-done-mark">${icon('check')}</div>
-      <h1>${esc(t('Order received'))}</h1>
+      <h1>${esc(title || t('Order received'))}</h1>
       <p>${esc(t('Your order number is'))} <b>${esc(lastOrder?.ref || '')}</b>.</p>
-      <p class="sf-note">${esc(t('{store} will confirm your order.', { store: store.name }))}</p>
+      <p class="sf-note">${esc(note || t('{store} will confirm your order.', { store: store.name }))}</p>
       ${link ? `<a class="sf-cta" href="${esc(link)}">${esc(t('Track your order'))}</a>` : ''}
       <button type="button" class="sf-link" data-act="home">${esc(t('Back to the store'))}</button>
     </div>`;
@@ -441,6 +474,7 @@
     if (r.name === 'cart') html = cartView();
     else if (r.name === 'checkout') html = cart.size ? checkoutView(err) : cartView();
     else if (r.name === 'done') html = doneView();
+    else if (r.name === 'paid' || r.name === 'payfail') html = payResultView(r);
     else if (r.name === 'product') html = tpl.product(c, product(r.id));
     else if (r.name === 'category') html = (tpl.category || tpl.home).call(tpl, c, r.id);
     else if (r.name === 'all') html = (tpl.all || tpl.category || tpl.home).call(tpl, c, null);
@@ -450,7 +484,7 @@
       ? (tpl.bar ? tpl.bar(c) : `<button type="button" class="sf-bar" data-act="tocart"><span>${esc(t(count() === 1 ? '{n} item' : '{n} items', { n: count() }))}</span><b>${money(total())}</b><span>${esc(t('View cart'))} ${icon('arrowRight')}</span></button>`)
       : '';
     app.className = `sf t-${tplKey} r-${r.name}${isClosed() ? ' is-closed' : ''}`;
-    const browse = !['cart', 'checkout', 'done'].includes(r.name);
+    const browse = !['cart', 'checkout', 'done', 'paid', 'payfail'].includes(r.name);
     app.innerHTML = `<div class="sf-page">${browse && isClosed() ? closedNote() : ''}${html}</div>${bar}`;
     dock(r);
     // Motion only marks a change: a new screen enters, and the cart badge
@@ -515,6 +549,8 @@
   const errorText = m => (/rate limited/.test(m) ? t('Too many attempts. Please wait a minute and try again.')
     : /business not verified/.test(m) ? t('This store is not taking orders yet. Please check back soon.')
     : /store closed/.test(m) ? `${t('This store is closed right now.')} ${nextOpenText()}`.trim()
+    : /online payment unavailable/.test(m) ? t('Online payment is not available for this store. Please choose cash on delivery.')
+    : /cash on delivery unavailable/.test(m) ? t('This store takes online payment only.')
     : /outside coverage/.test(m) ? t('Sorry, {store} does not deliver to this location yet.', { store: store.name })
     : /delivery pin/.test(m) ? t('Please pin your delivery location on the map.')
     : /phone/.test(m) ? t('Enter a valid phone number, for example +60 12-345 6789.')
@@ -541,6 +577,7 @@
         p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
         p_delivery_notes: [planText(plan()), (form.notes || '').trim()].filter(Boolean).join('\n'), p_idempotency_key: idempotencyKey,
         ...(plan().once ? {} : { p_plan: { weeks: Number(form.weeks), days: form.days, shift: form.shift || null } }),
+        p_payment: form.pay === 'cod' ? 'cod' : 'online',
         ...(pin ? { p_latitude: pin.lat, p_longitude: pin.lng, p_location_accuracy_m: pin.acc ?? null, p_location_source: pin.source } : {}),
       });
       if (res?.error) {
@@ -548,8 +585,11 @@
         return render(errorText(res.error));
       }
       lastOrder = { ref: res.order_reference, token: res.tracking_token };
+      const online = form.pay !== 'cod', key = idempotencyKey;
+      if (online) { try { sessionStorage.setItem(PAY_KEY, JSON.stringify({ key, ref: res.order_reference, token: res.tracking_token })); } catch { /* private mode */ } }
       try { localStorage.setItem('cefflo.sf.me', JSON.stringify({ name, phone, address })); } catch { /* private mode */ }
       cart.clear(); saveCart(); form = {}; pin = null; idempotencyKey = crypto.randomUUID();
+      if (online) { if (!(await startPayment(key))) go(`payfail/${key}`); return; }
       go('done');
     } catch (ex) {
       // The same key is kept, so a retry never creates a second order (a
@@ -573,6 +613,7 @@
       case 'sel+': ui.sel = Math.min(50, ui.sel + 1); render(); break;
       case 'sel-': ui.sel = Math.max(1, ui.sel - 1); render(); break;
       case 'pay': form.pay = id; render(); break;
+      case 'repay': startPayment(id).then(ok => { if (!ok) render(); }); break;
       case 'weeks': form.weeks = id === 'once' ? 'once' : Number(id); render(); break;
       case 'shift': form.shift = id; render(); break;
       case 'day': { const x = Number(id); form.days = form.days.includes(x) ? (form.days.length > 1 ? form.days.filter(y => y !== x) : form.days) : [...form.days, x].sort(); render(); break; }
