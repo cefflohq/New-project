@@ -94,6 +94,7 @@
   const ui = { cat: null, q: '', sel: 1, img: 0, intro: false, size: null };
   let idempotencyKey = crypto.randomUUID();
   let lastOrder = null;
+  let lastRouteKey = '', lastCount = 0;
 
   function normalise(raw) {
     const theme = raw.theme || {};
@@ -363,6 +364,13 @@
     const browse = !['cart', 'checkout', 'done'].includes(r.name);
     app.innerHTML = `<div class="sf-page">${browse && isClosed() ? closedNote() : ''}${html}${browse && !EMBED ? `<footer class="sf-foot">${langSwitch()}</footer>` : ''}</div>${bar}`;
     dock(r);
+    // Motion only marks a change: a new screen enters, and the cart badge
+    // bumps when an item is added. Re-renders from a tap on the same screen
+    // (quantity, size) do not replay the entrance.
+    const routeKey = `${r.name}:${r.id || ''}`, n = count();
+    if (routeKey !== lastRouteKey) app.classList.add('sf-enter');
+    if (n > lastCount) app.classList.add('sf-grew');
+    lastRouteKey = routeKey; lastCount = n;
     if (r.name === 'checkout' && cart.size) {
       const f = document.getElementById('sfForm');
       for (const [k, v] of Object.entries(form)) if (f.elements[k]) f.elements[k].value = v;

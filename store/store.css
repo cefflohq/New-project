@@ -1037,7 +1037,7 @@ h1, h2, h3, h4, p { margin: 0; }
   .cb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ca-cats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 .cri-head.on .cri-ic.w { background: #fff; color: #222; }
 
 /* ---- V1 completion: language switch, closed state, cart actions ---- */
@@ -1679,3 +1679,14 @@ h1, h2, h3, h4, p { margin: 0; }
 .po-seg button { padding: 10px 16px; border-radius: 999px; font-size: 14px; color: #111; }
 .po-seg button.on { background: #fff; }
 .po-cta { flex: 1; height: 50px; border-radius: 999px; background: #111; color: #fff; font-size: 15px; }
+
+/* Motion (2026-10-17). Each one shows a change, transform/opacity only,
+   150–300 ms. `translate`/`scale` compose with the bars' centring transform. */
+.sf button, .sf a { transition: scale .12s ease-out, background-color .15s ease, color .15s ease, border-color .15s ease; }
+.sf button:active:not(:disabled), .sf a:active { scale: .97; }
+.sf.sf-enter .sf-page { animation: sf-in .22s cubic-bezier(.2, .8, .2, 1) both; }
+.sf.sf-enter .sf-dock, .sf.sf-enter > .sf-bar, .sf.sf-enter > .ca-bar { animation: sf-up .28s cubic-bezier(.2, .8, .2, 1) both; }
+.sf.sf-grew .sf-badge { animation: sf-bump .32s ease-out; }
+@keyframes sf-in { from { opacity: 0; translate: 0 8px; } }
+@keyframes sf-up { from { translate: 0 100%; } }
+@keyframes sf-bump { 40% { scale: 1.35; } }
