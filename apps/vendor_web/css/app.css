@@ -1135,3 +1135,54 @@ select.sfx-in { appearance: none; padding-right: 36px; background-image: url("da
 .shell.fs .main .content > .card:not(.dc) { padding: 6px 20px 14px; margin-top: 16px; }
 .shell.fs .settings-page > .sp-head h2, .shell.fs .settings-page h2.sp-title { color: #fff; }
 .shell.fs table.t .chip { vertical-align: middle; }
+
+/* Modals in the glass DNA (Founder 2026-10-17): frosted cool-grey sheet,
+   blurred slate overlay, white inner tiles, pill controls, blue glass active. */
+.modal-root { background: rgba(40, 52, 72, .35); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.modal { border: 0; border-radius: 28px; background: rgba(236, 240, 245, .86); -webkit-backdrop-filter: blur(30px) saturate(140%); backdrop-filter: blur(30px) saturate(140%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 0 0 1px rgba(255, 255, 255, .6), 0 40px 90px -30px rgba(15, 22, 36, .55); }
+.modal-h { padding: 22px 24px 6px; }
+.modal-h h2 { font-size: 18px; letter-spacing: -.01em; }
+.modal-b { padding: 14px 24px; gap: 14px; }
+.modal-f { padding: 14px 24px 22px; }
+.modal .icon-btn, .modal .icon-btn.x { width: 38px; height: 38px; border-radius: 999px; background: rgba(255, 255, 255, .8); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .9), 0 1px 2px rgba(0, 0, 0, .06); }
+.modal .btn { height: 38px; padding: 0 16px; border-radius: 999px; }
+.modal .btn:not(.primary):not(.cta) { background: rgba(255, 255, 255, .85); border-color: rgba(60, 72, 96, .12); color: var(--ink); }
+.modal .btn.primary, .modal .btn.cta { background: linear-gradient(180deg, rgba(64, 140, 255, .9), rgba(0, 96, 254, .85)); border-color: transparent; color: #fff; box-shadow: 0 10px 24px -10px rgba(0, 96, 254, .75), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.modal .input, .modal select, .modal textarea { border-radius: 14px; background: rgba(255, 255, 255, .85); border-color: rgba(60, 72, 96, .12); }
+.modal .tabs { gap: 4px; padding: 4px; width: max-content; max-width: 100%; border: 0; border-radius: 14px; background: rgba(255, 255, 255, .55); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8); }
+.modal .tabs button { height: 34px; padding: 0 14px; border-radius: 10px; color: var(--ink-2); }
+.modal .tabs button.on { background: linear-gradient(180deg, rgba(64, 140, 255, .9), rgba(0, 96, 254, .85)); color: #fff; box-shadow: 0 8px 18px -8px rgba(0, 96, 254, .7); }
+.modal .tabs button.on::after { display: none; }
+.modal .stats { gap: 10px; }
+.modal .stat { padding: 12px 14px; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .04); }
+.modal .stat + .stat { border-left: 0; }
+.modal .rd-body, .modal [data-dbody] { display: grid; gap: 12px; }
+.modal .kv { padding: 12px 14px; border: 0; border-radius: 0; background: #fff; }
+.modal .kv:first-of-type, .modal .stats + .kv { border-radius: 16px 16px 0 0; }
+.modal .kv:last-child { border-radius: 0 0 16px 16px; }
+.modal .kv + .kv { box-shadow: inset 0 1px 0 rgba(60, 72, 96, .08); }
+.modal .kv > svg.i { width: 30px; height: 30px; padding: 7px; border-radius: 10px; background: #EEF2FF; color: #3D63F5; margin-top: 0; box-sizing: border-box; }
+.modal .avatar { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .9); }
+.modal .chip { border-radius: 999px; padding: 0 10px; }
+.modal .link-btn.rd-deactivate { color: var(--danger); }
+:root[data-theme="dark"] .modal { background: rgba(30, 32, 40, .88); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 40px 90px -30px rgba(0, 0, 0, .7); }
+:root[data-theme="dark"] .modal .stat, :root[data-theme="dark"] .modal .kv { background: rgba(255, 255, 255, .05); }
+/* Profile photo sits inside the Personal information card. */
+.photo.in-card { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; margin: 4px 0 8px; padding-bottom: 16px; border-bottom: 1px solid rgba(60, 72, 96, .1); }
+.photo.in-card .photo-btn .avatar { width: 72px; height: 72px; font-size: 24px; }
+.photo.in-card .photo-actions { display: flex; gap: 8px; margin: 0; }
+.photo.in-card .icon-btn { width: 36px; height: 36px; border-radius: 999px; background: rgba(255, 255, 255, .85); box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .12); }
+/* Founder 2026-10-17: sidebar matches the cards (light frosted glass, dark
+   text); backdrop is a Cefflo blue flow, deep at the top, light below. */
+.shell.fs { background: linear-gradient(180deg, #0A2E6E 0%, #1553C4 30%, #4F8DF0 62%, #A9CBF7 85%, #DCEBFC 100%); background-attachment: fixed; }
+.shell.fs .sidebar { background: rgba(236, 240, 245, .78); -webkit-backdrop-filter: blur(26px) saturate(140%); backdrop-filter: blur(26px) saturate(140%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 0 0 1px rgba(255, 255, 255, .6), 0 24px 56px -24px rgba(8, 30, 80, .5); }
+.shell.fs .sidebar .nav a, .shell.fs .sidebar .sb-item, .shell.fs .sidebar .ws-btn, .shell.fs .sidebar .sb-btn { color: var(--ink); }
+.shell.fs .sidebar .ws-btn .updown, .shell.fs .sidebar .sb-search, .shell.fs .sidebar .sb-search kbd { color: var(--muted); }
+.shell.fs .sidebar .sb-search { background: rgba(255, 255, 255, .7); }
+.shell.fs .sidebar .sb-search kbd { border-color: rgba(60, 72, 96, .16); }
+.shell.fs .sidebar .nav a:hover, .shell.fs .sidebar .sb-item:hover, .shell.fs .sidebar .ws-btn:hover, .shell.fs .sidebar .sb-btn:hover { background: rgba(255, 255, 255, .7); }
+.shell.fs .sidebar .nav a.active { color: #fff; }
+.shell.fs .sidebar .sb-head, .shell.fs .sidebar .sidebar-foot { border-color: rgba(60, 72, 96, .12); }
+.shell.fs .sidebar .sb-sw { background: rgba(60, 72, 96, .16); }
+.shell.fs .main { background: rgba(255, 255, 255, .1); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 0 0 1px rgba(255, 255, 255, .18), 0 30px 60px -30px rgba(8, 30, 80, .45); }
+.modal-h .btn, .modal-h a.btn, .modal-h button:not(.x) { border-radius: 999px !important; width: 38px; height: 38px; padding: 0; display: inline-grid; place-items: center; background: rgba(255, 255, 255, .85); border: 0; box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .12); }

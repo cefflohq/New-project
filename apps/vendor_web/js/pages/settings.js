@@ -96,7 +96,8 @@ async function profile(page) {
     const p = rows?.[0] || {};
     const name = p.display_name || u.user_metadata?.full_name || '';
     body.innerHTML = `
-      <div class="photo">
+      <div class="sub-card"><h3>${esc(t('prof.personal'))}</h3>
+      <div class="photo in-card">
         <button type="button" class="photo-btn" data-photo aria-label="${esc(t('prof.photoChange'))}">${avatar(name || u.email, 'xl')}<span data-photo-spin hidden></span></button>
         <input type="file" accept="image/jpeg,image/png,image/webp" data-photo-input hidden>
         <div class="photo-actions">
@@ -105,7 +106,6 @@ async function profile(page) {
         </div>
         <div class="err" data-photo-err hidden role="alert"></div>
       </div>
-      <div class="sub-card"><h3>${esc(t('prof.personal'))}</h3>
         <div class="form-row"><label>${esc(t('prof.fullName'))}</label><input class="input" name="name" maxlength="80" value="${esc(name)}"></div>
         <div class="form-row"><label>${esc(t('prof.email'))}</label><div class="inline-field"><input class="input" name="email" type="email" value="${esc(u.email)}"><button class="btn soft" data-email>${esc(t('c.change'))}</button></div></div>
         <div class="form-row"><label>${esc(t('prof.phone'))}</label><input class="input" name="phone" inputmode="tel" value="${esc(p.phone || '')}"></div>
