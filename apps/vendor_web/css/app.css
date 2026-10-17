@@ -1217,3 +1217,25 @@ select.sfx-in { appearance: none; padding-right: 36px; background-image: url("da
   .shell.fs .sidebar > *, .shell.fs .sidebar .nav, .shell.fs .sidebar-foot, .shell.fs .sidebar-foot > * { min-width: 0; width: 100%; box-sizing: border-box; }
   .shell.fs .nav a, .shell.fs .sb-item { overflow: hidden; box-sizing: border-box; }
 }
+@media (min-width: 1024px) {
+  .shell.fs .sb-head::before { width: 42px; height: 42px; border-radius: 50%; background: url("../img/cefflo-icon-navy.png") center / cover no-repeat; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 4px 12px -4px rgba(8, 30, 80, .4); }
+  .shell.fs .sidebar > *, .shell.fs .sb-search { flex-shrink: 0; }
+  .shell.fs .sb-search { height: 44px; min-height: 44px; }
+}
+@media (min-width: 1024px) {
+  .shell.fs .sidebar { overflow: visible; }
+  .shell.fs .sb-head .menu { top: calc(100% + 6px); left: 0; width: 260px; z-index: 90; }
+}
+.shell.fs .sidebar .menu { padding: 8px; border: 0; border-radius: 20px; background: rgba(246, 248, 251, .96); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .9), 0 24px 50px -18px rgba(8, 30, 80, .45); }
+.shell.fs .sidebar .menu .menu-label { padding: 6px 10px 8px; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); }
+.shell.fs .sidebar .menu button { min-height: 48px; padding: 8px 10px; border-radius: 14px; }
+.shell.fs .sidebar .menu button:hover { background: rgba(0, 96, 254, .08); }
+.shell.fs .sidebar .menu .ws-tile { width: 32px; height: 32px; border-radius: 50%; font-size: 13px; background: linear-gradient(180deg, #2F7BFF, #0057E8); }
+.shell.fs .sidebar .menu button b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 1024px) and (max-height: 780px) {
+  .shell.fs .nav a, .shell.fs .sb-item { height: 40px; }
+  .shell.fs .sb-search { height: 40px; min-height: 40px; margin-bottom: 4px; }
+  .shell.fs .sb-head { padding-bottom: 8px; margin-bottom: 2px; }
+  .shell.fs .sidebar { padding: 10px; gap: 2px; }
+  .shell.fs .acct-btn { height: 42px; }
+}
