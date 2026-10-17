@@ -134,6 +134,16 @@
       hours: Array.isArray(raw.hours) ? raw.hours : [], products,
       categories: (raw.categories || []).filter(c => products.some(p => p.categoryId === c.id)),
       templateKey: raw.template_key,
+      // Delivery plan set by the vendor: fee per drop (= the driver's pay, never
+      // free), delivery weekdays (1 = Mon), shifts (fixed batches) and package
+      // lengths in weeks. No fee set = the store confirms delivery itself.
+      delivery: {
+        fee: raw.delivery?.fee == null ? null : Number(raw.delivery.fee),
+        days: Array.isArray(raw.delivery?.days) && raw.delivery.days.length ? raw.delivery.days.map(Number) : [1, 2, 3, 4, 5],
+        shifts: Array.isArray(raw.delivery?.shifts) ? raw.delivery.shifts : [],
+        weeks: Array.isArray(raw.delivery?.weeks) && raw.delivery.weeks.length ? raw.delivery.weeks.map(Number) : [1, 2, 4],
+        coverage: !!raw.delivery?.coverage,
+      },
       // Online payment needs the vendor's own CHIP account; COD is allowed when
       // the vendor turns it on, and is the only way to pay without CHIP.
       payOnline: !!raw.payments?.online, payCod: raw.payments ? raw.payments.cod !== false || !raw.payments.online : true,
@@ -238,6 +248,25 @@
       : `<div class="sf-empty">${esc(t('Your cart is empty.'))}</div><button type="button" class="sf-cta" data-act="home">${esc(t('Browse products'))}</button>`}
     </div>`;
   }
+  // Delivery plan. 'once' = one delivery; otherwise the chosen weekdays every
+  // week for the chosen number of weeks. Goods and delivery repeat per drop.
+  const DAYN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  function plan() {
+    const d = store.delivery;
+    if (!form.weeks || (form.weeks !== 'once' && !d.weeks.includes(Number(form.weeks)))) form.weeks = 'once';
+    if (!Array.isArray(form.days)) form.days = [...d.days];
+    form.days = form.days.filter(x => d.days.includes(x));
+    if (d.shifts.length && !d.shifts.some(x => x.name === form.shift)) form.shift = d.shifts[0].name;
+    const once = form.weeks === 'once';
+    const drops = once ? 1 : form.days.length * Number(form.weeks);
+    const goods = total() * drops, fee = d.fee == null ? null : d.fee * drops;
+    return { once, drops, goods, fee, grand: goods + (fee || 0) };
+  }
+  function planText(pl) {
+    const sh = store.delivery.shifts.find(x => x.name === form.shift);
+    return [pl.once ? 'One delivery' : `${form.days.map(x => DAYN[x - 1]).join(', ')} × ${form.weeks} week${form.weeks == 1 ? '' : 's'} (${pl.drops} deliveries)`,
+      sh ? `${sh.name} ${sh.from}–${sh.to}` : '', store.delivery.fee != null ? `Delivery RM ${store.delivery.fee.toFixed(2)} × ${pl.drops}` : ''].filter(Boolean).join(' · ');
+  }
   // One-page checkout (Founder: as easy as TikTok / Shopee): address, items,
   // payment, total + Place order. Details are remembered on this device.
   function checkoutView(err) {
@@ -247,6 +276,7 @@
       ...(store.payCod ? [['cod', 'Cash on delivery', 'Pay the rider when it arrives']] : []),
     ];
     if (!methods.some(m => m[0] === form.pay)) form.pay = methods[0]?.[0] || 'cod';
+    const d = store.delivery, pl = plan();
     return `<div class="sf-flow sf-co">
       <header class="sf-flow-top"><button type="button" class="sf-round" data-act="back" aria-label="${esc(t('Back'))}">${icon('arrowLeft')}</button><h1>${esc(t('Checkout'))}</h1><span></span></header>
       ${isClosed() ? closedNote() : ''}
@@ -272,12 +302,18 @@
         <section class="co-box"><h2>${icon('bag')} ${esc(store.name)}</h2>
           <ul class="co-items">${lines.map(([id, q]) => { const p = product(id); return `<li>${img(p, 'co-img')}<div><b>${esc(p.name)}</b><small>× ${q}</small></div><span>${money(p.price * q)}</span></li>`; }).join('')}</ul>
         </section>
+        <section class="co-box"><h2>${icon('clock')} ${esc(t('Delivery schedule'))}</h2>
+          <div class="co-seg" role="radiogroup" aria-label="${esc(t('How often'))}">${[['once', t('Once')], ...d.weeks.map(w => [String(w), t(w === 1 ? '1 week' : '{n} weeks', { n: w })])].map(([k, l]) => `<button type="button" role="radio" aria-checked="${String(form.weeks) === k}" class="${String(form.weeks) === k ? 'on' : ''}" data-act="weeks" data-id="${k}">${esc(l)}</button>`).join('')}</div>
+          ${pl.once ? '' : `<div class="co-days" role="group" aria-label="${esc(t('Delivery days'))}">${[1, 2, 3, 4, 5, 6, 7].map(x => { const ok = d.days.includes(x), on = form.days.includes(x); return `<button type="button" aria-pressed="${on}" class="${on ? 'on' : ''}" data-act="day" data-id="${x}" ${ok ? '' : 'disabled'}>${esc(t(DAYN[x - 1]))}</button>`; }).join('')}</div>`}
+          ${d.shifts.length ? `<div class="co-pay" role="radiogroup" aria-label="${esc(t('Delivery time'))}">${d.shifts.map(x => `<button type="button" role="radio" aria-checked="${form.shift === x.name}" class="${form.shift === x.name ? 'on' : ''}" data-act="shift" data-id="${esc(x.name)}"><span class="co-dot"></span><span><b>${esc(x.name)}</b><small>${esc(t('Arrives {from}–{to}', { from: x.from, to: x.to }))}</small></span></button>`).join('')}</div>` : ''}
+          ${pl.once ? '' : `<p class="co-hint">${esc(t('{n} deliveries. Your items are sent on each day.', { n: pl.drops }))}</p>`}
+        </section>
         <section class="co-box"><h2>${icon('shield')} ${esc(t('Payment method'))}</h2>
           <div class="co-pay" role="radiogroup">${methods.map(([k, label, sub]) => `<button type="button" role="radio" aria-checked="${form.pay === k}" class="${form.pay === k ? 'on' : ''}" data-act="pay" data-id="${k}"><span class="co-dot"></span><span><b>${esc(t(label))}</b><small>${esc(t(sub))}</small></span></button>`).join('')}</div>
         </section>
-        <section class="co-box co-sum"><div><span>${esc(t('Subtotal'))}</span><span>${money(total())}</span></div><div><span>${esc(t('Delivery fee'))}</span><span>${esc(t('Confirmed by the store'))}</span></div></section>
+        <section class="co-box co-sum"><div><span>${esc(pl.once ? t('Subtotal') : t('Items × {n} deliveries', { n: pl.drops }))}</span><span>${money(pl.goods)}</span></div><div><span>${esc(pl.once ? t('Delivery fee') : t('Delivery {fee} × {n}', { fee: money(d.fee || 0), n: pl.drops }))}</span><span>${pl.fee == null ? esc(t('Confirmed by the store')) : money(pl.fee)}</span></div></section>
         ${err ? `<p class="sf-error" role="alert">${esc(err)}</p>` : ''}
-        <div class="co-bar"><div><small>${esc(t('Total'))}</small><b>${money(total())}</b></div><button type="submit" class="sf-cta" id="sfPlace" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Place order'))}</button></div>
+        <div class="co-bar"><div><small>${esc(t('Total'))}</small><b>${money(pl.grand)}</b></div><button type="submit" class="sf-cta" id="sfPlace" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Place order'))}</button></div>
       </form>
     </div>`;
   }
@@ -479,6 +515,8 @@
   const errorText = m => (/rate limited/.test(m) ? t('Too many attempts. Please wait a minute and try again.')
     : /business not verified/.test(m) ? t('This store is not taking orders yet. Please check back soon.')
     : /store closed/.test(m) ? `${t('This store is closed right now.')} ${nextOpenText()}`.trim()
+    : /outside coverage/.test(m) ? t('Sorry, {store} does not deliver to this location yet.', { store: store.name })
+    : /delivery pin/.test(m) ? t('Please pin your delivery location on the map.')
     : /phone/.test(m) ? t('Enter a valid phone number, for example +60 12-345 6789.')
     : /available|product|item|quantity/i.test(m) ? t('Some items are no longer available. Please review your order.')
     : t('We could not place your order. Please try again.'));
@@ -494,10 +532,14 @@
     btn.disabled = true; btn.textContent = t('Placing order…');
     window.showPageLoader(t('Placing order…'));
     try {
+      if (pin && store.delivery.coverage) {
+        const cov = await rpc('storefront_coverage_check', { p_slug: store.slug, p_latitude: pin.lat, p_longitude: pin.lng }).catch(() => null);
+        if (cov?.covered === false) return render(errorText('outside coverage'));
+      }
       const res = await rpc('submit_storefront_order', {
         p_slug: store.slug, p_items: [...cart].map(([product_id, quantity]) => ({ product_id, quantity })),
         p_customer_name: name, p_customer_phone: phone, p_delivery_address: address,
-        p_delivery_notes: (form.notes || '').trim(), p_idempotency_key: idempotencyKey,
+        p_delivery_notes: [planText(plan()), (form.notes || '').trim()].filter(Boolean).join('\n'), p_idempotency_key: idempotencyKey,
         ...(pin ? { p_latitude: pin.lat, p_longitude: pin.lng, p_location_accuracy_m: pin.acc ?? null, p_location_source: pin.source } : {}),
       });
       if (res?.error) {
@@ -530,6 +572,9 @@
       case 'sel+': ui.sel = Math.min(50, ui.sel + 1); render(); break;
       case 'sel-': ui.sel = Math.max(1, ui.sel - 1); render(); break;
       case 'pay': form.pay = id; render(); break;
+      case 'weeks': form.weeks = id === 'once' ? 'once' : Number(id); render(); break;
+      case 'shift': form.shift = id; render(); break;
+      case 'day': { const x = Number(id); form.days = form.days.includes(x) ? (form.days.length > 1 ? form.days.filter(y => y !== x) : form.days) : [...form.days, x].sort(); render(); break; }
       case 'buy': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } go('checkout'); break; }
       case 'addsel': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } render(); break; }
       case 'img': ui.img = Number(id) || 0; render(); break;
