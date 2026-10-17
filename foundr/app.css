@@ -265,3 +265,30 @@ html,body,#app{background:linear-gradient(180deg,#0A2E6E 0%,#1553C4 30%,#4F8DF0 
 .page-head h1,.page-head .eyebrow,.page-head p{display:none}
 .page-head{margin-bottom:12px}
 .page-head:not(:has(> :not(div:first-child))) {margin:0}
+/* Latest polish (2026-10-18), same as Vendor Web: icon rail that opens on
+   hover and pushes the panel, fluid width, blue row hover, round logo. */
+@media(min-width:1051px){
+:root{--rail:76px;--open:228px}
+.shell{grid-template-columns:calc(var(--rail) + 32px) 1fr;transition:grid-template-columns .32s cubic-bezier(.2,.8,.2,1)}
+.shell:has(.sidebar:hover),.shell:has(.sidebar:focus-within){grid-template-columns:calc(var(--open) + 32px) 1fr}
+.sidebar{width:var(--rail);overflow:hidden;transition:width .32s cubic-bezier(.2,.8,.2,1)}
+.sidebar:hover,.sidebar:focus-within{width:var(--open)}
+.workspace{grid-column:2;margin-left:0}
+.nav-btn span,.profile>div:last-child{opacity:0;white-space:nowrap;transition:opacity .16s}
+.sidebar:hover .nav-btn span,.sidebar:hover .profile>div:last-child,.sidebar:focus-within .nav-btn span{opacity:1;transition-delay:.12s}
+.nav-btn{padding:11px 15px;width:100%}
+.brand{font-size:0;padding:0 4px 18px}
+.brand::before{content:"";width:42px;height:42px;border-radius:50%;background:url("./img/cefflo-symbol.png") center/cover no-repeat;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 4px 12px -4px rgba(8,30,80,.4);flex:none}
+.ops-flyout{left:calc(var(--open) + 24px)}
+}
+.content{max-width:none}
+.table tbody tr:hover td{background:rgba(0,96,254,.1)}
+.nav-btn:focus{outline:0}.nav-btn:focus-visible{outline:2px solid #FFC93C;outline-offset:2px}
+@media(min-width:1051px){
+.nav{width:100%}
+.nav-btn{justify-content:flex-start;min-height:46px;color:#1c2433}
+.nav-btn svg,.nav-btn .ti{flex:0 0 20px;width:20px;height:20px;stroke:currentColor}
+.profile{padding:8px 6px;width:100%}
+.profile .avatar{flex:0 0 32px;width:32px;height:32px}
+.sidebar{align-items:stretch}
+}
