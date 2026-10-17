@@ -18,9 +18,9 @@ const TEMPLATES = [
   { id: 'tailor', name: 'Showcase', cat: 'retail', primary: '#111111', secondary: '#F59E6B' },
   { id: 'care', name: 'Basket', cat: 'retail', primary: '#1677D8', secondary: '#E8F2FD' },
   { id: 'service', name: 'Service', cat: 'services', primary: '#5B7CF6', secondary: '#FACC15' },
-  { id: 'pour', name: 'Spotlight', cat: 'retail', primary: '#F8BB5E', secondary: '#111111', hero: false },
+  { id: 'pour', name: 'Spotlight', cat: 'gifts', primary: '#F8BB5E', secondary: '#111111', hero: false },
 ];
-const CATS = ['food', 'sweet', 'retail', 'services'];
+const CATS = ['food', 'retail', 'gifts', 'services'];
 // Earlier templates (CEFFLO_TEMPLATE_LEGACY): not offered any more, but a
 // storefront saved on one still shows it as the active template.
 const LEGACY = [

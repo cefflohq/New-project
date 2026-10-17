@@ -113,14 +113,14 @@ final List<StorefrontTemplateDef> kWebStorefrontTemplates = [
   _t(
     'pour',
     'Spotlight',
-    'Fashion & Lifestyle',
-    'Warm and photo-led: a greeting, search with Filter, orange category chips and large product cards; the product page has a thumbnail column, sizes and Add to Cart + Buy Now.',
+    'Flowers & Gifts',
+    'Warm and photo-led for florists and gifts: a greeting, search, category chips and large bouquet cards; the product page has a photo column, sizes and Add to Cart + Buy Now.',
     const [
-      'Large product cards',
+      'Large bouquet cards',
       'Sizes and quantity',
       'Add to Cart + Buy Now',
     ],
-    const ['Retail'],
+    const ['Gifts'],
     const Color(0xFFF8BB5E),
     const Color(0xFF111111),
   ),

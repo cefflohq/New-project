@@ -134,6 +134,9 @@
       hours: Array.isArray(raw.hours) ? raw.hours : [], products,
       categories: (raw.categories || []).filter(c => products.some(p => p.categoryId === c.id)),
       templateKey: raw.template_key,
+      // Online payment needs the vendor's own CHIP account; COD is allowed when
+      // the vendor turns it on, and is the only way to pay without CHIP.
+      payOnline: !!raw.payments?.online, payCod: raw.payments ? raw.payments.cod !== false || !raw.payments.online : true,
     };
   }
 
@@ -231,37 +234,50 @@
       ${lines.length ? `<ul class="sf-lines">${lines.map(([id]) => { const p = product(id); return `<li>${img(p, 'sf-line-img')}<div><b>${esc(p.name)}</b><small>${money(p.price)}</small></div>${ctx().stepper(id)}</li>`; }).join('')}</ul>
       <div class="sf-sum"><span>${esc(t('Total'))}</span><b>${money(total())}</b></div>
       <p class="sf-note">${esc(t('Final prices are confirmed by {store} when your order is received.', { store: store.name }))}</p>
-      <button type="button" class="sf-cta" data-act="checkout" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Continue'))}</button>`
+      <button type="button" class="sf-cta" data-act="checkout" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Checkout'))}</button>`
       : `<div class="sf-empty">${esc(t('Your cart is empty.'))}</div><button type="button" class="sf-cta" data-act="home">${esc(t('Browse products'))}</button>`}
     </div>`;
   }
+  // One-page checkout (Founder: as easy as TikTok / Shopee): address, items,
+  // payment, total + Place order. Details are remembered on this device.
   function checkoutView(err) {
-    const n = count();
-    return `<div class="sf-flow">
-      <header class="sf-flow-top"><button type="button" class="sf-round" data-act="back" aria-label="${esc(t('Back'))}">${icon('arrowLeft')}</button><h1>${esc(t('Delivery details'))}</h1><span></span></header>
+    const lines = [...cart].filter(([id]) => product(id));
+    const methods = [
+      ...(store.payOnline ? [['duitnow', 'DuitNow QR', 'Any bank or e-wallet app'], ['fpx', 'Online banking (FPX)', 'Maybank2u, CIMB Clicks and more']] : []),
+      ...(store.payCod ? [['cod', 'Cash on delivery', 'Pay the rider when it arrives']] : []),
+    ];
+    if (!methods.some(m => m[0] === form.pay)) form.pay = methods[0]?.[0] || 'cod';
+    return `<div class="sf-flow sf-co">
+      <header class="sf-flow-top"><button type="button" class="sf-round" data-act="back" aria-label="${esc(t('Back'))}">${icon('arrowLeft')}</button><h1>${esc(t('Checkout'))}</h1><span></span></header>
       ${isClosed() ? closedNote() : ''}
       <form class="sf-form" id="sfForm" novalidate>
-        <label>${esc(t('Name'))}<input name="name" autocomplete="name" maxlength="120" required></label>
-        <label>${esc(t('Phone'))}<input name="phone" autocomplete="tel" inputmode="tel" maxlength="30" required placeholder="+60 12-345 6789"></label>
-        <label>${esc(t('Delivery address'))}<textarea name="address" rows="3" maxlength="500" required></textarea></label>
-        <div class="sf-pin">
-          <span class="sf-pin-label">${esc(t('Delivery pin'))}</span>
-          <div class="sf-pin-map" id="sfPinMap">
-            <div class="sf-map-canvas"></div>
-            <div class="sf-map-pin" aria-hidden="true"><svg viewBox="0 0 40 52"><path d="M20 51C20 51 37 31.6 37 19.5A17 17 0 0 0 3 19.5C3 31.6 20 51 20 51Z"/><circle cx="20" cy="19.5" r="6.5"/></svg><i></i></div>
-            <span class="sf-map-acc" hidden></span>
-            <div class="sf-map-zoom"><button type="button" data-act="zoomin" aria-label="${esc(t('Zoom in'))}">${icon('plus')}</button><button type="button" data-act="zoomout" aria-label="${esc(t('Zoom out'))}">${icon('minus')}</button></div>
-            <button type="button" class="sf-map-locate" data-act="pin" aria-label="${esc(t('Use my current location'))}">${icon('locate')}</button>
-            <div class="sf-map-start"><button type="button" data-act="pin">${icon('locate')} ${esc(t('Use my current location'))}</button></div>
-            ${mapboxToken() ? '' : '<small class="sf-map-attr">© OpenStreetMap · OpenFreeMap</small>'}
+        <section class="co-box"><h2>${icon('mapPin')} ${esc(t('Delivery address'))}</h2>
+          <div class="co-two"><label>${esc(t('Name'))}<input name="name" autocomplete="name" maxlength="120" required></label>
+          <label>${esc(t('Phone'))}<input name="phone" autocomplete="tel" inputmode="tel" maxlength="30" required placeholder="+60 12-345 6789"></label></div>
+          <label>${esc(t('Address'))}<textarea name="address" rows="2" maxlength="500" required></textarea></label>
+          <div class="sf-pin">
+            <div class="sf-pin-map" id="sfPinMap">
+              <div class="sf-map-canvas"></div>
+              <div class="sf-map-pin" aria-hidden="true"><svg viewBox="0 0 40 52"><path d="M20 51C20 51 37 31.6 37 19.5A17 17 0 0 0 3 19.5C3 31.6 20 51 20 51Z"/><circle cx="20" cy="19.5" r="6.5"/></svg><i></i></div>
+              <span class="sf-map-acc" hidden></span>
+              <div class="sf-map-zoom"><button type="button" data-act="zoomin" aria-label="${esc(t('Zoom in'))}">${icon('plus')}</button><button type="button" data-act="zoomout" aria-label="${esc(t('Zoom out'))}">${icon('minus')}</button></div>
+              <button type="button" class="sf-map-locate" data-act="pin" aria-label="${esc(t('Use my current location'))}">${icon('locate')}</button>
+              <div class="sf-map-start"><button type="button" data-act="pin">${icon('locate')} ${esc(t('Use my current location'))}</button></div>
+              ${mapboxToken() ? '' : '<small class="sf-map-attr">© OpenStreetMap · OpenFreeMap</small>'}
+            </div>
+            <p class="sf-pin-hint" id="sfPinHint">${esc(t('Pin your exact location so the rider finds you without calling.'))}</p>
           </div>
-          <p class="sf-pin-hint" id="sfPinHint">${esc(t('Pin your exact location so the rider finds you without calling.'))}</p>
-        </div>
-        <label>${esc(t('Notes for the rider (optional)'))}<textarea name="notes" rows="2" maxlength="500" placeholder="${esc(t('e.g. blue gate, rumah lot behind the surau, leave at the guardhouse'))}"></textarea></label>
-        <div class="sf-sum"><span>${esc(t(n === 1 ? '{n} item' : '{n} items', { n }))}</span><b>${money(total())}</b></div>
-        <p class="sf-note">${esc(t('Payment is arranged directly with {store}. Cefflo does not take payment for this order.', { store: store.name }))}</p>
+          <label>${esc(t('Note for the rider (optional)'))}<input name="notes" maxlength="500" placeholder="${esc(t('e.g. blue gate, leave at the guardhouse'))}"></label>
+        </section>
+        <section class="co-box"><h2>${icon('bag')} ${esc(store.name)}</h2>
+          <ul class="co-items">${lines.map(([id, q]) => { const p = product(id); return `<li>${img(p, 'co-img')}<div><b>${esc(p.name)}</b><small>× ${q}</small></div><span>${money(p.price * q)}</span></li>`; }).join('')}</ul>
+        </section>
+        <section class="co-box"><h2>${icon('shield')} ${esc(t('Payment method'))}</h2>
+          <div class="co-pay" role="radiogroup">${methods.map(([k, label, sub]) => `<button type="button" role="radio" aria-checked="${form.pay === k}" class="${form.pay === k ? 'on' : ''}" data-act="pay" data-id="${k}"><span class="co-dot"></span><span><b>${esc(t(label))}</b><small>${esc(t(sub))}</small></span></button>`).join('')}</div>
+        </section>
+        <section class="co-box co-sum"><div><span>${esc(t('Subtotal'))}</span><span>${money(total())}</span></div><div><span>${esc(t('Delivery fee'))}</span><span>${esc(t('Confirmed by the store'))}</span></div></section>
         ${err ? `<p class="sf-error" role="alert">${esc(err)}</p>` : ''}
-        <button type="submit" class="sf-cta" id="sfPlace" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Place order'))}</button>
+        <div class="co-bar"><div><small>${esc(t('Total'))}</small><b>${money(total())}</b></div><button type="submit" class="sf-cta" id="sfPlace" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Place order'))}</button></div>
       </form>
     </div>`;
   }
@@ -361,6 +377,8 @@
 
   // ------------------------------------------------------------- render
   let form = {};
+  // Returning shoppers: name, phone and address are pre-filled from this device.
+  try { const me = JSON.parse(localStorage.getItem('cefflo.sf.me') || 'null'); if (me) form = { ...me, ...form }; } catch { /* private mode */ }
   const CARD_SEL = '.wr-row, .tl-card, .ca-row, .ca-card, .ca-cats > *, .sv-offer, .sv-cats > *, .sv-card, .sp5-card, .sp5-chip, .tl-chip, .wr-chip, .sv-card2, .sp5-sizes button, .tl-sizes button';
   // Loading state: a shimmer laid out like the template the store last used
   // (remembered per store), so the page does not jump when data arrives.
@@ -440,9 +458,10 @@
       app.querySelectorAll('.sf-stepper').forEach(st => { if (st.querySelector('[data-id="__sel"]')) st.remove(); });
       inner = `${ctx().stepper('__sel', 'sf-dock-step')}<button type="button" class="sf-dock-cta" data-act="${act}" ${isClosed() ? 'disabled' : ''}>${esc(t(isClosed() ? 'Closed' : 'Add to cart'))}<b>${money(p.price * ui.sel)}</b></button>`;
     } else if (r.name === 'cart' || r.name === 'checkout' || r.name === 'done') {
-      const cta = app.querySelector('.sf-page .sf-cta');
+      const cta = app.querySelector('.sf-page .co-bar') || app.querySelector('.sf-page .sf-cta');
       if (!cta) return;
-      if (cta.id === 'sfPlace') cta.setAttribute('form', 'sfForm');
+      const place = cta.id === 'sfPlace' ? cta : cta.querySelector('#sfPlace');
+      if (place) place.setAttribute('form', 'sfForm');
       cta.remove();
       const d = document.createElement('div');
       d.className = 'sf-dock';
@@ -486,6 +505,7 @@
         return render(errorText(res.error));
       }
       lastOrder = { ref: res.order_reference, token: res.tracking_token };
+      try { localStorage.setItem('cefflo.sf.me', JSON.stringify({ name, phone, address })); } catch { /* private mode */ }
       cart.clear(); saveCart(); form = {}; pin = null; idempotencyKey = crypto.randomUUID();
       go('done');
     } catch (ex) {
@@ -509,7 +529,8 @@
       case 'q-': bump(id, -1); render(); break;
       case 'sel+': ui.sel = Math.min(50, ui.sel + 1); render(); break;
       case 'sel-': ui.sel = Math.max(1, ui.sel - 1); render(); break;
-      case 'buy': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } go('cart'); break; }
+      case 'pay': form.pay = id; render(); break;
+      case 'buy': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } go('checkout'); break; }
       case 'addsel': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } render(); break; }
       case 'img': ui.img = Number(id) || 0; render(); break;
       case 'pin': locate(); break;
