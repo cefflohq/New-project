@@ -101,7 +101,7 @@ export default function zones({ el, params, setHeader }) {
   // a place simply stays without a boundary.
   const outline = (row, place) => {
     const id = Array.isArray(row) ? row[0]?.id : row?.id;
-    return id ? api.fn('zone-boundary', { zone_id: id, ...(place ? { center: place.center } : {}) }).catch(() => null) : null;
+    return id ? api.fn('zone-boundary', { zone_id: id, ...(place?.center ? { center: place.center } : {}), ...(place?.area_id ? { area_id: place.area_id } : {}) }).catch(() => null) : null;
   };
 
   // Delete zone (Founder 2026-10-13): leaves the list, row kept for history.
@@ -140,17 +140,25 @@ export default function zones({ el, params, setHeader }) {
       footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t('c.save'))}</button>` });
     const input = m.el.querySelector('[name=n]'), sug = m.el.querySelector('[data-sug]');
     let picked = null, timer = null, seq = 0, options = [];
+    const sugCache = new Map();
     input.addEventListener('input', () => {
       if (picked && input.value !== picked.name) picked = null;
       clearTimeout(timer);
       const q = input.value.trim(), mine = ++seq;
       if (picked || q.length < 2) { sug.hidden = true; return; }
+      // Fast first: the admin areas already in the database answer at once;
+      // the wider town search fills in after. Both cached per query.
+      const show = list => { if (mine !== seq) return; options = list; sug.innerHTML = list.map((a, i) => `<button type="button" data-i="${i}">${icon('pin')}<span><b>${esc(a.name)}</b>${a.state ? `<small>${esc(a.state)}</small>` : ''}</span></button>`).join(''); sug.hidden = !list.length; };
+      const key = q.toLowerCase();
+      if (sugCache.has(key)) { show(sugCache.get(key)); return; }
       timer = setTimeout(async () => {
-        options = (await api.fn('zone-boundary', { suggest: q }).catch(() => null))?.suggestions || [];
-        if (mine !== seq) return;
-        sug.innerHTML = (options || []).map((a, i) => `<button type="button" data-i="${i}">${icon('pin')}<span><b>${esc(a.name)}</b>${a.state ? `<small>${esc(a.state)}</small>` : ''}</span></button>`).join('');
-        sug.hidden = !options?.length;
-      }, 250);
+        const local = ((await api.rpc('search_admin_areas', { p_query: q }).catch(() => [])) || []).map(a => ({ name: a.label, state: a.state, area_id: a.id }));
+        show(local);
+        const far = (await api.fn('zone-boundary', { suggest: q }).catch(() => null))?.suggestions || [];
+        const seen = new Set(local.map(a => `${a.name}|${a.state}`.toLowerCase()));
+        const all = [...local, ...far.filter(a => !seen.has(`${a.name}|${a.state}`.toLowerCase()))].slice(0, 8);
+        sugCache.set(key, all); show(all);
+      }, 90);
     });
     sug.addEventListener('click', e => {
       const b = e.target.closest('[data-i]'); if (!b) return;

@@ -5,7 +5,7 @@
 import { t } from './i18n.js';
 import { api } from './api.js';
 import { ctx } from './store.js';
-import { esc, modal, toast, copyText } from './ui.js';
+import { esc, icon, modal, toast, copyText } from './ui.js';
 import qrcode from './lib/qrcode.js';
 
 function qrSvg(text) {
@@ -32,12 +32,12 @@ export function showInviteLink(kind, initialRole = 'operator') {
     lead: t('invite.lead'),
     body: `${kind === 'rider' ? '' : (ctx.isOwner ? roleOpt('operator', 'team.operator', 'team.operatorSub') : '') + roleOpt('helper', 'team.helper', 'team.helperSub')}
       <div class="invite-qr" data-qr style="display:grid;place-items:center;min-height:200px">${window.cfLoader.markup(t('ld.default'))}</div>
-      <div class="field"><label>${esc(t('invite.linkLabel'))}</label><input class="input" readonly data-link></div>
+      <div class="field"><label>${esc(t('invite.linkLabel'))}</label><div class="copy-field" data-copy role="button" tabindex="0" title="${esc(t('riders.copy'))}"><input class="input" readonly data-link tabindex="-1"><span class="copy-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></span></div></div>
       <p class="desc" style="margin:4px 0 0">${esc(t('invite.pendingNote'))}</p>
       <div class="err" data-err hidden></div>`,
-    footer: `<button class="btn" data-close>${esc(t('c.close'))}</button>
-      ${navigator.share ? `<button class="btn" data-share disabled>${esc(t('invite.share'))}</button>` : ''}
-      <button class="btn primary" data-copy disabled>${esc(t('riders.copy'))}</button>`,
+    cls: 'invite-m', center: true,
+    footer: `<button class="icon-btn round-x" data-close aria-label="${esc(t('c.close'))}">${icon('x')}</button>
+      <button class="btn primary" data-share disabled>${esc(t('invite.share'))}</button>`,
   });
   let current = '';
   const load = async () => {
@@ -66,12 +66,14 @@ export function showInviteLink(kind, initialRole = 'operator') {
       return;
     }
     if (e.target.closest('[data-copy]') && current) {
+      const f = m.el.querySelector('.copy-field'); f.classList.add('copied'); setTimeout(() => f.classList.remove('copied'), 1200);
       const ok = await copyText(current);
       if (!ok) m.el.querySelector('[data-link]').select();
       toast(ok ? t('riders.copied') : current);
       return;
     }
     if (e.target.closest('[data-share]') && current) {
+      if (!navigator.share) { const ok = await copyText(current); toast(ok ? t('riders.copied') : current); return; }
       try { await navigator.share({ title: t('invite.shareTitle'), url: current }); } catch { /* dismissed */ }
     }
   });

@@ -1336,3 +1336,38 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 :root[data-theme="dark"] .shell.fs .sfx-pills .sfx-pill:not(.on), :root[data-theme="dark"] .shell.fs .dash-bar .seg > :not(.on) { color: #C5CCDA; }
 :root[data-theme="dark"] .shell.fs .main .dash-bar .dash-acts .btn:not(:hover), :root[data-theme="dark"] .shell.fs .main .card .btn:not(.primary), :root[data-theme="dark"] .shell.fs .main .sub-card .btn:not(.primary), :root[data-theme="dark"] .modal .btn:not(.primary) { background: rgba(255, 255, 255, .08) !important; color: #E8ECF4 !important; border-color: rgba(255, 255, 255, .12) !important; }
 :root[data-theme="dark"] .shell.fs table.t td, :root[data-theme="dark"] .shell.fs table.t th { border-color: rgba(255, 255, 255, .08); }
+/* Map full-screen button and mode. */
+.map-full-btn { position: absolute; top: 10px; right: 10px; z-index: 5; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .92); color: #1c2433; cursor: pointer; box-shadow: 0 4px 14px -6px rgba(8, 30, 80, .45); }
+.map-full-btn:hover { background: #fff; }
+.map-full-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.map-full { position: fixed !important; inset: 16px !important; z-index: 120 !important; width: auto !important; height: auto !important; border-radius: 24px !important; overflow: hidden; box-shadow: 0 0 0 100vmax rgba(10, 20, 40, .55), 0 40px 90px -20px rgba(0, 0, 0, .6) !important; }
+.map-full .pm-canvas, .map-full > div:first-child, .map-full [data-livemap] { height: 100% !important; }
+.pm .maplibregl-ctrl-top-right, .pm .mapboxgl-ctrl-top-right { top: 52px; }
+/* Live map card: 10px inset, map fills the card. */
+.dc .dc-map { height: 260px; margin: 0; border-radius: 16px; }
+.dc:has(.dc-map) { padding: 16px 10px 10px; }
+.dc:has(.dc-map) .dc-h, .dc:has(.dc-map) .map-legend { padding: 0 6px; }
+/* Today's Delivery: compact driver list. */
+.donut { flex-direction: column; align-items: stretch; gap: 14px; }
+.donut-c { align-self: center; width: 112px; height: 112px; }
+.donut ul { max-height: 200px; overflow: auto; scrollbar-width: thin; gap: 8px; }
+.donut li { justify-content: space-between; }
+/* Modal scrolls inside its rounded body; slim, quiet scrollbar. */
+.modal { overflow: hidden; display: flex; flex-direction: column; }
+.modal-h, .modal-f { flex: none; }
+.modal-b { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(60, 72, 96, .28) transparent; }
+.modal-b::-webkit-scrollbar { width: 6px; }
+.modal-b::-webkit-scrollbar-thumb { background: rgba(60, 72, 96, .28); border-radius: 999px; }
+.modal-b::-webkit-scrollbar-track { background: transparent; }
+.map-full [data-livemap], .map-full { min-height: 0; }
+.map-full .pm-canvas { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
+/* Invite modal: tap the link to copy; footer is a centred close icon + Share. */
+.invite-m .modal-h .x { display: none; }
+.copy-field { position: relative; cursor: pointer; }
+.copy-field .input { padding-right: 48px; cursor: pointer; pointer-events: none; }
+.copy-ico { position: absolute; right: 6px; top: 50%; translate: 0 -50%; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: #EEF2FF; color: #0060FE; transition: background-color 160ms ease, color 160ms ease; }
+.copy-ico svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.copy-field:hover .copy-ico { background: #0060FE; color: #fff; }
+.copy-field.copied .copy-ico { background: #1a9e6e; color: #fff; }
+.copy-field.copied .input { box-shadow: 0 0 0 2px rgba(26, 158, 110, .35); }
+.modal .round-x { width: 40px; height: 40px; border-radius: 999px; }

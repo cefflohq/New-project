@@ -34,13 +34,43 @@ const MY_CENTER = [101.9, 4.2];
 const PIN_SVG = '<svg viewBox="0 0 40 52" aria-hidden="true"><path d="M20 51C20 51 3 32.6 3 19.5a17 17 0 0 1 34 0C37 32.6 20 51 20 51z"/><circle cx="20" cy="19.5" r="6.5"/></svg>';
 
 let loading = null;
+// Every map (Founder 2026-10-17): the wheel / trackpad pinch zooms the map,
+// not the page, and a corner button opens it full screen (Esc closes).
+function enhance(gl) {
+  if (gl.__cefflo) return;
+  gl.__cefflo = true;
+  const Base = gl.Map;
+  gl.Map = class extends Base {
+    constructor(o) {
+      super({ ...o, scrollZoom: true });
+      const host = this.getContainer().closest('.pm, [data-livemap], .map-slot') || this.getContainer().parentElement;
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'map-full-btn'; btn.setAttribute('aria-label', 'Full screen');
+      const ico = on => btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${on ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'}"/></svg>`;
+      ico(false);
+      let mark = null;
+      const set = on => {
+        // Glass cards (backdrop-filter) trap position:fixed, so lift the map to <body>.
+        if (on && !mark) { mark = document.createComment('map'); host.before(mark); document.body.append(host); }
+        if (!on && mark) { mark.replaceWith(host); mark = null; }
+        host.classList.toggle('map-full', on); document.body.classList.toggle('map-full-open', on); ico(on); btn.setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen'); setTimeout(() => this.resize(), 30); setTimeout(() => this.resize(), 350); };
+      btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); set(!host.classList.contains('map-full')); });
+      const esc = e => { if (e.key === 'Escape' && host.classList.contains('map-full')) set(false); };
+      document.addEventListener('keydown', esc);
+      this.on('remove', () => { document.removeEventListener('keydown', esc); if (host.classList.contains('map-full')) set(false); });
+      host.style.position ||= 'relative';
+      host.append(btn);
+    }
+  };
+}
+
 function loadMapLibre() {
   const ready = () => (MAPBOX_TOKEN ? window.mapboxgl : window.maplibregl);
-  if (ready()) return Promise.resolve(ready());
+  if (ready()) { enhance(ready()); return Promise.resolve(ready()); }
   loading ||= new Promise((ok, bad) => {
     const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = `${GL}.css`; document.head.append(css);
     const s = document.createElement('script'); s.src = `${GL}.js`;
-    s.onload = () => { const gl = ready(); if (MAPBOX_TOKEN) gl.accessToken = MAPBOX_TOKEN; ok(gl); };
+    s.onload = () => { const gl = ready(); if (MAPBOX_TOKEN) gl.accessToken = MAPBOX_TOKEN; enhance(gl); ok(gl); };
     s.onerror = () => { loading = null; bad(new Error('map')); };
     document.head.append(s);
   });
