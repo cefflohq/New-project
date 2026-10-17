@@ -8,52 +8,57 @@ import { esc, icon, chip, orderStatus, itemsText, avatar, loadingRows, emptyStat
 import { openAddOrder, openImport, openPlanDelivery } from './order_actions.js';
 import { openAddRider } from './riders.js';
 import { verificationBanner } from '../trust.js';
+import { lineChart, wireCharts, barList, donut } from '../charts.js';
 
 export default function today({ el, setHeader }) {
   setHeader(t('today.title'));
   let tab = 'all', query = '';
+  // Dashboard (Founder 2026-10-17): a performance summary against yesterday,
+  // a 14-day orders trend, today's status breakdown, drivers, what needs
+  // attention and the live map, then recent orders. Charts are plain SVG.
+  const card = (ic, tone, title, lead, body, extra = '') => `<section class="dc"><header class="dc-h"><span class="dc-ic ${tone}">${icon(ic)}</span><div><h2>${esc(title)}</h2>${lead ? `<p>${esc(lead)}</p>` : ''}</div>${extra}</header>${body}</section>`;
   el.innerHTML = `<div data-verify></div>
-  <div class="grid-today">
-    <div class="stack">
-      <div class="card map-slot is-live">
-        <div data-livemap></div>
-        <div class="map-legend" data-legend></div>
-      </div>
-      <div class="actions">
-        <button class="btn cta" data-a="add">${icon('plus')}${esc(t('today.addOrder'))}</button>
-        <button class="btn" data-a="import">${icon('upload')}${esc(t('today.importOrders'))}</button>
-        <button class="btn" data-a="plan">${icon('plan')}${esc(t('today.planDelivery'))}</button>
-        <button class="btn" data-a="rider">${icon('user')}${esc(t('today.addRider'))}</button>
-      </div>
-      <div class="card">
-        <div class="card-h"><h2>${esc(t('today.recent'))}</h2>
-          <div class="search" style="margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('today.searchOrders'))}" aria-label="${esc(t('c.search'))}"></div>
-          <a class="link" href="#/orders">${esc(t('c.viewAll'))}</a></div>
-        <div class="tabs" data-tabs></div>
-        <div data-recent>${loadingRows(5)}</div>
-      </div>
+  <div class="dash">
+    <div class="dash-bar">
+      <div class="seg" role="tablist"><button class="on" role="tab" aria-selected="true">Overview</button><a href="#/orders" role="tab">Orders</a><a href="#/riders" role="tab">Drivers</a></div>
+      <div class="dash-acts"><span class="dash-date" data-dashdate></span>
+        <button class="btn" data-a="import">${esc(t('today.importOrders'))}</button>
+        <button class="btn" data-a="plan">${esc(t('today.planDelivery'))}</button>
+        <button class="btn" data-a="rider">${esc(t('today.addRider'))}</button>
+        <button class="btn primary" data-a="add">${esc(t('today.addOrder'))}</button></div></div>
+    ${card('route', 'blue', 'Performance summary', 'Today against yesterday.', '<div class="kpis2" data-overview>' + loadingRows(1) + '</div>')}
+    <div class="dash-2">
+      ${card('file', 'violet', 'Orders trend', 'Orders and deliveries over the last 14 days.', '<div data-trend>' + loadingRows(3) + '</div>')}
+      ${card('box', 'amber', 'Order status', 'Where today\'s orders are now.', '<div data-status>' + loadingRows(3) + '</div>')}
     </div>
-    <div class="stack">
-      <div class="card"><div class="card-h"><h2>${esc(t('today.overview'))}</h2><a class="link" href="#/orders">${esc(t('c.viewAll'))}</a></div><div class="card-b" data-overview>${loadingRows(1)}</div></div>
-      <div class="card"><div class="card-h"><h2>${esc(t('today.delivery'))}</h2><a class="link" href="#/riders">${esc(t('c.viewAll'))}</a></div><div class="card-b" data-delivery>${loadingRows(3)}</div></div>
-      <div class="card"><div class="card-h"><h2>${esc(t('today.attention'))}</h2><span data-attn-count></span><a class="link" href="#/orders">${esc(t('c.viewAll'))}</a></div><div class="card-b" data-attn>${loadingRows(3)}</div></div>
+    <div class="dash-3">
+      ${card('alert', 'red', t('today.attention'), 'Orders that need you now.', '<div data-attn>' + loadingRows(3) + '</div>', '<span data-attn-count></span><a class="link" href="#/orders">' + esc(t('c.viewAll')) + '</a>')}
+      ${card('users', 'green', t('today.delivery'), 'Delivered against assigned, per driver.', '<div data-delivery>' + loadingRows(3) + '</div>', '<a class="link" href="#/riders">' + esc(t('c.viewAll')) + '</a>')}
+      ${card('map', 'blue', 'Live map', '', '<div class="dc-map map-slot is-live"><div data-livemap></div></div><div class="map-legend" data-legend></div>')}
     </div>
+    ${card('file', 'violet', t('today.recent'), '', '<div class="dc-tools"><div class="tabs" data-tabs></div><div class="search">' + icon('search') + '<input data-q placeholder="' + esc(t('today.searchOrders')) + '" aria-label="' + esc(t('c.search')) + '"></div></div><div data-recent>' + loadingRows(5) + '</div>', '<a class="link" href="#/orders">' + esc(t('c.viewAll')) + '</a>')}
   </div>`;
+  // The dashboard bar replaces the page title block (Founder 2026-10-17).
+  const mainEl = el.closest('.main'); mainEl?.classList.add('no-title');
+  businessToday().then(d => { const n = $('[data-dashdate]'); if (n) n.textContent = new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); });
   verificationBanner().then(h => { const v = el.querySelector('[data-verify]'); if (v) v.innerHTML = h; });
 
-  let orders = [], prep = new Map(), riders = new Map();
+  let orders = [], hist = [], today = '', prep = new Map(), riders = new Map();
   const $ = s => el.querySelector(s);
 
   async function load() {
     try {
-      const [o, stops, rs] = await Promise.all([businessToday().then(d => fetchOrders(`&order_date=eq.${d}`)), fetchStops(), fetchRiders()]);
-      orders = o || [];
+      const day = await businessToday();
+      const from = new Date(new Date(`${day}T12:00:00Z`).getTime() - 13 * 86400000).toISOString().slice(0, 10);
+      const [all, stops, rs] = await Promise.all([fetchOrders(`&order_date=gte.${from}`), fetchStops(), fetchRiders()]);
+      hist = all || []; today = day;
+      orders = hist.filter(o => o.order_date === day);
       prep = new Map((stops || []).map(s => [s.order_id, s.preparation_status]));
       riders = new Map((rs || []).map(r => [r.id, r]));
       paint();
       liveMap();
     } catch (e) {
-      ['[data-recent]', '[data-overview]', '[data-delivery]', '[data-attn]'].forEach(s => { $(s).innerHTML = errorState(e, 'today'); });
+      ['[data-recent]', '[data-overview]', '[data-delivery]', '[data-attn]', '[data-trend]', '[data-status]'].forEach(s => { $(s).innerHTML = errorState(e, 'today'); });
     }
   }
   // Live map (Founder 2026-10-12): today's pinned orders + the latest point
@@ -89,24 +94,47 @@ export default function today({ el, setHeader }) {
       if (s === 'issue') counts.issue++;
       if (s === 'delivered') counts.delivered++;
     });
-    $('[data-overview]').innerHTML = `<div class="stats">
-      <div class="stat"><b class="c-blue">${counts.all}</b><span>${esc(t('today.total'))}</span></div>
-      <div class="stat"><b class="c-amber">${counts.ready}</b><span>${esc(t('st.ready'))}</span></div>
-      <div class="stat"><b class="c-red">${counts.issue}</b><span>${esc(t('today.issues'))}</span></div>
-      <div class="stat"><b class="c-green">${counts.delivered}</b><span>${esc(t('st.delivered'))}</span></div></div>`;
+    // Performance summary: today against yesterday (same business day logic).
+    const yday = new Date(new Date(`${today}T12:00:00Z`).getTime() - 86400000).toISOString().slice(0, 10);
+    const yo = hist.filter(o => o.order_date === yday);
+    const rate = list => list.length ? Math.round((list.filter(o => o.delivery_status === 'delivered').length / list.length) * 100) : 0;
+    const kpi = (label, tone, now, before, unit = '', goodUp = true) => {
+      const diff = before ? Math.round(((now - before) / before) * 100) : null;
+      const good = diff === null ? null : (diff >= 0) === goodUp;
+      return `<div class="kpi2 ${tone}"><span>${esc(label)}</span><small>Today</small><div><b>${now}${unit}</b>${diff === null ? '' : `<em class="${good ? 'up' : 'down'}">${diff >= 0 ? '↗' : '↘'} ${Math.abs(diff)}%</em>`}</div></div>`;
+    };
+    $('[data-overview]').innerHTML = kpi(t('today.total'), 'blue', counts.all, yo.length)
+      + kpi(t('st.delivered'), 'green', counts.delivered, yo.filter(o => o.delivery_status === 'delivered').length)
+      + kpi('Success rate', 'violet', rate(orders), rate(yo), '%')
+      + kpi(t('today.issues'), 'red', counts.issue, yo.filter(o => o.delivery_status === 'issue').length, '', false);
+
+    // Orders trend: last 14 business days.
+    const days = [...Array(14)].map((_, i) => new Date(new Date(`${today}T12:00:00Z`).getTime() - (13 - i) * 86400000).toISOString().slice(0, 10));
+    const per = d => hist.filter(o => o.order_date === d);
+    $('[data-trend]').innerHTML = lineChart({ labels: days.map(d => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })),
+      series: [{ key: 'o', name: 'Orders', color: '#3D63F5', fill: true, values: days.map(d => per(d).length) },
+        { key: 'd', name: 'Delivered', color: '#22B07D', dashed: true, values: days.map(d => per(d).filter(o => o.delivery_status === 'delivered').length) }] })
+      + '<div class="legend"><span><i style="background:#3D63F5"></i>Orders</span><span><i style="background:#22B07D"></i>Delivered</span></div>';
+    wireCharts($('[data-trend]'));
+
+    // Order status now.
+    const by = k => orders.filter(o => st(o) === k).length;
+    $('[data-status]').innerHTML = barList([
+      { label: t('st.pending'), value: by('pending') + by('unassigned'), color: '#F5A524' },
+      { label: t('st.preparing'), value: by('preparing'), color: '#8B6CF6' },
+      { label: t('st.ready'), value: by('ready'), color: '#3D63F5' },
+      { label: t('st.onDelivery'), value: by('delivery'), color: '#2BB5D8' },
+      { label: t('st.delivered'), value: counts.delivered, color: '#22B07D' },
+      { label: t('today.issues'), value: counts.issue, color: '#EF5A5A' }]);
 
     // Today's Delivery: every active rider, delivered / assigned today.
     const active = [...riders.values()].filter(r => r.status === 'active');
-    $('[data-delivery]').innerHTML = active.length ? active.map(r => {
+    const COLORS = ['#3D63F5', '#2BB5D8', '#22B07D', '#C46CF0', '#F5A524', '#EF5A5A'];
+    const assigned = orders.filter(o => o.assigned_rider_id).length;
+    $('[data-delivery]').innerHTML = active.length ? donut(active.map((r, i) => {
       const mine = orders.filter(o => o.assigned_rider_id === r.id);
-      const done = mine.filter(o => o.delivery_status === 'delivered').length;
-      const onRoad = mine.some(o => st(o) === 'delivery');
-      const pct = mine.length ? Math.round((done / mine.length) * 100) : 0;
-      return `<a class="list-row" href="#/riders/${esc(r.id)}" style="color:inherit;text-decoration:none">
-        ${avatar(r.name)}<div style="min-width:130px"><b>${esc(r.name)}</b><small>${onRoad ? `<span class="live" style="color:var(--success)"><i class="dot"></i>${esc(t('st.onDelivery'))}</span>` : esc(r.vehicle_plate || '')}</small></div>
-        <div class="grow"><div class="progress"><i style="width:${pct}%"></i></div></div>
-        <span class="num" style="min-width:44px;text-align:right">${done} / ${mine.length}</span>${icon('right', 'i chev')}</a>`;
-    }).join('') : emptyState(t('today.noRiders'), t('today.noRidersBody'));
+      return { label: `${r.name}  ${mine.filter(o => o.delivery_status === 'delivered').length}/${mine.length}`, value: mine.length, color: COLORS[i % COLORS.length] };
+    }), String(assigned), 'Assigned') : emptyState(t('today.noRiders'), t('today.noRidersBody'));
 
     // Need Attention: backend truth only (issues, failed geocode,
     // unapproved, approved-but-unassigned).
@@ -168,5 +196,5 @@ export default function today({ el, setHeader }) {
   el.querySelector('[data-q]').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); paintRecent(); });
   load();
   const timer = setInterval(() => { if (document.visibilityState === 'visible') load(); }, 30000);
-  return () => clearInterval(timer);
+  return () => { clearInterval(timer); mainEl?.classList.remove('no-title'); };
 }

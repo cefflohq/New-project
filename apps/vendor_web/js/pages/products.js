@@ -31,7 +31,7 @@ export default function products({ el, setHeader }) {
     const rows = all.filter(p => !query || p.name.toLowerCase().includes(query));
     if (!rows.length) { list.innerHTML = emptyState(t(all.length ? 'prod.noMatch' : 'prod.none')); return; }
     const catName = id => cats.find(c => c.id === id)?.name || '';
-    list.innerHTML = `<table class="table"><thead><tr><th>${esc(t('prod.name'))}</th><th>${esc(t('prod.category'))}</th><th>${esc(t('prod.price'))}</th><th>${esc(t('prod.status'))}</th></tr></thead><tbody>
+    list.innerHTML = `<table class="t"><thead><tr><th>${esc(t('prod.name'))}</th><th>${esc(t('prod.category'))}</th><th>${esc(t('prod.price'))}</th><th>${esc(t('prod.status'))}</th></tr></thead><tbody>
       ${rows.map(p => `<tr data-id="${esc(p.id)}" style="cursor:pointer"><td><b>${esc(p.name)}</b></td><td>${esc(catName(p.category_id))}</td><td>${esc(rm(p.display_price))}</td><td>${chip(p.status === 'active' ? 'active' : 'hidden')}</td></tr>`).join('')}</tbody></table>`;
   };
   const load = async () => {

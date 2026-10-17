@@ -1,10 +1,10 @@
+import { savePrefs } from './prefs.js';
 // The single application shell: a persistent neutral sidebar (workspace
 // switcher, primary navigation, Settings / Help and the account menu), a
 // compact top bar and the hash router. Pages only render into the content
 // area. Below 1024px the sidebar becomes an icon rail, below 768px an
 // off-canvas drawer; both open from the top-bar toggle.
 import { t, longToday } from './i18n.js';
-import { isDemo } from './demo.js';
 import { businessToday } from './data.js';
 import { ctx, selectBusiness } from './store.js';
 import { esc, icon, initials, avatar, confirmDialog, setChromeColor } from './ui.js';
@@ -69,40 +69,39 @@ function renderFrame() {
   const b = ctx.business;
   const name = ctx.user?.user_metadata?.full_name || ctx.user?.email || '';
   const link = (id, ic, key, href = `#/${id}`) => `<a href="${href}" data-nav="${id}" title="${esc(t(key))}">${icon(ic)}<span class="lbl">${esc(t(key))}</span></a>`;
-  // Console layout (Founder 2026-10-11, Cloudflare-style): a full-width top
-  // header (brand, business switcher, quick search, bell, account), the
-  // navigation sidebar under it, and a page title block above the content.
+  // Floating sidebar (Founder 2026-10-17): no top header on desktop. The
+  // sidebar is one rounded panel holding the business, search, navigation
+  // (active item is a filled pill), notifications, theme and account. It
+  // collapses to an icon rail. Phones keep a slim bar with the menu button.
+  const dark = document.documentElement.dataset.theme === 'dark';
   root.innerHTML = `
-  <div class="shell${collapsed() ? ' collapsed' : ''}">
+  <div class="shell fs${collapsed() ? ' collapsed' : ''}">
     <header class="topbar">
       <button class="icon-btn nav-toggle" data-navtoggle aria-label="${esc(t('shell.menu'))}" aria-expanded="false">${icon('menu')}</button>
-      <a class="brand" href="#/today"><img src="img/cefflo-icon-navy.png" alt="" width="24" height="24"><b>Cefflo</b></a>
-      <span class="crumb-sep" aria-hidden="true">/</span>
-      <div class="ws">
-        <button class="ws-btn" data-bizmenu aria-haspopup="menu" aria-label="${esc(t('shell.switchBusiness'))}" title="${esc(b?.business_name)}">
-          <span class="ws-tile">${esc(initials(b?.business_name).slice(0, 1))}</span>
-          <span class="ws-txt"><b>${esc(b?.business_name)}</b><small>${esc(t(`shell.role.${b?.member_role}`))}</small></span>${icon('updown', 'i updown')}
-        </button>
-      </div>
-      <button class="qsearch" data-qsearch aria-haspopup="dialog">${icon('search')}<span>${esc(t('shell.search'))}</span><kbd>Ctrl K</kbd></button>
-      <div class="spacer"></div>
-      <div style="position:relative">
-        <button class="icon-btn" data-bell aria-haspopup="dialog" aria-label="${esc(t('shell.notifications'))}">${icon('bell')}<span class="nbadge" data-nbadge hidden></span></button>
-      </div>
-      <div class="acct">
-        <button class="acct-btn" data-usermenu aria-haspopup="menu" aria-label="${esc(name)}" title="${esc(name)}">${avatar(name, 'sm')}</button>
-      </div>
+      <b class="tb-name">${esc(b?.business_name)}</b>
     </header>
     <aside class="sidebar" aria-label="Main navigation">
+      <div class="sb-head">
+        <button class="sb-btn sb-toggle" data-collapse title="${esc(t('shell.collapse'))}" aria-label="${esc(t('shell.collapse'))}">${icon('panel')}</button>
+        <div class="ws">
+          <button class="ws-btn" data-bizmenu aria-haspopup="menu" aria-label="${esc(t('shell.switchBusiness'))}" title="${esc(b?.business_name)}">
+            <span class="ws-txt"><b>${esc(b?.business_name)}</b></span>${icon('updown', 'i updown')}
+          </button>
+        </div>
+      </div>
+      <button class="sb-item sb-search" data-qsearch aria-haspopup="dialog" title="${esc(t('shell.search'))}">${icon('search')}<span class="lbl">${esc(t('shell.search'))}</span><kbd>Ctrl K</kbd></button>
       <nav class="nav">${NAV.map(([id, ic, key]) => link(id, ic, key)).join('')}</nav>
-      <div class="sidebar-foot nav">
-        ${link('settings', 'gear', 'nav.settings')}
-        <button class="collapse-btn" data-collapse title="${esc(t('shell.collapse'))}" aria-label="${esc(t('shell.collapse'))}">${icon('chevl')}<span class="lbl">${esc(t('shell.collapse'))}</span></button>
+      <div class="sidebar-foot">
+        <div class="sb-rel"><button class="sb-item" data-bell aria-haspopup="dialog" aria-label="${esc(t('shell.notifications'))}" title="${esc(t('shell.notifications'))}">${icon('bell')}<span class="lbl">${esc(t('shell.notifications'))}</span><span class="nbadge" data-nbadge hidden></span></button></div>
+        <div class="nav">${link('settings', 'gear', 'nav.settings')}</div>
+        <button class="sb-item sb-theme" data-themetoggle role="switch" aria-checked="${dark}" title="${dark ? 'Dark mode' : 'Light mode'}">${icon(dark ? 'moon' : 'sun')}<span class="lbl">${dark ? 'Dark mode' : 'Light mode'}</span><i class="sb-sw"></i></button>
+        <div class="acct sb-rel">
+          <button class="sb-item acct-btn" data-usermenu aria-haspopup="menu" aria-label="${esc(name)}" title="${esc(name)}">${avatar(name, 'sm')}<span class="lbl">${esc(name)}</span></button>
+        </div>
       </div>
     </aside>
     <div class="scrim" data-scrim></div>
     <main class="main">
-      ${isDemo() ? `<div class="demo-bar" role="status"><b>${esc(t('demo.bar'))}</b><span>${esc(t('demo.barBody'))}</span></div>` : ''}
       <div class="page-title"><h1 data-title></h1><div class="date" data-date></div></div>
       <section class="content" data-content></section>
     </main>
@@ -113,6 +112,10 @@ function renderFrame() {
   root.querySelector('[data-usermenu]').addEventListener('click', e => openUserMenu(e.currentTarget));
   root.querySelector('[data-bell]').addEventListener('click', e => openBell(e.currentTarget));
   root.querySelector('[data-qsearch]').addEventListener('click', openQuickSearch);
+  root.querySelector('[data-themetoggle]').addEventListener('click', () => {
+    savePrefs({ theme: document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark' });
+    rerenderShell();
+  });
   root.querySelector('[data-collapse]').addEventListener('click', () => {
     const on = root.querySelector('.shell').classList.toggle('collapsed');
     try { localStorage.setItem(COLLAPSE_KEY, on ? '1' : ''); } catch { /* ignore */ }

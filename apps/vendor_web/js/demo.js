@@ -125,6 +125,15 @@ function params(path) {
   return { table, eq };
 }
 
+function history() {
+  const out = [], base = new Date(`${todayLocal()}T12:00:00+08:00`);
+  for (let d = 1; d < 14; d++) {
+    const day = new Date(base.getTime() - d * 86400000).toISOString().slice(0, 10);
+    const n = 9 + ((d * 7) % 8);
+    for (let i = 0; i < n; i++) out.push({ id: `h-${d}-${i}`, order_date: day, created_at: `${day}T0${(i % 9) + 1}:00:00+08:00`, delivery_status: i === n - 1 && d % 3 === 0 ? 'issue' : 'delivered', assigned_rider_id: ['r-ahmad', 'r-siti', 'r-jason', 'r-nur'][i % 4], items: [] });
+  }
+  return out;
+}
 const TABLES = {
   orders: () => strip(orders),
   delivery_stops: () => orders.filter(o => o._prep || o.assigned_rider_id).map(o => ({ order_id: o.id, preparation_status: o._prep || 'ready', sequence: o._stop })),
@@ -156,6 +165,8 @@ export async function demoGet(path) {
     const o = orders.find(x => x.id === eq.order_id);
     return o ? events(o) : [];
   }
+  // Past days for the Today trend chart (order_date=gte.…): counts only.
+  if (table === 'orders' && path.includes('order_date=gte.')) return clone([...strip(orders), ...history()]);
   const rows = TABLES[table] ? TABLES[table]() : [];
   return clone(rows.filter(r => Object.entries(eq).every(([k, v]) => String(r[k]) === v)));
 }

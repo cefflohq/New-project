@@ -6,7 +6,7 @@
 import { t } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
-import { esc, icon, chip, loadingRows, errorState, toast, busy, copyText } from '../ui.js';
+import { esc, icon, chip, loadingRows, errorState, toast, busy, copyText, modal } from '../ui.js';
 import qrcode from '../lib/qrcode.js';
 
 // The Template Library: five templates (Menu, Showcase, Basket, Service,
@@ -65,7 +65,7 @@ export default function storefront({ el, setHeader }) {
   el.innerHTML = loadingRows(4);
   let dlv = {}, subs = [], pay = {}, cou = {};
   let sf = null, tpl = 'warung', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
-  let frame = null, frameReady = false;
+  let frame = null, frameReady = false, tab = 'look';
   const def = () => TEMPLATES.find(x => x.id === tpl) || LEGACY.find(x => x.id === tpl) || TEMPLATES[0];
   const sfOrigin = () => new URL(base(), location.href).origin;
 
@@ -101,58 +101,62 @@ export default function storefront({ el, setHeader }) {
       : { accent: theme.accent, secondary: theme.secondary, tagline: theme.tagline || '' };
   };
 
+  // Each settings group is a section: a heading row (icon, title, one-line
+  // lead) over one quiet panel. Layout classes live in app.css (.sfx-*).
+  const sec = (id, ic, title, lead, body) => `<section class="sfx-sec" id="sfx-${id}" ${tab === id ? '' : 'hidden'}>
+      <p class="sfx-lead">${esc(lead)}</p>${body}</section>`;
+  const fld = (label, control, cls = '') => `<label class="sfx-f ${cls}"><span>${esc(label)}</span>${control}</label>`;
+  const foot = (btn, note = '') => `<div class="sfx-foot">${note ? `<small>${esc(note)}</small>` : ''}${btn}</div>`;
+
   // Delivery & packages (Founder 2026-10-17): fee per drop = the driver's pay,
   // never free; weekdays; shifts (batches); package lengths.
   const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const deliveryCard = () => {
     const days = dlv.days || [1, 2, 3, 4, 5], weeks = dlv.weeks || [1, 2, 4], shifts = dlv.shifts || [];
-    return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.delivery'))}</h3><p class="desc">${esc(t('sf.deliveryLead'))}</p>
-      <div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.fee'))}</label><input class="input" type="number" min="0" max="1000" step="0.5" data-fee value="${esc(dlv.fee ?? '')}" placeholder="5.00"></div></div>
-      <div class="field"><label>${esc(t('sf.days'))}</label><div style="display:flex;gap:6px;flex-wrap:wrap">${DAYS.map((d, i) => `<button class="opt ${days.includes(i + 1) ? 'on' : ''}" data-dday="${i + 1}" style="min-width:52px">${esc(t(`sf.d${i + 1}`))}</button>`).join('')}</div></div>
-      <div class="field"><label>${esc(t('sf.weeks'))}</label><div style="display:flex;gap:6px;flex-wrap:wrap">${[1, 2, 3, 4].map(w => `<button class="opt ${weeks.includes(w) ? 'on' : ''}" data-dweek="${w}">${esc(t(w === 1 ? 'sf.week1' : 'sf.weekN', { n: w }))}</button>`).join('')}</div><small class="hint">${esc(t('sf.weeksHint'))}</small></div>
-      <div class="field"><label>${esc(t('sf.shifts'))}</label><div style="display:grid;gap:8px" data-shifts>${shifts.map((x, i) => `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input class="input" data-sname="${i}" value="${esc(x.name)}" placeholder="${esc(t('sf.shiftName'))}" style="flex:1;min-width:140px"><input class="input" type="time" data-sfrom="${i}" value="${esc(x.from)}" style="width:120px"><span>–</span><input class="input" type="time" data-sto="${i}" value="${esc(x.to)}" style="width:120px"><button class="btn sm" data-sdel="${i}">${esc(t('sf.shiftRemove'))}</button></div>`).join('')}</div>
-        ${shifts.length < 4 ? `<button class="btn sm" data-sadd style="margin-top:8px">${esc(t('sf.shiftAdd'))}</button>` : ''}<small class="hint">${esc(t('sf.shiftsHint'))}</small></div>
+    return sec('delivery', 'route', t('sf.delivery'), t('sf.deliveryLead'), `
+      <div class="sfx-row">${fld(t('sf.fee'), `<span class="sfx-money"><i>RM</i><input class="sfx-in" type="number" min="0" max="1000" step="0.5" data-fee value="${esc(dlv.fee ?? '')}" placeholder="5.00"></span>`, 'sfx-narrow')}</div>
+      <div class="sfx-f"><span>${esc(t('sf.days'))}</span><div class="sfx-pills">${DAYS.map((d, i) => `<button type="button" class="sfx-pill ${days.includes(i + 1) ? 'on' : ''}" aria-pressed="${days.includes(i + 1)}" data-dday="${i + 1}">${esc(t(`sf.d${i + 1}`))}</button>`).join('')}</div></div>
+      <div class="sfx-f"><span>${esc(t('sf.weeks'))}</span><div class="sfx-pills">${[1, 2, 3, 4].map(w => `<button type="button" class="sfx-pill ${weeks.includes(w) ? 'on' : ''}" aria-pressed="${weeks.includes(w)}" data-dweek="${w}">${esc(t(w === 1 ? 'sf.week1' : 'sf.weekN', { n: w }))}</button>`).join('')}</div><small>${esc(t('sf.weeksHint'))}</small></div>
+      <div class="sfx-f"><span>${esc(t('sf.shifts'))}</span><div class="sfx-shifts" data-shifts>${shifts.map((x, i) => `<div class="sfx-shift"><input class="sfx-in" data-sname="${i}" value="${esc(x.name)}" placeholder="${esc(t('sf.shiftName'))}"><input class="sfx-in sfx-time" type="time" data-sfrom="${i}" value="${esc(x.from)}"><span class="sfx-to">to</span><input class="sfx-in sfx-time" type="time" data-sto="${i}" value="${esc(x.to)}"><button type="button" class="sfx-x" data-sdel="${i}" aria-label="${esc(t('sf.shiftRemove'))}">${icon('trash')}</button></div>`).join('')}
+        ${shifts.length < 4 ? `<button type="button" class="sfx-add" data-sadd>${esc(t('sf.shiftAdd'))}</button>` : ''}</div><small>${esc(t('sf.shiftsHint'))}</small></div>
       <div class="err" data-derr hidden></div>
-      <div style="display:flex;justify-content:flex-end"><button class="btn primary" data-dsave>${esc(t('c.save'))}</button></div></div>`;
+      ${foot(`<button class="sfx-btn primary" data-dsave>${esc(t('c.save'))}</button>`)}`);
   };
   // Payments (Founder 2026-10-17): the vendor's own Curlec account; Cefflo never
   // holds the money. Cash on delivery is a vendor switch (always on without Curlec).
-  const payCard = () => `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.pay'))}</h3><p class="desc">${esc(t('sf.payLead'))}</p>
-    ${pay.connected ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${chip('active')}<span>${esc(t('sf.chipOn', { id: pay.key_hint || '' }))}${pay.test_mode ? ` · ${esc(t('sf.testMode'))}` : ''}</span><button class="btn sm" data-chipoff style="margin-left:auto">${esc(t('sf.chipOff'))}</button></div>`
-      : `<div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.brandId'))}</label><input class="input" data-brand placeholder="rzp_live_…" autocomplete="off"></div>
-        <div class="field"><label>${esc(t('sf.secret'))}</label><input class="input" type="password" data-secret autocomplete="new-password"></div></div>
-        <small class="hint">${esc(t('sf.chipHint'))}</small>
+  const payCard = () => sec('pay', 'card', t('sf.pay'), t('sf.payLead'), `
+    ${pay.connected ? `<div class="sfx-conn"><span class="sfx-dot"></span><div><b>${esc(t('sf.chipOn', { id: pay.key_hint || '' }))}</b>${pay.test_mode ? `<small>${esc(t('sf.testMode'))}</small>` : ''}</div><button class="sfx-btn" data-chipoff>${esc(t('sf.chipOff'))}</button></div>`
+      : `<div class="sfx-row">${fld(t('sf.brandId'), `<input class="sfx-in" data-brand placeholder="rzp_live_…" autocomplete="off">`)}${fld(t('sf.secret'), `<input class="sfx-in" type="password" data-secret autocomplete="new-password">`)}</div>
+        <small class="sfx-note">${esc(t('sf.chipHint'))}</small>
         <div class="err" data-perr hidden></div>
-        <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn primary" data-chipon>${esc(t('sf.chipConnect'))}</button></div>`}
-    <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input type="checkbox" data-cod ${pay.accept_cod !== false || !pay.connected ? 'checked' : ''} ${pay.connected ? '' : 'disabled'}><span><b>${esc(t('sf.cod'))}</b><br><small class="hint">${esc(t(pay.connected ? 'sf.codHint' : 'sf.codOnly'))}</small></span></label></div>`;
+        ${foot(`<button class="sfx-btn primary" data-chipon>${esc(t('sf.chipConnect'))}</button>`)}`}
+    <label class="sfx-switch"><span><b>${esc(t('sf.cod'))}</b><small>${esc(t(pay.connected ? 'sf.codHint' : 'sf.codOnly'))}</small></span><input type="checkbox" role="switch" data-cod ${pay.accept_cod !== false || !pay.connected ? 'checked' : ''} ${pay.connected ? '' : 'disabled'}><i></i></label>`);
+
   // Courier (Founder 2026-10-17): the vendor's own EasyParcel account ships
   // storefront orders outside the rider area; booking is automatic after payment.
   const EP_STATES = [['jhr', 'Johor'], ['kdh', 'Kedah'], ['ktn', 'Kelantan'], ['mlk', 'Melaka'], ['nsn', 'Negeri Sembilan'], ['phg', 'Pahang'], ['prk', 'Perak'], ['pls', 'Perlis'], ['png', 'Pulau Pinang'], ['sgr', 'Selangor'], ['trg', 'Terengganu'], ['kul', 'Kuala Lumpur'], ['pjy', 'Putrajaya'], ['srw', 'Sarawak'], ['sbh', 'Sabah'], ['lbn', 'Labuan']];
   const courierCard = () => {
     const pk = cou.pickup || {};
-    return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.courier'))}</h3><p class="desc">${esc(t('sf.courierLead'))}</p>
-    ${cou.connected ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">${chip('active')}<span>${esc(t('sf.epOn', { id: cou.key_hint || '' }))}${cou.demo ? ` · ${esc(t('sf.testMode'))}` : ''}</span><button class="btn sm" data-epoff style="margin-left:auto">${esc(t('sf.chipOff'))}</button></div>` : ''}
-    <div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.epKey'))}</label><input class="input" type="password" data-epkey autocomplete="new-password" placeholder="${esc(cou.connected ? t('sf.epKeyKeep') : '')}"></div>
-      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-epdemo ${cou.demo ? 'checked' : ''}>${esc(t('sf.epDemo'))}</label></div>
-    <div class="g4"><div class="field"><label>${esc(t('sf.pickName'))}</label><input class="input" data-pk="name" value="${esc(pk.name || '')}"></div>
-      <div class="field"><label>${esc(t('sf.pickPhone'))}</label><input class="input" data-pk="phone" value="${esc(pk.phone || '')}"></div></div>
-    <div class="field"><label>${esc(t('sf.pickAddr'))}</label><input class="input" data-pk="address" value="${esc(pk.address || '')}"></div>
-    <div class="g4"><div class="field"><label>${esc(t('sf.pickCity'))}</label><input class="input" data-pk="city" value="${esc(pk.city || '')}"></div>
-      <div class="field"><label>${esc(t('sf.pickPost'))}</label><input class="input" data-pk="postcode" inputmode="numeric" maxlength="5" value="${esc(pk.postcode || '')}"></div>
-      <div class="field"><label>${esc(t('sf.pickState'))}</label><select class="input" data-pk="state">${EP_STATES.map(([k, n]) => `<option value="${k}" ${pk.state === k ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></div></div>
-    <small class="hint">${esc(t('sf.courierHint'))}</small>
+    return sec('courier', 'pkg', t('sf.courier'), t('sf.courierLead'), `
+    ${cou.connected ? `<div class="sfx-conn"><span class="sfx-dot"></span><div><b>${esc(t('sf.epOn', { id: cou.key_hint || '' }))}</b>${cou.demo ? `<small>${esc(t('sf.testMode'))}</small>` : ''}</div><button class="sfx-btn" data-epoff>${esc(t('sf.chipOff'))}</button></div>` : ''}
+    <div class="sfx-row">${fld(t('sf.epKey'), `<input class="sfx-in" type="password" data-epkey autocomplete="new-password" placeholder="${esc(cou.connected ? t('sf.epKeyKeep') : '')}">`)}
+      <label class="sfx-check"><input type="checkbox" data-epdemo ${cou.demo ? 'checked' : ''}><span>${esc(t('sf.epDemo'))}</span></label></div>
+    <h3 class="sfx-sub">${esc(t('sf.pickAddr'))}</h3>
+    <div class="sfx-row">${fld(t('sf.pickName'), `<input class="sfx-in" data-pk="name" value="${esc(pk.name || '')}">`)}${fld(t('sf.pickPhone'), `<input class="sfx-in" data-pk="phone" inputmode="tel" value="${esc(pk.phone || '')}">`)}</div>
+    ${fld(t('sf.pickAddr'), `<input class="sfx-in" data-pk="address" value="${esc(pk.address || '')}">`)}
+    <div class="sfx-row sfx-r3">${fld(t('sf.pickCity'), `<input class="sfx-in" data-pk="city" value="${esc(pk.city || '')}">`)}${fld(t('sf.pickPost'), `<input class="sfx-in" data-pk="postcode" inputmode="numeric" maxlength="5" value="${esc(pk.postcode || '')}">`)}${fld(t('sf.pickState'), `<select class="sfx-in" data-pk="state">${EP_STATES.map(([k, n]) => `<option value="${k}" ${pk.state === k ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>`)}</div>
+    <small class="sfx-note">${esc(t('sf.courierHint'))}</small>
     <div class="err" data-eperr hidden></div>
-    <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn primary" data-epsave>${esc(t(cou.connected ? 'c.save' : 'sf.epConnect'))}</button></div></div>`;
+    ${foot(`<button class="sfx-btn primary" data-epsave>${esc(t(cou.connected ? 'c.save' : 'sf.epConnect'))}</button>`)}`);
   };
   const subsCard = () => {
     if (!subs.length) return '';
-    return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.subs'))}</h3><p class="desc">${esc(t('sf.subsLead'))}</p>
-      <div style="display:grid;gap:14px">${subs.map(x => `<div style="border:1px solid var(--line);border-radius:12px;padding:12px">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${esc(x.customer_name)}</b><small class="hint">${esc(x.customer_phone)}</small>${chip(x.status === 'active' ? 'active' : 'pending')}
-          ${x.status === 'active' ? `<button class="btn sm" data-scancel="${x.id}" style="margin-left:auto">${esc(t('sf.subCancel'))}</button>` : ''}</div>
-        <small class="hint">${esc((x.days || []).map(d => DAYS[d - 1]).join(', '))} × ${x.weeks} · ${esc(x.shift?.name || '')}</small>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${(x.deliveries || []).map(d => `<span class="chip" title="${esc(d.status)}" style="${d.status === 'skipped' ? 'text-decoration:line-through;opacity:.5' : ''}">${esc(new Date(d.date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }))}${d.multiplier > 1 ? ` ×${d.multiplier}` : ''}
-          ${d.status === 'scheduled' ? `<button class="link" data-dskip="${d.id}" title="${esc(t('sf.skip'))}">✕</button><button class="link" data-dmove="${d.id}" data-month="${d.date.slice(0, 7)}" title="${esc(t('sf.move'))}">↻</button>` : ''}</span>`).join('')}</div></div>`).join('')}</div></div>`;
+    return sec('subs', 'plan', t('sf.subs'), t('sf.subsLead'), `<div class="sfx-subs">${subs.map(x => `<div class="sfx-subi">
+        <div class="sfx-subh"><b>${esc(x.customer_name)}</b><small>${esc(x.customer_phone)}</small>${chip(x.status === 'active' ? 'active' : 'pending')}
+          ${x.status === 'active' ? `<button class="sfx-btn sm" data-scancel="${x.id}">${esc(t('sf.subCancel'))}</button>` : ''}</div>
+        <small>${esc((x.days || []).map(d => DAYS[d - 1]).join(', '))} × ${x.weeks} · ${esc(x.shift?.name || '')}</small>
+        <div class="sfx-pills">${(x.deliveries || []).map(d => `<span class="sfx-day ${d.status === 'skipped' ? 'off' : ''}" title="${esc(d.status)}">${esc(new Date(d.date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }))}${d.multiplier > 1 ? ` ×${d.multiplier}` : ''}
+          ${d.status === 'scheduled' ? `<button class="link" data-dskip="${d.id}" title="${esc(t('sf.skip'))}">✕</button><button class="link" data-dmove="${d.id}" data-month="${d.date.slice(0, 7)}" title="${esc(t('sf.move'))}">↻</button>` : ''}</span>`).join('')}</div></div>`).join('')}</div>`);
   };
   const readDelivery = () => {
     const shifts = [...el.querySelectorAll('[data-sname]')].map(n => { const i = n.dataset.sname; return { name: n.value.trim(), from: el.querySelector(`[data-sfrom="${i}"]`).value, to: el.querySelector(`[data-sto="${i}"]`).value }; });
@@ -163,50 +167,49 @@ export default function storefront({ el, setHeader }) {
   const paint = () => {
     const link = base() + sf.slug;
     const cur = def();
-    el.innerHTML = `<div style="display:grid;gap:16px;max-width:1180px">
-      <div class="card" style="padding:20px"><div style="display:flex;align-items:center;gap:12px"><h3 style="margin:0">${esc(t('sf.yours'))}</h3>${chip(sf.published ? 'active' : 'pending')}
-          <button class="btn ${sf.published ? '' : 'primary'} sm" data-publish style="margin-left:auto">${esc(t(sf.published ? 'sf.unpublish' : 'sf.publish'))}</button></div>
-        <p class="desc">${esc(t(sf.published ? 'sf.liveLead' : 'sf.draftLead'))}</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;align-items:center">
-          <div style="width:200px;height:200px">${qrSvg(link)}</div>
-          <div><div class="field"><label>${esc(t('sf.link'))}</label><input class="input" readonly data-link value="${esc(link)}"></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn primary sm" data-copy>${esc(t('riders.copy'))}</button>
-              ${navigator.share ? `<button class="btn sm" data-share>${esc(t('invite.share'))}</button>` : ''}
-              <a class="btn sm" href="${esc(link)}" target="_blank" rel="noopener">${esc(t('sf.open'))}</a></div></div></div></div>
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start" class="sf-split">
-        <div style="display:grid;gap:16px;min-width:0">
-          <div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.template'))}</h3><p class="desc">${esc(t('sf.templateLead'))}</p>
-            <div class="tabs" style="margin-bottom:12px;flex-wrap:wrap">${['', ...CATS].map(k => `<button class="tab ${cat === k ? 'on' : ''}" data-cat="${k}">${esc(t(k ? `sf.cat.${k}` : 'sf.cat.all'))}</button>`).join('')}</div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">${[...(LEGACY.some(x => x.id === sf.template_key) && !cat ? LEGACY.filter(x => x.id === sf.template_key) : []), ...TEMPLATES.filter(x => !cat || x.cat === cat)].map(x => `<button class="opt ${x.id === tpl ? 'on' : ''}" data-tpl="${x.id}" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left">
-              <span style="display:flex;gap:4px"><i style="width:18px;height:18px;border-radius:50%;background:${x.primary};border:1px solid var(--line)"></i><i style="width:18px;height:18px;border-radius:50%;background:${x.secondary};border:1px solid var(--line)"></i></span>
-              <b>${esc(x.name)}</b><small>${esc(t(`tpl.${x.id}`))}</small>
-              ${x.id === sf.template_key ? `<small style="color:var(--ok,#047857);font-weight:600">● ${esc(t(LEGACY.some(l => l.id === x.id) ? 'sf.activeEarlier' : 'sf.active'))}</small>` : x.id === tpl ? `<small style="color:var(--primary);font-weight:600">${esc(t('sf.previewing'))}</small>` : ''}</button>`).join('')}</div></div>
-          <div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.appearance'))}</h3><p class="desc">${esc(t('sf.appearanceLead'))}</p>
-            <div class="g4" style="align-items:end">
-              <div class="field"><label>${esc(t('sf.accent'))}</label><input class="input" type="color" data-accent value="${esc(theme.accent || cur.primary)}"></div>
-              <div class="field"><label>${esc(t('sf.secondary'))}</label><input class="input" type="color" data-secondary value="${esc(theme.secondary || cur.secondary)}"></div></div>
-            <div class="field"><label>${esc(t('sf.tagline'))}</label><input class="input" data-tagline maxlength="120" value="${esc(theme.tagline || '')}"></div>
-            <div class="field"><label>${esc(t('sf.logo'))}</label>
-              <div style="display:flex;gap:12px;align-items:center">${theme.logo_path || logoFile ? `<img data-logoimg src="${esc(logoData || api.publicUrl('cefflo-storefront-assets', theme.logo_path))}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:12px;border:1px solid var(--line)">` : ''}
-                <button class="btn sm" data-logo>${esc(t(theme.logo_path || logoFile ? 'sf.logoChange' : 'sf.logoAdd'))}</button>
-                <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-logofile></div>
-              <small class="hint">${esc(t('sf.logoHint'))}</small></div>
-            ${cur.hero === false ? '' : `<div class="field"><label>${esc(t('sf.hero'))}</label>
-              <div style="display:flex;gap:12px;align-items:center">${theme.hero_path || heroFile ? `<img data-heroimg src="${esc(heroData || api.publicUrl('cefflo-storefront-assets', theme.hero_path))}" alt="" style="width:160px;height:90px;object-fit:cover;border-radius:8px">` : ''}
-                <button class="btn sm" data-hero>${esc(t(theme.hero_path || heroFile ? 'sf.heroChange' : 'sf.heroAdd'))}</button>
-                <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-herofile></div>
-              <small class="hint">${esc(t('sf.heroHint'))}</small></div>`}
+    const nav = [['look', t('sf.template')], ['pay', t('sf.pay')], ['delivery', t('sf.delivery')], ['courier', t('sf.courier')], ...(subs.length ? [['subs', t('sf.subs')]] : [])];
+    el.innerHTML = `<div class="sfx">
+      <div class="sfx-top">
+        <div class="sfx-link">${chip(sf.published ? 'active' : 'pending')}<input class="sfx-url" readonly data-link value="${esc(link)}" aria-label="${esc(t('sf.link'))}"></div>
+        <div class="sfx-acts">
+          <button class="sfx-btn" data-copy>${esc(t('riders.copy'))}</button>
+          <button class="sfx-btn" data-qr>QR code</button>
+          <a class="sfx-btn" href="${esc(link)}" target="_blank" rel="noopener">${esc(t('sf.open'))}</a>
+          <button class="sfx-btn ${sf.published ? '' : 'primary'}" data-publish>${esc(t(sf.published ? 'sf.unpublish' : 'sf.publish'))}</button></div></div>
+      <nav class="sfx-nav" role="tablist">${nav.map(([k, n]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-jump="${k}">${esc(n)}</button>`).join('')}</nav>
+      <div class="sfx-split sf-split">
+        <div class="sfx-main">
+          ${sec('look', 'palette', t('sf.template'), t('sf.templateLead'), `
+            <div class="sfx-pills">${['', ...CATS].map(k => `<button type="button" class="sfx-pill ${cat === k ? 'on' : ''}" data-cat="${k}">${esc(t(k ? `sf.cat.${k}` : 'sf.cat.all'))}</button>`).join('')}</div>
+            <div class="sfx-tpls">${[...(LEGACY.some(x => x.id === sf.template_key) && !cat ? LEGACY.filter(x => x.id === sf.template_key) : []), ...TEMPLATES.filter(x => !cat || x.cat === cat)].map(x => `<button type="button" class="sfx-tpl ${x.id === tpl ? 'on' : ''}" data-tpl="${x.id}" aria-pressed="${x.id === tpl}">
+              <span class="sfx-shot">${TEMPLATES.some(y => y.id === x.id) ? `<img src="img/templates/${x.id}.jpg" alt="" loading="lazy">` : `<i style="background:linear-gradient(${x.primary},${x.secondary})"></i>`}</span>
+              <span class="sfx-tn"><b>${esc(x.name)}</b>${x.id === sf.template_key ? `<em>${esc(t(LEGACY.some(l => l.id === x.id) ? 'sf.activeEarlier' : 'sf.active'))}</em>` : ''}</span><small>${esc(t(`tpl.${x.id}`))}</small></button>`).join('')}</div>
+            <h3 class="sfx-sub">${esc(t('sf.appearance'))}</h3><p class="sfx-lead">${esc(t('sf.appearanceLead'))}</p>
+            <div class="sfx-row">
+              ${fld(t('sf.accent'), `<span class="sfx-color"><input type="color" data-accent value="${esc(theme.accent || cur.primary)}"><i>${esc((theme.accent || cur.primary).toUpperCase())}</i></span>`)}
+              ${fld(t('sf.secondary'), `<span class="sfx-color"><input type="color" data-secondary value="${esc(theme.secondary || cur.secondary)}"><i>${esc((theme.secondary || cur.secondary).toUpperCase())}</i></span>`)}</div>
+            ${fld(t('sf.tagline'), `<input class="sfx-in" data-tagline maxlength="120" value="${esc(theme.tagline || '')}">`)}
+            <div class="sfx-row sfx-start">
+              <div class="sfx-f"><span>${esc(t('sf.logo'))}</span>
+                <div class="sfx-media">${theme.logo_path || logoFile ? `<img data-logoimg src="${esc(logoData || api.publicUrl('cefflo-storefront-assets', theme.logo_path))}" alt="" class="sfx-logo">` : `<span class="sfx-ph sfx-logo">${icon('upload')}</span>`}
+                  <button type="button" class="sfx-btn sm" data-logo>${esc(t(theme.logo_path || logoFile ? 'sf.logoChange' : 'sf.logoAdd'))}</button>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-logofile></div>
+                <small>${esc(t('sf.logoHint'))}</small></div>
+              ${cur.hero === false ? '' : `<div class="sfx-f"><span>${esc(t('sf.hero'))}</span>
+                <div class="sfx-media">${theme.hero_path || heroFile ? `<img data-heroimg src="${esc(heroData || api.publicUrl('cefflo-storefront-assets', theme.hero_path))}" alt="" class="sfx-heroimg">` : `<span class="sfx-ph sfx-heroimg">${icon('upload')}</span>`}
+                  <button type="button" class="sfx-btn sm" data-hero>${esc(t(theme.hero_path || heroFile ? 'sf.heroChange' : 'sf.heroAdd'))}</button>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-herofile></div>
+                <small>${esc(t('sf.heroHint'))}</small></div>`}</div>
             <div class="err" data-err hidden></div>
-            <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">${sf.published ? `<small class="hint">${esc(t('sf.applyLive'))}</small>` : ''}<button class="btn primary" data-save>${esc(t('sf.apply'))}</button></div></div>
+            ${foot(`<button class="sfx-btn primary" data-save>${esc(t('sf.apply'))}</button>`, sf.published ? t('sf.applyLive') : '')}`)}
           ${payCard()}
-          ${courierCard()}
           ${deliveryCard()}
+          ${courierCard()}
           ${subsCard()}</div>
-        <div class="card" style="padding:16px;position:sticky;top:16px"><h3 style="margin:0 0 4px">${esc(t('sf.preview'))}</h3><p class="desc" style="margin-bottom:10px">${esc(t('sf.previewLead'))}</p>
-          <div class="tabs" style="margin-bottom:12px">${PREVIEW_SCREENS.map(([r, k]) => `<button class="tab ${screen === r ? 'on' : ''}" data-screen="${r}">${esc(t(k))}</button>`).join('')}</div>
-          <div style="width:308px;height:667px;margin:0 auto;border-radius:28px;overflow:hidden;border:6px solid #111;background:#fff">
-            <iframe data-frame title="${esc(t('sf.preview'))}" style="width:390px;height:844px;border:0;transform:scale(.7744);transform-origin:0 0" src="${esc(src())}"></iframe></div></div></div></div>`;
+        <aside class="sfx-pv">
+          <div class="sfx-pills sfx-pvtabs">${PREVIEW_SCREENS.map(([r, k]) => `<button type="button" class="sfx-pill ${screen === r ? 'on' : ''}" data-screen="${r}">${esc(t(k))}</button>`).join('')}</div>
+          <div class="sfx-phone"><iframe data-frame title="${esc(t('sf.preview'))}" src="${esc(src())}"></iframe></div>
+          <small>${esc(t('sf.previewLead'))}</small></aside></div></div>`;
     frame = el.querySelector('[data-frame]'); frameReady = false;
   };
 
@@ -228,9 +231,15 @@ export default function storefront({ el, setHeader }) {
     } catch (e) { el.innerHTML = errorState(e, 'storefront'); }
   };
 
-  el.addEventListener('input', e => { if (e.target.closest('[data-accent],[data-secondary],[data-tagline]')) post(); });
+  el.addEventListener('input', e => {
+    if (e.target.matches('[data-accent],[data-secondary]')) { const tag = e.target.nextElementSibling; if (tag) tag.textContent = e.target.value.toUpperCase(); }
+    if (e.target.closest('[data-accent],[data-secondary],[data-tagline]')) post();
+  });
   el.addEventListener('click', async e => {
     if (e.target.closest('[data-retry]')) { load(); return; }
+    const jp = e.target.closest('[data-jump]');
+    if (jp) { tab = jp.dataset.jump; el.querySelectorAll('[data-jump]').forEach(b => { const on = b === jp; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); }); el.querySelectorAll('.sfx-sec').forEach(x => { x.hidden = x.id !== `sfx-${tab}`; }); return; }
+    if (e.target.closest('[data-qr]')) { const link = base() + sf.slug; modal({ title: 'QR code', lead: t('sf.link'), cls: 'sfx-qrm', body: `<div class="sfx-qrbox">${qrSvg(link)}</div><p class="sfx-qrlink">${esc(link)}</p>` }); return; }
     const eps = e.target.closest('[data-epsave]');
     if (eps) {
       const err = el.querySelector('[data-eperr]'); err.hidden = true;
