@@ -111,7 +111,7 @@ export default function today({ el, setHeader }) {
     // Orders trend: last 14 business days.
     const days = [...Array(14)].map((_, i) => new Date(new Date(`${today}T12:00:00Z`).getTime() - (13 - i) * 86400000).toISOString().slice(0, 10));
     const per = d => hist.filter(o => o.order_date === d);
-    $('[data-trend]').innerHTML = lineChart({ labels: days.map(d => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })),
+    $('[data-trend]').innerHTML = lineChart({ width: $('[data-trend]').clientWidth || 640, labels: days.map(d => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })),
       series: [{ key: 'o', name: 'Orders', color: '#3D63F5', fill: true, values: days.map(d => per(d).length) },
         { key: 'd', name: 'Delivered', color: '#22B07D', dashed: true, values: days.map(d => per(d).filter(o => o.delivery_status === 'delivered').length) }] })
       + '<div class="legend"><span><i style="background:#3D63F5"></i>Orders</span><span><i style="background:#22B07D"></i>Delivered</span></div>';

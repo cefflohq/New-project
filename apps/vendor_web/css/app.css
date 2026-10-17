@@ -974,7 +974,7 @@ select.sfx-in { appearance: none; padding-right: 36px; background-image: url("da
 .kpi2 em { font-style: normal; font-size: 13px; font-weight: 600; }
 .kpi2 em.up { color: #1A9E6E; } .kpi2 em.down { color: #E04848; }
 .chart { position: relative; }
-.chart svg { display: block; width: 100%; height: 220px; overflow: visible; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 .chart .cg { stroke: var(--border); stroke-dasharray: 3 4; }
 .chart .ct { fill: var(--faint); font: 500 11px Inter, system-ui, sans-serif; }
 .chart .cx { stroke: var(--border-strong); stroke-width: 1; }
@@ -1085,3 +1085,53 @@ select.sfx-in { appearance: none; padding-right: 36px; background-image: url("da
 .shell.fs { --on-glass: linear-gradient(180deg, rgba(64, 140, 255, .72), rgba(0, 96, 254, .62)); --on-glow: 0 10px 26px -10px rgba(0, 96, 254, .75), inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 0 0 1px rgba(255, 255, 255, .22); }
 .shell.fs .sidebar .nav a.active, .shell.fs .sfx-btn.primary, .shell.fs .sfx-pill.on, .shell.fs .sfx-nav button.on, .shell.fs .main .btn.primary, .shell.fs .main .btn.cta, .shell.fs .seg > .on { background: var(--on-glass); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%); box-shadow: var(--on-glow); border-color: transparent; color: #fff; }
 .shell.fs .main .btn.primary:hover, .shell.fs .main .btn.cta:hover, .shell.fs .sfx-btn.primary:hover { background: linear-gradient(180deg, rgba(64, 140, 255, .85), rgba(0, 96, 254, .78)); }
+
+/* ===== Polish pass (audit 2026-10-17) ===== */
+/* Menus and popovers opened from the sidebar keep dark-on-light text. */
+.shell.fs .sidebar .menu, .shell.fs .sidebar .menu * { color: var(--ink); }
+.shell.fs .sidebar .menu small, .shell.fs .sidebar .menu .muted { color: var(--muted); }
+.shell.fs .sidebar .menu { border-radius: 18px; overflow: hidden; }
+/* White glass buttons only on the backdrop; inside cards, modals and menus
+   they are light buttons with dark text. */
+.shell.fs .main .card .btn:not(.primary):not(.cta), .shell.fs .main .dc .btn:not(.primary):not(.cta), .modal .btn:not(.primary):not(.cta), .shell.fs .main .settings-page .btn:not(.primary):not(.cta) { background: rgba(255, 255, 255, .85); border-color: rgba(60, 72, 96, .14); color: var(--ink); }
+.shell.fs .main .card .btn:not(.primary):not(.cta):hover { background: #fff; }
+/* Segmented controls on the backdrop (Drivers | Openings). */
+.shell.fs .mode-seg { justify-self: start; width: max-content; background: rgba(255, 255, 255, .16); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28); border-radius: 12px; }
+.shell.fs .mode-seg button { color: rgba(255, 255, 255, .8); }
+.shell.fs .mode-seg button.on { background: var(--on-glass); color: #fff; box-shadow: var(--on-glow); }
+/* Glass surfaces for the remaining white blocks: KPI strips, settings cards,
+   settings navigation, run lists. */
+.shell.fs .kpis, .shell.fs .settings-page .card, .shell.fs .settings-page section, .shell.fs .settings-nav { background: rgba(236, 240, 245, .72); -webkit-backdrop-filter: blur(24px) saturate(130%); backdrop-filter: blur(24px) saturate(130%); border: 0; border-radius: 22px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), inset 0 0 0 1px rgba(255, 255, 255, .55), 0 18px 40px -22px rgba(30, 40, 60, .45); }
+.shell.fs .kpis { overflow: hidden; }
+.shell.fs .kpi { background: none; }
+.shell.fs .settings-nav { padding: 12px; top: 24px; }
+.shell.fs .settings-nav button { border-radius: 10px; height: 34px; }
+.shell.fs .settings-nav button.on { background: var(--on-glass); color: #fff; box-shadow: var(--on-glow); }
+.shell.fs .settings-nav button.on svg.i { color: #fff; }
+.shell.fs .settings-page > h2, .shell.fs .settings-page > header h2, .shell.fs .settings-page > .sp-h h2 { color: #fff; }
+.shell.fs .settings-page > p, .shell.fs .settings-page > header p { color: rgba(255, 255, 255, .78); }
+.shell.fs .settings-page .card { padding: 18px 20px; }
+/* Run lists sit in a glass card too. */
+.shell.fs .main .content > .card:not(.dc) { padding: 6px 20px 14px; }
+/* Tables: no wrapping in compact columns; quieter selected row. */
+.shell.fs table.t td { white-space: nowrap; }
+.shell.fs table.t td:nth-child(2) { white-space: normal; }
+.shell.fs table.t tr.sel td { background: rgba(0, 96, 254, .07); }
+.shell.fs table.t tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--on); }
+/* Detail side panel and modals: rounder, glassy. */
+.shell.fs .detail, .shell.fs .split > .card + .card { border-radius: 22px; }
+.modal { border-radius: 24px; box-shadow: 0 30px 80px -20px rgba(15, 22, 36, .45); }
+.modal .input { border-radius: 12px; }
+/* Hidden chart markers until hover. */
+.chart .cd { opacity: 0; transition: opacity 120ms ease; }
+.chart:hover .cd { opacity: 1; }
+/* Phone top bar matches the backdrop. */
+@media (max-width: 767px) {
+  .shell.fs .topbar { background: transparent; color: #fff; }
+  .shell.fs .topbar .icon-btn { color: #fff; }
+  .shell.fs .main { margin-top: 0; }
+}
+.shell.fs .sub-card, .shell.fs .main .content > .card:not(.dc) { background: rgba(236, 240, 245, .72); -webkit-backdrop-filter: blur(24px) saturate(130%); backdrop-filter: blur(24px) saturate(130%); border: 0; border-radius: 22px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), inset 0 0 0 1px rgba(255, 255, 255, .55), 0 18px 40px -22px rgba(30, 40, 60, .45); }
+.shell.fs .main .content > .card:not(.dc) { padding: 6px 20px 14px; margin-top: 16px; }
+.shell.fs .settings-page > .sp-head h2, .shell.fs .settings-page h2.sp-title { color: #fff; }
+.shell.fs table.t .chip { vertical-align: middle; }

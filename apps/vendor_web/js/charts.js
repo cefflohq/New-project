@@ -3,8 +3,8 @@
 import { esc } from './ui.js';
 
 // series: [{ name, color, dashed, values: [n…] }], labels: [str…]
-export function lineChart({ labels, series, height = 220 }) {
-  const W = 640, H = height, L = 32, R = 8, T = 12, B = 26;
+export function lineChart({ labels, series, height = 220, width = 640 }) {
+  const W = Math.max(280, Math.round(width)), H = height, L = 32, R = 8, T = 12, B = 26;
   const max = Math.max(4, ...series.flatMap(s => s.values));
   const step = Math.ceil(max / 4);
   const top = step * 4;
@@ -20,14 +20,14 @@ export function lineChart({ labels, series, height = 220 }) {
   }).join('');
   const hits = labels.map((l, i) => `<rect x="${x(i) - (W - L - R) / labels.length / 2}" y="${T}" width="${(W - L - R) / labels.length}" height="${H - T - B}" fill="transparent" data-i="${i}"/>`).join('');
   return `<div class="chart" data-chart='${esc(JSON.stringify({ labels, series: series.map(s => ({ name: s.name, color: s.color, values: s.values })) }))}'>
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(series.map(s => s.name).join(', '))}">${grid}${xl}${lines}<line class="cx" y1="${T}" y2="${H - B}" x1="-10" x2="-10"/>${series.map((s, k) => `<circle class="cd" data-k="${k}" r="4.5" cx="-10" cy="-10" fill="#fff" stroke="${s.color}" stroke-width="2.4"/>`).join('')}${hits}</svg>
+    <svg viewBox="0 0 ${W} ${H}" role="img" data-w="${W}" aria-label="${esc(series.map(s => s.name).join(', '))}">${grid}${xl}${lines}<line class="cx" y1="${T}" y2="${H - B}" x1="-10" x2="-10"/>${series.map((s, k) => `<circle class="cd" data-k="${k}" r="4.5" cx="-10" cy="-10" fill="#fff" stroke="${s.color}" stroke-width="2.4"/>`).join('')}${hits}</svg>
     <div class="ctip" hidden></div></div>`;
 }
 
 export function wireCharts(root) {
   root.querySelectorAll('.chart').forEach(c => {
     const data = JSON.parse(c.dataset.chart); const svg = c.querySelector('svg'); const tip = c.querySelector('.ctip');
-    const W = 640, L = 32, R = 8;
+    const W = Number(svg.dataset.w) || 640, L = 32, R = 8;
     c.addEventListener('pointermove', e => {
       const r = e.target.closest('rect[data-i]'); if (!r) return;
       const i = Number(r.dataset.i); const xi = L + (data.labels.length < 2 ? 0 : (i * (W - L - R)) / (data.labels.length - 1));
