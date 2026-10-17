@@ -1883,3 +1883,14 @@ h1, h2, h3, h4, p { margin: 0; }
    pill Confirm, rounded left and right. */
 .co-mapsheet .sf-map-start { display: none !important; }
 .co-mapsheet .co-mapok { background: #111; color: #fff; border-radius: 999px; height: 52px; padding: 0 24px; box-shadow: none; }
+/* Fewer cards (Founder 2026-10-17): checkout sections sit on white, split
+   by a hairline; options are plain rows with a radio, not boxed cards. */
+.sf.r-checkout, .sf.r-checkout .sf-page, .sf.r-cart, .sf.r-cart .sf-page, .sf-co { background: #fff; }
+.sf-co .sf-form { gap: 0; }
+.co-box { background: none; border-radius: 0; padding: 18px 0; border-bottom: 1px solid #EEF0F3; }
+.co-box:last-of-type { border-bottom: 0; }
+.co-pay { gap: 0; }
+.co-pay button { border: 0; border-radius: 0; background: none; padding: 12px 0; }
+.co-pay button + button { border-top: 1px solid #F1F2F4; }
+.co-pay button.on { background: none; }
+.co-sum { padding-top: 14px; }
