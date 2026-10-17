@@ -262,3 +262,6 @@ html,body,#app{background:linear-gradient(180deg,#0A2E6E 0%,#1553C4 30%,#4F8DF0 
 .brand{display:flex;align-items:center;gap:8px}
 .layout-right>aside>div>.card-title h3,.layout-right>div>.card-title h3,.stack>div>.card-title h3{color:#fff}
 .card .card-title h3{color:var(--ink)!important}
+.page-head h1,.page-head .eyebrow,.page-head p{display:none}
+.page-head{margin-bottom:12px}
+.page-head:not(:has(> :not(div:first-child))) {margin:0}
