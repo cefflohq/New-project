@@ -7,7 +7,7 @@
 import { t } from '../i18n.js';
 import { api } from '../api.js';
 import { ctx } from '../store.js';
-import { esc, icon, chip, loadingRows, emptyState, errorState, toast, busy, modal } from '../ui.js';
+import { esc, icon, chip, loadingRows, emptyState, errorState, toast, busy, modal, copyText } from '../ui.js';
 
 const MAX_PHOTOS = 5;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -74,7 +74,7 @@ function openProduct(product, cats, onDone) {
         <div class="field"><label>${esc(t('prod.setItems'))}</label><textarea class="textarea" name="setitems" rows="4" placeholder="${esc(t('prod.setItemsHint'))}">${esc((p.set_items || []).join('\n'))}</textarea></div>
         <small class="hint">${esc(t('prod.extrasHint'))}</small></details>
       <div class="err" data-err hidden></div>`,
-    footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t(isNew ? 'prod.create' : 'c.save'))}</button>`,
+    footer: `${isNew ? '' : `<button class="btn" data-adlink style="margin-right:auto">${esc(t('prod.adLink'))}</button>`}<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-submit>${esc(t(isNew ? 'prod.create' : 'c.save'))}</button>`,
   });
   // Photos: saved media (id) and new files (file) in the order shown.
   // Changes apply on Save, so a new product can take photos before it exists.
@@ -111,6 +111,16 @@ function openProduct(product, cats, onDone) {
     if (l) { const i = Number(l.dataset.left); [photos[i - 1], photos[i]] = [photos[i], photos[i - 1]]; paintPhotos(); }
   });
 
+  // Ad link (Founder 2026-10-17): opens the storefront straight on this product,
+  // to use instead of 'Chat on WhatsApp' in ads.
+  m.el.querySelector('[data-adlink]')?.addEventListener('click', async () => {
+    try {
+      const sf = await api.rpc('get_storefront', { p_business_id: ctx.bid });
+      const slug = (Array.isArray(sf) ? sf[0] : sf)?.slug;
+      const link = `${(window.CEFFLO_CONFIG?.storefrontBaseUrl || 'https://order.cefflo.com/')}${slug}#/p/${p.id}`;
+      const ok = await copyText(link); toast(ok ? t('prod.adCopied') : link);
+    } catch (ex) { toast(ex.message, 'error'); }
+  });
   m.el.querySelector('[data-submit]').addEventListener('click', async e => {
     const f = n => m.el.querySelector(`[name=${n}]`);
     const name = f('name').value.trim(), price = Number(f('price').value), catText = f('category').value.trim();

@@ -9116,6 +9116,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weight (kg)'**
   String get prodWeight;
+
+  /// No description provided for @cuTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier (outside your rider area)'**
+  String get cuTitle;
+
+  /// No description provided for @cuLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Ship storefront orders outside your rider area with your own EasyParcel account. Booking is automatic after the customer pays; you only print the label.'**
+  String get cuLead;
+
+  /// No description provided for @cuConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'EasyParcel connected.'**
+  String get cuConnected;
+
+  /// No description provided for @cuKey.
+  ///
+  /// In en, this message translates to:
+  /// **'EasyParcel API key'**
+  String get cuKey;
+
+  /// No description provided for @cuDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Test (demo) account'**
+  String get cuDemo;
+
+  /// No description provided for @cuPickName.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup name'**
+  String get cuPickName;
+
+  /// No description provided for @cuPickPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup phone'**
+  String get cuPickPhone;
+
+  /// No description provided for @cuPickAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup address'**
+  String get cuPickAddress;
+
+  /// No description provided for @cuCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get cuCity;
+
+  /// No description provided for @cuPostcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Postcode'**
+  String get cuPostcode;
+
+  /// No description provided for @cuState.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get cuState;
+
+  /// No description provided for @cuHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Courier costs come from your EasyParcel credit. Set each product\'s weight for accurate rates.'**
+  String get cuHint;
+
+  /// No description provided for @cuNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the API key and a 5-digit postcode.'**
+  String get cuNeeded;
+
+  /// No description provided for @prodAdLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy ad link'**
+  String get prodAdLink;
+
+  /// No description provided for @prodAdLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens your storefront on this product. Use it in ads instead of a WhatsApp chat.'**
+  String get prodAdLinkHint;
 }
 
 class _AppLocalizationsDelegate

@@ -62,7 +62,9 @@ Deno.serve(async (req) => {
   // Per-drop fee: the highest item fee (product override or store fee); a
   // vendor-set 0 means the vendor gives free delivery.
   const { data: orderFee } = await db.rpc('_storefront_order_fee', { p_order_id: order.id });
-  const fee = Math.round(Number((sub?.delivery_fee ?? orderFee ?? page.delivery_fee) || 0) * 100);
+  // Courier orders pay the quoted courier price instead of the rider fee.
+  const { data: ship } = await db.from('storefront_shipments').select('price').eq('order_id', order.id).maybeSingle();
+  const fee = ship ? Math.round(Number(ship.price || 0) * 100) : Math.round(Number((sub?.delivery_fee ?? orderFee ?? page.delivery_fee) || 0) * 100);
   const amount = (goods + fee) * drops;
   if (amount <= 0) return json({ error: 'invalid amount' }, 409, origin);
 

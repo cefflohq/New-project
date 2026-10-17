@@ -5009,4 +5009,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prodWeight => 'Weight (kg)';
+
+  @override
+  String get cuTitle => 'Courier (outside your rider area)';
+
+  @override
+  String get cuLead =>
+      'Ship storefront orders outside your rider area with your own EasyParcel account. Booking is automatic after the customer pays; you only print the label.';
+
+  @override
+  String get cuConnected => 'EasyParcel connected.';
+
+  @override
+  String get cuKey => 'EasyParcel API key';
+
+  @override
+  String get cuDemo => 'Test (demo) account';
+
+  @override
+  String get cuPickName => 'Pickup name';
+
+  @override
+  String get cuPickPhone => 'Pickup phone';
+
+  @override
+  String get cuPickAddress => 'Pickup address';
+
+  @override
+  String get cuCity => 'City';
+
+  @override
+  String get cuPostcode => 'Postcode';
+
+  @override
+  String get cuState => 'State';
+
+  @override
+  String get cuHint =>
+      'Courier costs come from your EasyParcel credit. Set each product\'s weight for accurate rates.';
+
+  @override
+  String get cuNeeded => 'Enter the API key and a 5-digit postcode.';
+
+  @override
+  String get prodAdLink => 'Copy ad link';
+
+  @override
+  String get prodAdLinkHint =>
+      'Opens your storefront on this product. Use it in ads instead of a WhatsApp chat.';
 }

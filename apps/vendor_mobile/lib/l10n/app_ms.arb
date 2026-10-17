@@ -1501,5 +1501,20 @@
   "prodPortionHint": "cth. Setiap bekas untuk 2-3 orang",
   "prodDeliveryFee": "Caj hantar produk ini (RM)",
   "prodDeliveryFeeHint": "Kosong = caj kedai, 0 = percuma",
-  "prodWeight": "Berat (kg)"
+  "prodWeight": "Berat (kg)",
+  "cuTitle": "Kurier (luar kawasan rider)",
+  "cuLead": "Hantar order kedai di luar kawasan rider guna akaun EasyParcel anda sendiri. Tempahan automatik selepas pelanggan bayar; anda hanya cetak label.",
+  "cuConnected": "EasyParcel disambung.",
+  "cuKey": "Kunci API EasyParcel",
+  "cuDemo": "Akaun ujian (demo)",
+  "cuPickName": "Nama pungutan",
+  "cuPickPhone": "Telefon pungutan",
+  "cuPickAddress": "Alamat pungutan",
+  "cuCity": "Bandar",
+  "cuPostcode": "Poskod",
+  "cuState": "Negeri",
+  "cuHint": "Kos kurier ditolak dari kredit EasyParcel anda. Isi berat setiap produk untuk harga tepat.",
+  "cuNeeded": "Masukkan kunci API dan poskod 5 digit.",
+  "prodAdLink": "Salin link iklan",
+  "prodAdLinkHint": "Buka kedai anda terus pada produk ini. Guna dalam iklan menggantikan chat WhatsApp."
 }

@@ -2457,5 +2457,20 @@
   "prodPortionHint": "e.g. Each pack feeds 2-3",
   "prodDeliveryFee": "Delivery fee for this product (RM)",
   "prodDeliveryFeeHint": "Blank = store fee, 0 = free",
-  "prodWeight": "Weight (kg)"
+  "prodWeight": "Weight (kg)",
+  "cuTitle": "Courier (outside your rider area)",
+  "cuLead": "Ship storefront orders outside your rider area with your own EasyParcel account. Booking is automatic after the customer pays; you only print the label.",
+  "cuConnected": "EasyParcel connected.",
+  "cuKey": "EasyParcel API key",
+  "cuDemo": "Test (demo) account",
+  "cuPickName": "Pickup name",
+  "cuPickPhone": "Pickup phone",
+  "cuPickAddress": "Pickup address",
+  "cuCity": "City",
+  "cuPostcode": "Postcode",
+  "cuState": "State",
+  "cuHint": "Courier costs come from your EasyParcel credit. Set each product's weight for accurate rates.",
+  "cuNeeded": "Enter the API key and a 5-digit postcode.",
+  "prodAdLink": "Copy ad link",
+  "prodAdLinkHint": "Opens your storefront on this product. Use it in ads instead of a WhatsApp chat."
 }

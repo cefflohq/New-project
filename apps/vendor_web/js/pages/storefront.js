@@ -63,7 +63,7 @@ function qrSvg(text) {
 export default function storefront({ el, setHeader }) {
   setHeader(t('sf.title'));
   el.innerHTML = loadingRows(4);
-  let dlv = {}, subs = [], pay = {};
+  let dlv = {}, subs = [], pay = {}, cou = {};
   let sf = null, tpl = 'warung', theme = {}, heroFile = null, heroData = null, logoFile = null, logoData = null, pv = null, screen = '', cat = '';
   let frame = null, frameReady = false;
   const def = () => TEMPLATES.find(x => x.id === tpl) || LEGACY.find(x => x.id === tpl) || TEMPLATES[0];
@@ -125,6 +125,25 @@ export default function storefront({ el, setHeader }) {
         <div class="err" data-perr hidden></div>
         <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn primary" data-chipon>${esc(t('sf.chipConnect'))}</button></div>`}
     <label style="display:flex;gap:10px;align-items:center;margin-top:14px"><input type="checkbox" data-cod ${pay.accept_cod !== false || !pay.connected ? 'checked' : ''} ${pay.connected ? '' : 'disabled'}><span><b>${esc(t('sf.cod'))}</b><br><small class="hint">${esc(t(pay.connected ? 'sf.codHint' : 'sf.codOnly'))}</small></span></label></div>`;
+  // Courier (Founder 2026-10-17): the vendor's own EasyParcel account ships
+  // storefront orders outside the rider area; booking is automatic after payment.
+  const EP_STATES = [['jhr', 'Johor'], ['kdh', 'Kedah'], ['ktn', 'Kelantan'], ['mlk', 'Melaka'], ['nsn', 'Negeri Sembilan'], ['phg', 'Pahang'], ['prk', 'Perak'], ['pls', 'Perlis'], ['png', 'Pulau Pinang'], ['sgr', 'Selangor'], ['trg', 'Terengganu'], ['kul', 'Kuala Lumpur'], ['pjy', 'Putrajaya'], ['srw', 'Sarawak'], ['sbh', 'Sabah'], ['lbn', 'Labuan']];
+  const courierCard = () => {
+    const pk = cou.pickup || {};
+    return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.courier'))}</h3><p class="desc">${esc(t('sf.courierLead'))}</p>
+    ${cou.connected ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">${chip('active')}<span>${esc(t('sf.epOn', { id: cou.key_hint || '' }))}${cou.demo ? ` · ${esc(t('sf.testMode'))}` : ''}</span><button class="btn sm" data-epoff style="margin-left:auto">${esc(t('sf.chipOff'))}</button></div>` : ''}
+    <div class="g4" style="align-items:end"><div class="field"><label>${esc(t('sf.epKey'))}</label><input class="input" type="password" data-epkey autocomplete="new-password" placeholder="${esc(cou.connected ? t('sf.epKeyKeep') : '')}"></div>
+      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-epdemo ${cou.demo ? 'checked' : ''}>${esc(t('sf.epDemo'))}</label></div>
+    <div class="g4"><div class="field"><label>${esc(t('sf.pickName'))}</label><input class="input" data-pk="name" value="${esc(pk.name || '')}"></div>
+      <div class="field"><label>${esc(t('sf.pickPhone'))}</label><input class="input" data-pk="phone" value="${esc(pk.phone || '')}"></div></div>
+    <div class="field"><label>${esc(t('sf.pickAddr'))}</label><input class="input" data-pk="address" value="${esc(pk.address || '')}"></div>
+    <div class="g4"><div class="field"><label>${esc(t('sf.pickCity'))}</label><input class="input" data-pk="city" value="${esc(pk.city || '')}"></div>
+      <div class="field"><label>${esc(t('sf.pickPost'))}</label><input class="input" data-pk="postcode" inputmode="numeric" maxlength="5" value="${esc(pk.postcode || '')}"></div>
+      <div class="field"><label>${esc(t('sf.pickState'))}</label><select class="input" data-pk="state">${EP_STATES.map(([k, n]) => `<option value="${k}" ${pk.state === k ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></div></div>
+    <small class="hint">${esc(t('sf.courierHint'))}</small>
+    <div class="err" data-eperr hidden></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn primary" data-epsave>${esc(t(cou.connected ? 'c.save' : 'sf.epConnect'))}</button></div></div>`;
+  };
   const subsCard = () => {
     if (!subs.length) return '';
     return `<div class="card" style="padding:20px"><h3 style="margin:0 0 4px">${esc(t('sf.subs'))}</h3><p class="desc">${esc(t('sf.subsLead'))}</p>
@@ -181,6 +200,7 @@ export default function storefront({ el, setHeader }) {
             <div class="err" data-err hidden></div>
             <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap">${sf.published ? `<small class="hint">${esc(t('sf.applyLive'))}</small>` : ''}<button class="btn primary" data-save>${esc(t('sf.apply'))}</button></div></div>
           ${payCard()}
+          ${courierCard()}
           ${deliveryCard()}
           ${subsCard()}</div>
         <div class="card" style="padding:16px;position:sticky;top:16px"><h3 style="margin:0 0 4px">${esc(t('sf.preview'))}</h3><p class="desc" style="margin-bottom:10px">${esc(t('sf.previewLead'))}</p>
@@ -203,6 +223,7 @@ export default function storefront({ el, setHeader }) {
       dlv = { fee: sf.delivery_fee, days: sf.delivery_days, weeks: sf.package_weeks, shifts: sf.delivery_shifts || [] };
       subs = await api.rpc('list_storefront_subscriptions', { p_business_id: ctx.bid }).catch(() => []) || [];
       pay = await api.rpc('payment_settings', { p_business_id: ctx.bid }).catch(() => ({})) || {};
+      cou = await api.rpc('courier_settings', { p_business_id: ctx.bid }).catch(() => ({})) || {};
       paint();
     } catch (e) { el.innerHTML = errorState(e, 'storefront'); }
   };
@@ -210,6 +231,19 @@ export default function storefront({ el, setHeader }) {
   el.addEventListener('input', e => { if (e.target.closest('[data-accent],[data-secondary],[data-tagline]')) post(); });
   el.addEventListener('click', async e => {
     if (e.target.closest('[data-retry]')) { load(); return; }
+    const eps = e.target.closest('[data-epsave]');
+    if (eps) {
+      const err = el.querySelector('[data-eperr]'); err.hidden = true;
+      const pickup = Object.fromEntries([...el.querySelectorAll('[data-pk]')].map(i => [i.dataset.pk, i.value.trim()]));
+      const key = el.querySelector('[data-epkey]').value.trim();
+      if (!key && !cou.connected) { err.textContent = t('sf.epKeyNeeded'); err.hidden = false; return; }
+      if (!/^[0-9]{5}$/.test(pickup.postcode) || !pickup.name || !pickup.phone || !pickup.address || !pickup.city) { err.textContent = t('c.required'); err.hidden = false; return; }
+      if (!key) { err.textContent = t('sf.epKeyNeeded'); err.hidden = false; return; }
+      try { await busy(eps, () => api.rpc('save_courier_account', { p_business_id: ctx.bid, p_api_key: key, p_demo: el.querySelector('[data-epdemo]').checked, p_pickup: pickup })); cou = await api.rpc('courier_settings', { p_business_id: ctx.bid }); toast(t('c.saved')); paint(); }
+      catch (ex) { err.textContent = ex.message; err.hidden = false; }
+      return;
+    }
+    if (e.target.closest('[data-epoff]')) { try { await api.rpc('disconnect_courier_account', { p_business_id: ctx.bid }); cou = await api.rpc('courier_settings', { p_business_id: ctx.bid }); paint(); } catch (ex) { toast(ex.message, 'error'); } return; }
     const con = e.target.closest('[data-chipon]');
     if (con) {
       const err = el.querySelector('[data-perr]'); err.hidden = true;

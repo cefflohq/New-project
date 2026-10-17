@@ -103,6 +103,8 @@ class _DeliverySettingsScreenState extends State<DeliverySettingsScreen> {
             const StorefrontDeliverySection(),
             const SizedBox(height: Gap.xl),
             const StorefrontPaymentsSection(),
+            const SizedBox(height: Gap.xl),
+            const StorefrontCourierSection(),
           ],
         );
       },
@@ -441,6 +443,184 @@ class _StorefrontPaymentsSectionState extends State<StorefrontPaymentsSection> {
               ? null
               : (v) => _do(() => app.repo.setStorefrontCod(id, v)),
         ),
+      ],
+    );
+  }
+}
+
+/// Courier (Founder 2026-10-17): the vendor's own EasyParcel account ships
+/// storefront orders outside the rider area; booking is automatic.
+class StorefrontCourierSection extends StatefulWidget {
+  const StorefrontCourierSection({super.key});
+
+  @override
+  State<StorefrontCourierSection> createState() =>
+      _StorefrontCourierSectionState();
+}
+
+class _StorefrontCourierSectionState extends State<StorefrontCourierSection> {
+  static const _states = {
+    'jhr': 'Johor',
+    'kdh': 'Kedah',
+    'ktn': 'Kelantan',
+    'mlk': 'Melaka',
+    'nsn': 'Negeri Sembilan',
+    'phg': 'Pahang',
+    'prk': 'Perak',
+    'pls': 'Perlis',
+    'png': 'Pulau Pinang',
+    'sgr': 'Selangor',
+    'trg': 'Terengganu',
+    'kul': 'Kuala Lumpur',
+    'pjy': 'Putrajaya',
+    'srw': 'Sarawak',
+    'sbh': 'Sabah',
+    'lbn': 'Labuan',
+  };
+  final _key = TextEditingController();
+  final _f = {
+    for (final k in ['name', 'phone', 'address', 'city', 'postcode'])
+      k: TextEditingController(),
+  };
+  String _state = 'sgr';
+  bool _demo = false, _busy = false;
+  Map<String, dynamic>? _s;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_s == null) _load();
+  }
+
+  Future<void> _load() async {
+    final app = AppScope.read(context);
+    try {
+      final s = await app.repo.courierSettings(app.business!.id);
+      final pk = Map<String, dynamic>.from((s['pickup'] as Map?) ?? const {});
+      if (!mounted) return;
+      setState(() {
+        _s = s;
+        _demo = s['demo'] == true;
+        for (final e in _f.entries) {
+          e.value.text = '${pk[e.key] ?? ''}';
+        }
+        if (_states.containsKey(pk['state'])) _state = '${pk['state']}';
+      });
+    } catch (_) {
+      if (mounted) setState(() => _s = {'connected': false});
+    }
+  }
+
+  @override
+  void dispose() {
+    _key.dispose();
+    for (final c in _f.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final app = AppScope.read(context);
+    if (_key.text.trim().isEmpty ||
+        !RegExp(r'^[0-9]{5}$').hasMatch(_f['postcode']!.text.trim())) {
+      showCefToast(context, L.cuNeeded, error: true);
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await app.repo.saveCourier(
+        app.business!.id,
+        apiKey: _key.text.trim(),
+        demo: _demo,
+        pickup: {
+          for (final e in _f.entries) e.key: e.value.text.trim(),
+          'state': _state,
+        },
+      );
+      _key.clear();
+      await _load();
+      if (mounted) showCefToast(context, L.dsSaved);
+    } on RepositoryError catch (e) {
+      if (mounted) showCefToast(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    final text = Theme.of(context).textTheme;
+    final s = _s;
+    if (s == null) return const SizedBox.shrink();
+    final connected = s['connected'] == true;
+    final labels = {
+      'name': L.cuPickName,
+      'phone': L.cuPickPhone,
+      'address': L.cuPickAddress,
+      'city': L.cuCity,
+      'postcode': L.cuPostcode,
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeading(
+          L.cuTitle,
+          icon: LucideIcons.package,
+          subtitle: L.cuLead,
+        ),
+        const SizedBox(height: Gap.md),
+        if (connected) ...[
+          Text(L.cuConnected, style: text.bodyLarge),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: _busy
+                  ? null
+                  : () async {
+                      await app.repo.disconnectCourier(app.business!.id);
+                      await _load();
+                    },
+              child: Text(L.spDisconnect),
+            ),
+          ),
+        ],
+        TextField(
+          controller: _key,
+          obscureText: true,
+          decoration: InputDecoration(labelText: L.cuKey),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(L.cuDemo),
+          value: _demo,
+          onChanged: (v) => setState(() => _demo = v),
+        ),
+        for (final e in _f.entries)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Gap.sm),
+            child: TextField(
+              controller: e.value,
+              keyboardType: e.key == 'postcode' || e.key == 'phone'
+                  ? TextInputType.number
+                  : TextInputType.text,
+              decoration: InputDecoration(labelText: labels[e.key]),
+            ),
+          ),
+        DropdownButtonFormField<String>(
+          initialValue: _state,
+          decoration: InputDecoration(labelText: L.cuState),
+          items: [
+            for (final e in _states.entries)
+              DropdownMenuItem(value: e.key, child: Text(e.value)),
+          ],
+          onChanged: (v) => setState(() => _state = v ?? _state),
+        ),
+        const SizedBox(height: Gap.xs),
+        Text(L.cuHint, style: text.bodySmall),
+        const SizedBox(height: Gap.md),
+        CefButton(L.saveChanges, busy: _busy, onTap: _busy ? null : _save),
       ],
     );
   }

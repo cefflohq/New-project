@@ -1720,6 +1720,23 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             ],
           ),
         ),
+        if (!widget.isNew)
+          CefListRow(
+            title: L.prodAdLink,
+            subtitle: L.prodAdLinkHint,
+            trailing: const Icon(LucideIcons.link, size: 20),
+            onTap: () async {
+              final app = AppScope.read(context);
+              try {
+                final sf = await app.repo.getStorefront(app.business!.id);
+                if (!context.mounted) return;
+                copyLink(
+                  context,
+                  '${Env.storefrontBaseUrl}${sf['slug']}#/p/${widget.productId}',
+                );
+              } catch (_) {}
+            },
+          ),
         CefListRow(
           title: L.available,
           subtitle: L.showProductStorefront,

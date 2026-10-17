@@ -5018,4 +5018,52 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get prodWeight => 'Berat (kg)';
+
+  @override
+  String get cuTitle => 'Kurier (luar kawasan rider)';
+
+  @override
+  String get cuLead =>
+      'Hantar order kedai di luar kawasan rider guna akaun EasyParcel anda sendiri. Tempahan automatik selepas pelanggan bayar; anda hanya cetak label.';
+
+  @override
+  String get cuConnected => 'EasyParcel disambung.';
+
+  @override
+  String get cuKey => 'Kunci API EasyParcel';
+
+  @override
+  String get cuDemo => 'Akaun ujian (demo)';
+
+  @override
+  String get cuPickName => 'Nama pungutan';
+
+  @override
+  String get cuPickPhone => 'Telefon pungutan';
+
+  @override
+  String get cuPickAddress => 'Alamat pungutan';
+
+  @override
+  String get cuCity => 'Bandar';
+
+  @override
+  String get cuPostcode => 'Poskod';
+
+  @override
+  String get cuState => 'Negeri';
+
+  @override
+  String get cuHint =>
+      'Kos kurier ditolak dari kredit EasyParcel anda. Isi berat setiap produk untuk harga tepat.';
+
+  @override
+  String get cuNeeded => 'Masukkan kunci API dan poskod 5 digit.';
+
+  @override
+  String get prodAdLink => 'Salin link iklan';
+
+  @override
+  String get prodAdLinkHint =>
+      'Buka kedai anda terus pada produk ini. Guna dalam iklan menggantikan chat WhatsApp.';
 }

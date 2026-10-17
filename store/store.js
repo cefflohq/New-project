@@ -153,6 +153,7 @@
       },
       // Online payment needs the vendor's own CHIP account; COD is allowed when
       // the vendor turns it on, and is the only way to pay without CHIP.
+      courier: !!raw.courier?.enabled,
       payOnline: !!raw.payments?.online, payCod: raw.payments ? raw.payments.cod !== false || !raw.payments.online : true,
     };
   }
@@ -260,13 +261,41 @@
       : `<div class="sf-empty">${esc(t('Your cart is empty.'))}</div><button type="button" class="sf-cta" data-act="home">${esc(t('Browse products'))}</button>`}
     </div>`;
   }
+  // Courier (Founder 2026-10-17): outside the rider area, the vendor's
+  // EasyParcel courier; live rates by postcode and state.
+  const STATES = [['jhr', 'Johor'], ['kdh', 'Kedah'], ['ktn', 'Kelantan'], ['mlk', 'Melaka'], ['nsn', 'Negeri Sembilan'], ['phg', 'Pahang'], ['prk', 'Perak'], ['pls', 'Perlis'], ['png', 'Pulau Pinang'], ['sgr', 'Selangor'], ['trg', 'Terengganu'], ['kul', 'Kuala Lumpur'], ['pjy', 'Putrajaya'], ['srw', 'Sarawak'], ['sbh', 'Sabah'], ['lbn', 'Labuan']];
+  let courierRates = null, courierKey = '';
+  async function loadRates() {
+    const key = `${form.postcode}|${form.state}|${[...cart].join(',')}`;
+    if (!/^[0-9]{5}$/.test(form.postcode || '') || !form.state || key === courierKey) return;
+    courierKey = key; courierRates = { loading: true }; render();
+    try {
+      const res = await fetch(`${cfg.supabaseUrl}/functions/v1/courier-rates`, { method: 'POST', headers: { apikey: cfg.supabaseAnonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: store.slug, postcode: form.postcode, state: form.state, items: [...cart].map(([product_id, quantity]) => ({ product_id, quantity })) }) });
+      const out = await res.json().catch(() => ({}));
+      courierRates = out.rates ? out : { error: true };
+      if (courierRates.rates && !courierRates.rates.some(r => r.service_id === form.rate)) form.rate = courierRates.rates[0]?.service_id;
+    } catch { courierRates = { error: true }; }
+    render();
+  }
+  function courierSection() {
+    if (!store.courier) return '';
+    const ship = form.ship || 'rider';
+    const rates = courierRates?.rates || [];
+    return `<section class="co-box"><h2>${icon('box')} ${esc(t('Delivery method'))}</h2>
+      <div class="co-seg" role="radiogroup"><button type="button" role="radio" aria-checked="${ship === 'rider'}" class="${ship === 'rider' ? 'on' : ''}" data-act="ship" data-id="rider">${esc(t('Our rider'))}</button><button type="button" role="radio" aria-checked="${ship === 'courier'}" class="${ship === 'courier' ? 'on' : ''}" data-act="ship" data-id="courier">${esc(t('Courier'))}</button></div>
+      ${ship === 'courier' ? `<div class="co-two"><label>${esc(t('City'))}<input name="city" maxlength="80" autocomplete="address-level2"></label><label>${esc(t('Postcode'))}<input name="postcode" inputmode="numeric" maxlength="5" autocomplete="postal-code"></label></div>
+        <label>${esc(t('State'))}<select name="state" data-act="state"><option value="">${esc(t('Choose a state'))}</option>${STATES.map(([k, n]) => `<option value="${k}" ${form.state === k ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>
+        ${courierRates?.loading ? `<p class="co-hint">${esc(t('Checking courier rates…'))}</p>` : courierRates?.error ? `<p class="co-hint">${esc(t('No courier rates for this address. Check the postcode and state.'))}</p>` : rates.length ? `<div class="co-pay" role="radiogroup">${rates.map(r => `<button type="button" role="radio" aria-checked="${form.rate === r.service_id}" class="${form.rate === r.service_id ? 'on' : ''}" data-act="rate" data-id="${esc(r.service_id)}"><span class="co-dot"></span><span><b>${esc(r.courier_name)}</b><small>${esc([r.service_name, r.delivery].filter(Boolean).join(' · '))}</small></span><b>${money(r.price)}</b></button>`).join('')}</div>` : `<p class="co-hint">${esc(t('Enter your postcode and state to see courier prices.'))}</p>`}` : ''}
+    </section>`;
+  }
   // Delivery plan. 'once' = one delivery; otherwise the chosen weekdays every
   // week for the chosen number of weeks. Goods and delivery repeat per drop.
   const DAYN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   function plan() {
     const d = store.delivery;
     // Packages are paid in full up front, so they need online payment.
-    if (!store.payOnline || !form.weeks || (form.weeks !== 'once' && !d.weeks.includes(Number(form.weeks)))) form.weeks = 'once';
+    if (form.ship === 'courier' || !store.payOnline || !form.weeks || (form.weeks !== 'once' && !d.weeks.includes(Number(form.weeks)))) form.weeks = 'once';
     if (!Array.isArray(form.days)) form.days = [...d.days];
     form.days = form.days.filter(x => d.days.includes(x));
     if (d.shifts.length && !d.shifts.some(x => x.name === form.shift)) form.shift = d.shifts[0].name;
@@ -274,7 +303,8 @@
     const drops = once ? 1 : form.days.length * Number(form.weeks);
     const itemFees = [...cart.keys()].map(id => product(id)).filter(Boolean).map(p => p.deliveryFee ?? d.fee);
     const perDrop = itemFees.some(f => f != null) ? Math.max(...itemFees.map(f => f ?? 0)) : null;
-    const goods = total() * drops, fee = perDrop == null ? null : perDrop * drops;
+    const rate = form.ship === 'courier' ? (courierRates?.rates || []).find(r => r.service_id === form.rate) : null;
+    const goods = total() * drops, fee = form.ship === 'courier' ? (rate ? rate.price : null) : perDrop == null ? null : perDrop * drops;
     return { once, drops, goods, fee, perDrop, grand: goods + (fee || 0) };
   }
   function planText(pl) {
@@ -290,7 +320,8 @@
       // One online choice: CHIP's page then offers DuitNow QR, FPX, e-wallets
       // and Pay Later, whichever the vendor's CHIP account supports.
       ...(store.payOnline ? [['online', 'Pay online', 'DuitNow QR, online banking (FPX), e-wallets, Pay Later']] : []),
-      ...(store.payCod && (form.weeks || 'once') === 'once' ? [['cod', 'Cash on delivery', 'Pay the rider when it arrives']] : []),
+      // Couriers do not collect cash: courier orders are paid online.
+      ...(store.payCod && (form.weeks || 'once') === 'once' && form.ship !== 'courier' ? [['cod', 'Cash on delivery', 'Pay the rider when it arrives']] : []),
     ];
     if (!methods.some(m => m[0] === form.pay)) form.pay = methods[0]?.[0] || 'cod';
     const d = store.delivery, pl = plan();
@@ -323,12 +354,13 @@
         <section class="co-box"><h2>${icon('bag')} ${esc(store.name)}</h2>
           <ul class="co-items">${lines.map(([id, q]) => { const p = product(id); return `<li>${img(p, 'co-img')}<div><b>${esc(p.name)}</b><small>${money(p.price * q)}</small></div>${ctx().stepper(id, 'co-step')}</li>`; }).join('')}</ul>
         </section>
-        <section class="co-box"><h2>${icon('clock')} ${esc(t('Delivery schedule'))}</h2>
+        ${courierSection()}
+        ${form.ship === 'courier' ? '' : `<section class="co-box"><h2>${icon('clock')} ${esc(t('Delivery schedule'))}</h2>
           <div class="co-seg" role="radiogroup" aria-label="${esc(t('How often'))}">${[['once', t('Once')], ...(store.payOnline ? d.weeks : []).map(w => [String(w), t(w === 1 ? '1 week' : '{n} weeks', { n: w })])].map(([k, l]) => `<button type="button" role="radio" aria-checked="${String(form.weeks) === k}" class="${String(form.weeks) === k ? 'on' : ''}" data-act="weeks" data-id="${k}">${esc(l)}</button>`).join('')}</div>
           ${pl.once ? '' : `<div class="co-days" role="group" aria-label="${esc(t('Delivery days'))}">${[1, 2, 3, 4, 5, 6, 7].map(x => { const ok = d.days.includes(x), on = form.days.includes(x); return `<button type="button" aria-pressed="${on}" class="${on ? 'on' : ''}" data-act="day" data-id="${x}" ${ok ? '' : 'disabled'}>${esc(t(DAYN[x - 1]))}</button>`; }).join('')}</div>`}
           ${d.shifts.length ? `<div class="co-pay" role="radiogroup" aria-label="${esc(t('Delivery time'))}">${d.shifts.map(x => `<button type="button" role="radio" aria-checked="${form.shift === x.name}" class="${form.shift === x.name ? 'on' : ''}" data-act="shift" data-id="${esc(x.name)}"><span class="co-dot"></span><span><b>${esc(x.name)}</b><small>${esc(t('Arrives {from}–{to}', { from: x.from, to: x.to }))}</small></span></button>`).join('')}</div>` : ''}
           ${pl.once ? '' : `<p class="co-hint">${esc(t('{n} deliveries. Your items are sent on each day.', { n: pl.drops }))}</p>`}
-        </section>
+        </section>`}
         <section class="co-box"><h2>${icon('shield')} ${esc(t('Payment method'))}</h2>
           <div class="co-pay" role="radiogroup">${methods.map(([k, label, sub]) => `<button type="button" role="radio" aria-checked="${form.pay === k}" class="${form.pay === k ? 'on' : ''}" data-act="pay" data-id="${k}"><span class="co-dot"></span><span><b>${esc(t(label))}</b><small>${esc(t(sub))}</small></span></button>`).join('')}</div>
         </section>
@@ -558,7 +590,8 @@
     if ((r.name === 'checkout' || r.name === 'cart') && cart.size) {
       const f = document.getElementById('sfForm');
       for (const [k, v] of Object.entries(form)) if (f.elements[k]) f.elements[k].value = v;
-      f.addEventListener('input', e => { form[e.target.name] = e.target.value; });
+      f.addEventListener('input', e => { form[e.target.name] = e.target.value; if (e.target.name === 'postcode' && /^[0-9]{5}$/.test(e.target.value)) loadRates(); });
+      f.addEventListener('change', e => { if (e.target.name === 'state') { form.state = e.target.value; loadRates(); } });
       if (err) { const bad = f.querySelector('[aria-invalid="true"]'); bad?.focus(); }
       if (ui.map) mountPinMap();
       f.addEventListener('submit', submit);
@@ -609,7 +642,8 @@
     : /store closed/.test(m) ? `${t('This store is closed right now.')} ${nextOpenText()}`.trim()
     : /online payment unavailable/.test(m) ? t('Online payment is not available for this store. Please choose cash on delivery.')
     : /cash on delivery unavailable/.test(m) ? t('This store takes online payment only.')
-    : /outside coverage/.test(m) ? t('Sorry, {store} does not deliver to this location yet.', { store: store.name })
+    : /outside coverage/.test(m) ? (store.courier ? t('Our riders do not reach this location. Choose Courier to have it shipped.') : t('Sorry, {store} does not deliver to this location yet.', { store: store.name }))
+    : /courier/.test(m) ? t('Courier delivery is not available for this order. Please try again.')
     : /delivery pin/.test(m) ? t('Please pin your delivery location on the map.')
     : /phone/.test(m) ? t('Enter a valid phone number, for example +60 12-345 6789.')
     : /available|product|item|quantity/i.test(m) ? t('Some items are no longer available. Please review your order.')
@@ -618,7 +652,11 @@
     e.preventDefault();
     const name = (form.name || '').trim(), phone = (form.phone || '').trim(), address = (form.address || '').trim();
     if (!name || !phone || !address) return render(t('Please fill in your name, phone and delivery address.'));
-    if (!pin && !EMBED) return render(t('Please pin your delivery location on the map.'));
+    const courier = form.ship === 'courier';
+    if (courier) {
+      const r = (courierRates?.rates || []).find(x => x.service_id === form.rate);
+      if (!r || !(form.city || '').trim()) return render(t('Choose a courier and fill in your city, postcode and state.'));
+    } else if (!pin && !EMBED) return render(t('Please pin your delivery location on the map.'));
     if (!phoneOk(phone)) return render(t('Enter a valid phone number, for example +60 12-345 6789.'));
     if (EMBED) return render(t('This is a preview. Orders are placed from your live storefront.'));
     if (isClosed()) return render(`${t('This store is closed right now.')} ${nextOpenText()}`.trim());
@@ -626,7 +664,7 @@
     btn.disabled = true; btn.textContent = t('Placing order…');
     window.showPageLoader(t('Placing order…'));
     try {
-      if (pin && store.delivery.coverage) {
+      if (pin && store.delivery.coverage && form.ship !== 'courier') {
         const cov = await rpc('storefront_coverage_check', { p_slug: store.slug, p_latitude: pin.lat, p_longitude: pin.lng }).catch(() => null);
         if (cov?.covered === false) return render(errorText('outside coverage'));
       }
@@ -636,6 +674,7 @@
         p_delivery_notes: [planText(plan()), (form.notes || '').trim()].filter(Boolean).join('\n'), p_idempotency_key: idempotencyKey,
         ...(plan().once ? {} : { p_plan: { weeks: Number(form.weeks), days: form.days, shift: form.shift || null } }),
         p_payment: form.pay === 'cod' ? 'cod' : 'online',
+        ...(form.ship === 'courier' ? { p_courier: (r => ({ service_id: r.service_id, courier_name: r.courier_name, price: r.price, postcode: form.postcode, state: form.state, city: (form.city || '').trim() }))((courierRates?.rates || []).find(x => x.service_id === form.rate)) } : {}),
         ...(pin ? { p_latitude: pin.lat, p_longitude: pin.lng, p_location_accuracy_m: pin.acc ?? null, p_location_source: pin.source } : {}),
       });
       if (res?.error) {
@@ -672,6 +711,8 @@
       case 'sel+': ui.sel = Math.min(50, ui.sel + 1); render(); break;
       case 'sel-': ui.sel = Math.max(1, ui.sel - 1); render(); break;
       case 'pay': form.pay = id; render(); break;
+      case 'ship': form.ship = id; render(); if (id === 'courier') loadRates(); break;
+      case 'rate': form.rate = id; render(); break;
       case 'repay': startPayment(id).then(ok => { if (!ok) render(); }); break;
       case 'weeks': form.weeks = id === 'once' ? 'once' : Number(id); render(); break;
       case 'shift': form.shift = id; render(); break;

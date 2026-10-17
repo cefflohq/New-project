@@ -1353,6 +1353,45 @@ class VendorRepository {
     );
   }
 
+  /// Courier (EasyParcel) for storefront orders outside the rider area.
+  Future<Map<String, dynamic>> courierSettings(String businessId) async {
+    if (_demo) return {'connected': false};
+    final r = await _run(
+      () => _db!.rpc('courier_settings', params: {'p_business_id': businessId}),
+    );
+    return Map<String, dynamic>.from(r as Map);
+  }
+
+  Future<void> saveCourier(
+    String businessId, {
+    required String apiKey,
+    required bool demo,
+    required Map<String, String> pickup,
+  }) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'save_courier_account',
+        params: {
+          'p_business_id': businessId,
+          'p_api_key': apiKey,
+          'p_demo': demo,
+          'p_pickup': pickup,
+        },
+      ),
+    );
+  }
+
+  Future<void> disconnectCourier(String businessId) async {
+    if (_demo) return;
+    await _run(
+      () => _db!.rpc(
+        'disconnect_courier_account',
+        params: {'p_business_id': businessId},
+      ),
+    );
+  }
+
   // ------------------------------------------------------ business verification
   // SSM number, SSM certificate and the owner's IC (Founder 2026-10-17).
   // Files go to the business folder of a sealed bucket; only the last 4 IC
