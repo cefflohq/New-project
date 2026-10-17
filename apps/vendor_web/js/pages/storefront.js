@@ -220,7 +220,8 @@ export default function storefront({ el, setHeader }) {
   const fitDevice = () => {
     const scr = el.querySelector('[data-scr]'); if (!scr || !frame) return;
     const w = DEV_W[device], k = scr.clientWidth / w;
-    frame.style.width = `${w}px`; frame.style.height = `${scr.clientHeight / k}px`; frame.style.transform = `scale(${k})`;
+    const off = device === 'phone' ? 40 : 0;
+    frame.style.width = `${w}px`; frame.style.height = `${(scr.clientHeight - off) / k}px`; frame.style.transform = `scale(${k})`;
   };
   const ro = new ResizeObserver(() => fitDevice()); ro.observe(el);
 
