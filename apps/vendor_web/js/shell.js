@@ -75,7 +75,7 @@ function renderFrame() {
   // collapses to an icon rail. Phones keep a slim bar with the menu button.
   const dark = document.documentElement.dataset.theme === 'dark';
   root.innerHTML = `
-  <div class="shell fs${collapsed() ? ' collapsed' : ''}">
+  <div class="shell fs">
     <header class="topbar">
       <button class="icon-btn nav-toggle" data-navtoggle aria-label="${esc(t('shell.menu'))}" aria-expanded="false">${icon('menu')}</button>
       <b class="tb-name">${esc(b?.business_name)}</b>
