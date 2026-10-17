@@ -193,7 +193,7 @@ async function business(page) {
           <div class="field"><label>${esc(t('bp.phone'))}</label><input class="input" name="phone" inputmode="tel" value="${esc(b.phone || '')}"></div>
           <div class="field"><label>${esc(t('bp.address'))}</label><textarea class="textarea" name="address" rows="2">${esc(b.address || '')}</textarea></div></div>
         <div class="err" data-err hidden></div>
-        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-save>${esc(t('c.save'))}</button></div></div>
+        <div style="display:flex;justify-content:center;margin-top:12px"><button class="btn primary" data-save>${esc(t('c.save'))}</button></div></div>
       <div class="sub-card"><h3>${esc(t('bp.area'))}</h3><p class="desc">${esc(t('bp.areaLead'))}</p>
         <div class="boxed stats" style="margin-bottom:12px"><div class="stat"><b style="font-size:18px">${b.service_coverage_radius_km ? esc(t('bp.km', { n: Number(b.service_coverage_radius_km) })) : '—'}</b><span>${esc(t('bp.radius'))}</span></div>
           <div class="stat"><b style="font-size:18px">${esc(t('bp.zonesN', { n: active.length }))}</b><span>${esc(t('bp.activeZones'))}</span></div>
@@ -213,7 +213,7 @@ async function business(page) {
           <input class="input" type="time" data-from value="${esc((h.opens_at || '09:00').slice(0, 5))}" aria-label="${esc(t('hours.from'))}">
           <input class="input" type="time" data-to value="${esc((h.closes_at || '18:00').slice(0, 5))}" aria-label="${esc(t('hours.to'))}"></div>`; }).join('')}
         <div class="err" data-herr hidden></div>
-        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-hsave>${esc(t('c.save'))}</button></div></div>
+        <div style="display:flex;justify-content:center;margin-top:12px"><button class="btn primary" data-hsave>${esc(t('c.save'))}</button></div></div>
       <div class="sub-card"><h3>${esc(t('bp.description'))} · ${esc(t('bp.social'))}</h3>${gatedNote(t('bp.gatedFields'))}</div>`;
     // Business Hours V1 (V-40): ISO weekdays 1-7, one interval per day,
     // overnight allowed; the whole week is replaced atomically, Owner only.
@@ -603,7 +603,7 @@ async function subscription(page) {
           <ul>${features(p).map(f => `<li>${icon('check')}<span>${esc(f)}</span></li>`).join('')}</ul></button>`).join('')}</div>
         ${plans.some(p => p.key === 'enterprise') ? `<p class="plan-custom">${esc(t('p.fEnterprise'))} <button type="button" class="link" data-plan="enterprise">${esc(t('sub.contactSales'))}</button></p>` : ''}
         ${gatedNote(t('sub.paymentHold'))}
-        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-request ${pick && pick !== cur?.key ? '' : 'disabled'}>${icon('mail')}${esc(t(pick === 'enterprise' ? 'sub.contactSales' : 'sub.request'))}</button></div></div>
+        <div style="display:flex;justify-content:center;margin-top:12px"><button class="btn primary" data-request ${pick && pick !== cur?.key ? '' : 'disabled'}>${icon('mail')}${esc(t(pick === 'enterprise' ? 'sub.contactSales' : 'sub.request'))}</button></div></div>
       <div class="sub-card"><h3>${esc(t('sub.billing'))}</h3>${emptyState(t('sub.noInvoices'))}</div>`;
   };
   body.addEventListener('click', e => {
@@ -630,7 +630,7 @@ function staticPage(kind) {
           <div class="field"><label>${esc(t('support.message'))}</label><textarea class="textarea" data-message rows="4" maxlength="500" placeholder="${esc(t('support.messageHint'))}"></textarea></div>
           <p class="hint">${esc(t('support.opensEmail'))}</p>
           <div class="err" data-serr hidden></div>
-          <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-send>${icon('mail')}${esc(t('support.send'))}</button></div></div>`;
+          <div style="display:flex;justify-content:center;margin-top:12px"><button class="btn primary" data-send>${icon('mail')}${esc(t('support.send'))}</button></div></div>`;
       // V-57 Contact Support (FG-4), as Vendor App: the request goes to
       // support@cefflo.com from the user's own email app with business and
       // account context. No ticket backend, so nothing is reported as sent.
