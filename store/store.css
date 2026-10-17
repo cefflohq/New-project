@@ -1865,3 +1865,17 @@ h1, h2, h3, h4, p { margin: 0; }
 .od-row b { display: block; font-size: 14px; } .od-row small { color: #6b7280; font-size: 12.5px; }
 .od-track { padding: 8px 16px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 600; font-size: 13px; text-decoration: none; }
 .od-wait { font-size: 12px; color: #6b7280; text-align: right; max-width: 140px; }
+/* Address with a round pin button; the map opens full screen. */
+.co-addr { position: relative; }
+.co-addr textarea { padding-right: 60px; }
+.co-pinbtn { position: absolute; right: 8px; bottom: 8px; width: 42px; height: 42px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+.co-pinbtn .ic { width: 20px; height: 20px; }
+.co-pinbtn.on { background: #16A34A; }
+.co-pinnote { margin: -4px 0 0; font-size: 12px; color: #6b7280; }
+.co-mapsheet { position: fixed; inset: 0; z-index: 60; background: #fff; display: flex; flex-direction: column; padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); gap: 10px; }
+.co-mapsheet[hidden] { display: none; }
+.co-maphead { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; text-align: center; }
+.co-mapsheet .sf-pin-map { flex: 1; height: auto !important; border-radius: 18px; }
+.co-mapok { margin: 0; }
+.co-items li { grid-template-columns: 48px 1fr auto; }
+.co-step { transform: scale(.9); transform-origin: right center; }

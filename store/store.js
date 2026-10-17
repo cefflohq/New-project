@@ -288,8 +288,11 @@
         <section class="co-box"><h2>${icon('mapPin')} ${esc(t('Delivery address'))}</h2>
           <div class="co-two"><label>${esc(t('Name'))}<input name="name" autocomplete="name" maxlength="120" required></label>
           <label>${esc(t('Phone'))}<input name="phone" autocomplete="tel" inputmode="tel" maxlength="30" required placeholder="+60 12-345 6789"></label></div>
-          <label>${esc(t('Address'))}<textarea name="address" rows="2" maxlength="500" required></textarea></label>
-          <div class="sf-pin">
+          <div class="co-addr"><label>${esc(t('Address'))}<textarea name="address" rows="2" maxlength="500" required></textarea></label>
+            <button type="button" class="co-pinbtn${pin ? ' on' : ''}" data-act="openmap" aria-label="${esc(t(pin ? 'Change pin on map' : 'Pin on map'))}">${icon(pin ? 'check' : 'mapPin')}</button></div>
+          <p class="co-pinnote">${esc(t(pin ? 'Location pinned. Tap the pin to change it.' : 'Tap the pin to mark your door on the map.'))}</p>
+          <div class="sf-pin co-mapsheet" id="sfMapSheet" ${ui.map ? '' : 'hidden'}>
+            <header class="co-maphead"><button type="button" class="sf-round" data-act="closemap" aria-label="${esc(t('Back'))}">${icon('arrowLeft')}</button><b>${esc(t('Pin your door'))}</b><span></span></header>
             <div class="sf-pin-map" id="sfPinMap">
               <div class="sf-map-canvas"></div>
               <div class="sf-map-pin" aria-hidden="true"><svg viewBox="0 0 40 52"><path d="M20 51C20 51 37 31.6 37 19.5A17 17 0 0 0 3 19.5C3 31.6 20 51 20 51Z"/><circle cx="20" cy="19.5" r="6.5"/></svg><i></i></div>
@@ -300,11 +303,12 @@
               ${mapboxToken() ? '' : '<small class="sf-map-attr">© OpenStreetMap · OpenFreeMap</small>'}
             </div>
             <p class="sf-pin-hint" id="sfPinHint">${esc(t('Pin your exact location so the rider finds you without calling.'))}</p>
+            <button type="button" class="sf-cta co-mapok" data-act="closemap">${esc(t('Confirm location'))}</button>
           </div>
           <label>${esc(t('Note for the rider (optional)'))}<input name="notes" maxlength="500" placeholder="${esc(t('e.g. blue gate, leave at the guardhouse'))}"></label>
         </section>
         <section class="co-box"><h2>${icon('bag')} ${esc(store.name)}</h2>
-          <ul class="co-items">${lines.map(([id, q]) => { const p = product(id); return `<li>${img(p, 'co-img')}<div><b>${esc(p.name)}</b><small>× ${q}</small></div><span>${money(p.price * q)}</span></li>`; }).join('')}</ul>
+          <ul class="co-items">${lines.map(([id, q]) => { const p = product(id); return `<li>${img(p, 'co-img')}<div><b>${esc(p.name)}</b><small>${money(p.price * q)}</small></div>${ctx().stepper(id, 'co-step')}</li>`; }).join('')}</ul>
         </section>
         <section class="co-box"><h2>${icon('clock')} ${esc(t('Delivery schedule'))}</h2>
           <div class="co-seg" role="radiogroup" aria-label="${esc(t('How often'))}">${[['once', t('Once')], ...(store.payOnline ? d.weeks : []).map(w => [String(w), t(w === 1 ? '1 week' : '{n} weeks', { n: w })])].map(([k, l]) => `<button type="button" role="radio" aria-checked="${String(form.weeks) === k}" class="${String(form.weeks) === k ? 'on' : ''}" data-act="weeks" data-id="${k}">${esc(l)}</button>`).join('')}</div>
@@ -511,7 +515,7 @@
     const r = route();
     const c = ctx();
     let html;
-    if (r.name === 'cart') html = cartView();
+    if (r.name === 'cart') html = cart.size ? checkoutView() : cartView();
     else if (r.name === 'checkout') html = cart.size ? checkoutView(err) : cartView();
     else if (r.name === 'done') html = doneView();
     else if (r.name === 'paid' || r.name === 'payfail') html = payResultView(r);
@@ -538,12 +542,12 @@
     // Cards carry their order so each template staggers its own entrance.
     if (app.classList.contains('sf-enter')) app.querySelectorAll(CARD_SEL).forEach((el, i) => el.style.setProperty('--i', Math.min(i, 8)));
     app.querySelectorAll('img').forEach(im => { if (im.complete && im.naturalWidth) im.classList.add('is-in'); });
-    if (r.name === 'checkout' && cart.size) {
+    if ((r.name === 'checkout' || r.name === 'cart') && cart.size) {
       const f = document.getElementById('sfForm');
       for (const [k, v] of Object.entries(form)) if (f.elements[k]) f.elements[k].value = v;
       f.addEventListener('input', e => { form[e.target.name] = e.target.value; });
       if (err) { const bad = f.querySelector('[aria-invalid="true"]'); bad?.focus(); }
-      mountPinMap();
+      if (ui.map) mountPinMap();
       f.addEventListener('submit', submit);
     }
   }
@@ -663,6 +667,8 @@
       case 'addsel': { const r = route(); if (r.name === 'product') { bump(r.id, ui.sel); ui.sel = 1; } render(); break; }
       case 'img': ui.img = Number(id) || 0; render(); break;
       case 'pin': locate(); break;
+      case 'openmap': ui.map = true; render(); break;
+      case 'closemap': ui.map = false; render(); break;
       case 'zoomin': zoom(1); break;
       case 'zoomout': zoom(-1); break;
       case 'cat': ui.cat = id || null; render(); break;
