@@ -68,5 +68,6 @@ window.CEFFLO_STORE_MS = {
   'For an event or a scheduled delivery, write the date and time in the delivery notes at checkout.': 'Untuk majlis atau penghantaran berjadual, tulis tarikh dan masa dalam nota penghantaran semasa checkout.',
   'Product information': 'Maklumat produk', 'Shop by occasion': 'Pilih ikut majlis', 'Service area': 'Kawasan servis', "What's included": 'Termasuk',
   'Bestsellers': 'Paling laris', 'Serving': 'Kawasan', 'More': 'Lain-lain',
+  'New & Featured': 'Baru & Pilihan', '#SpecialForYou': '#IstimewaUntukAnda', 'View Cart': 'Lihat troli', 'item': 'item', 'items': 'item',
   'Add to Bag': 'Masuk beg', 'Select size': 'Pilih saiz', 'Size': 'Saiz', 'Book Service Now': 'Tempah servis sekarang',
 };

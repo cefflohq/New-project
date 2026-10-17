@@ -19,11 +19,11 @@
   const money = n => `RM ${Number(n || 0).toFixed(2)}`;
   const moneyShort = money;
 
-  // Customer language: English by default, Bahasa Melayu when chosen; kept on
+  // Customer language: Bahasa Melayu by default, English when chosen; kept on
   // this device only, never auto-detected. Vendor content is never translated.
   const LANG_KEY = 'cefflo.store.lang';
-  let lang = 'en';
-  try { lang = localStorage.getItem(LANG_KEY) === 'ms' ? 'ms' : 'en'; } catch { /* private mode */ }
+  let lang = 'ms';
+  try { lang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ms'; } catch { /* private mode */ }
   const MS = window.CEFFLO_STORE_MS || {};
   const t = (s, vars) => { let out = lang === 'ms' && MS[s] ? MS[s] : s; if (vars) out = out.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? ''); return out; };
   window.CEFFLO_I18N = s => (lang === 'ms' && MS[s] ? MS[s] : s);

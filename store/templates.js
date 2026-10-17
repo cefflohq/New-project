@@ -528,7 +528,7 @@
       return `<section class="sv-home">
         <header class="sv-top"><div class="sv-loc"><small>${L("Location")}</small><b>${c.icon('pin')} ${c.esc(c.s.area || c.s.name)} ${c.icon('chevronDown')}</b></div>${c.toCart('sv-bell', c.icon('bag'))}
           <div class="sv-srow"><label class="sv-search">${c.icon('search')}${c.searchInput(L('Search'))}</label><button type="button" class="sv-filter" data-act="catpage" data-id="" aria-label="${L("Browse")}">${c.icon('filter')}</button></div></header>
-        <div class="sv-sec"><h3>#SpecialForYou</h3><a href="#/all">${L("See All")}</a></div>
+        <div class="sv-sec"><h3>${L("#SpecialForYou")}</h3><a href="#/all">${L("See All")}</a></div>
         <div class="sv-offers">${all.slice(0, 4).map(p => `<article class="sv-offer" ${c.open(p.id)}>${c.img(p)}<div><span class="sv-lt">${c.esc(c.catName(p.categoryId) || c.s.name)}</span><h4>${c.esc(p.name)}</h4><p>${L("From")} <b>${c.money(p.price)}</b></p><button type="button" class="sv-claim" ${c.add(p.id)}>${L("Add")}</button></div></article>`).join('')}</div>
         ${dots(Math.min(all.length, 3) || 1, 0, 'dots sv-dots')}
         <div class="sv-sec"><h3>${L("Services")}</h3><a href="#/all">${L("See all")}</a></div>
@@ -676,7 +676,7 @@
     dock(c, p) {
       return `<div class="ca-dq">${c.stepper('__sel', 'ca-step')}</div><div class="ca-db"><button type="button" class="ca-add" data-act="addsel">${c.icon('cart')} ${L('Add to Cart')}</button>${c.buy(L('Buy Now'), 'ca-buy')}</div>`;
     },
-    bar(c) { return `<div class="ca-bar"><div><small>${c.count()} item${c.count() === 1 ? '' : 's'}</small><b>${c.money(c.total())}</b></div><button type="button" data-act="tocart">View Cart ${c.icon('arrowRight')}</button></div>`; },
+    bar(c) { return `<div class="ca-bar"><div><small>${c.count()} ${L(c.count() === 1 ? 'item' : 'items')}</small><b>${c.money(c.total())}</b></div><button type="button" data-act="tocart">${L('View Cart')} ${c.icon('arrowRight')}</button></div>`; },
     product(c, p) {
       const n = Math.max(1, p.images.length);
       return `<section class="ca-pdp">
