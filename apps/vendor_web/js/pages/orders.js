@@ -100,7 +100,7 @@ export default function orders({ el, params, setHeader }) {
       <tbody>${slice.map(o => {
         const r = riders.get(o.assigned_rider_id);
         return `<tr class="row ${o.id === selected ? 'sel' : ''}" data-id="${esc(o.id)}"><td><b>${esc(orderNo(o))}</b></td>
-          <td>${esc(o.customer_name)}${hasPin(o) ? '' : ` <span class="chip neutral" title="${esc(t('pin.noneBody'))}">${esc(t('pin.none'))}</span>`}<span class="sub">${esc(o.customer_phone)}</span></td><td style="color:var(--muted)">${esc(itemsText(o.items))}</td>
+          <td>${esc(o.customer_name)}${hasPin(o) ? '' : ` <span class="chip nopin" title="${esc(t('pin.noneBody'))}">${esc(t('pin.none'))}</span>`}<span class="sub">${esc(o.customer_phone)}</span></td><td style="color:var(--muted)">${esc(itemsText(o.items))}</td>
           <td>${chip(st(o))}</td>
           <td>${r ? `<span class="person">${avatar(r.name, 'sm')}<span>${esc(r.name)}</span></span>` : esc(t('c.none'))}</td>
           <td class="num" style="color:var(--muted)">${esc(fmtTime(o.updated_at))}</td><td>${icon('right', 'i chev')}</td></tr>`;
@@ -166,7 +166,7 @@ export async function renderDetail(box, id, onChange) {
         <div class="sec kv" style="border-bottom:0"><span style="color:var(--primary)">${icon('pin')}</span><div style="flex:1"><b style="margin:0">${esc(o.delivery_address)}</b></div></div>
         ${hasPin(o) ? `<div class="sec"><div data-pinmap></div>
           <a class="btn sm" style="margin-top:10px" href="${esc(mapsLink(`${o.latitude},${o.longitude}`))}" target="_blank" rel="noopener">${icon('map')}${esc(t('pin.open'))}</a></div>`
-          : `<div class="sec kv" style="border-bottom:0"><span class="chip neutral">${esc(t('pin.none'))}</span><div class="hint" style="flex:1">${esc(t('pin.noneBody'))}</div></div>
+          : `<div class="sec kv" style="border-bottom:0"><span class="chip nopin">${esc(t('pin.none'))}</span><div class="hint" style="flex:1">${esc(t('pin.noneBody'))}</div></div>
           <div class="sec" style="padding-top:0"><a class="btn sm" href="${esc(mapsLink(o.delivery_address))}" target="_blank" rel="noopener">${icon('map')}${esc(t('pin.open'))}</a></div>`}
         <div class="sec kv" style="border-bottom:0"><span style="color:var(--primary)">${icon('map')}</span><div style="flex:1"><b style="margin:0">${esc(t('cov.title'))}</b></div><span class="chip ${COV_ATTN.includes(cov) ? 'issue' : cov === 'covered' ? 'active' : 'neutral'}">${esc(t(`cov.${COV_KEYS.includes(cov) ? cov : 'unknown'}`))}</span></div>
         ${o.delivery_status === 'created' && !o.assigned_rider_id ? `<div class="sec" style="display:flex;gap:10px"><button class="btn sm" data-edit>${esc(t('edit.action'))}</button>${!o.approved_at ? `<button class="btn primary sm" data-approve>${esc(t('orders.approve'))}</button>` : ''}</div>` : ''}

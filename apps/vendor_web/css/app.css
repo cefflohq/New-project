@@ -1371,3 +1371,71 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 .copy-field.copied .copy-ico { background: #1a9e6e; color: #fff; }
 .copy-field.copied .input { box-shadow: 0 0 0 2px rgba(26, 158, 110, .35); }
 .modal .round-x { width: 40px; height: 40px; border-radius: 999px; }
+
+/* ===== Final audit pass (Founder 2026-10-17) ===== */
+/* Status chips: solid, clear colours with white text (no pale tints). */
+.shell.fs .chip, .modal .chip { height: 24px; padding: 0 10px; border-radius: 999px; font-weight: 600; font-size: 12px; color: #fff; }
+.shell.fs .chip.active, .shell.fs .chip.delivered, .modal .chip.active, .modal .chip.delivered { background: #17A55B; color: #fff; }
+.shell.fs .chip.pending, .shell.fs .chip.ready, .modal .chip.pending, .modal .chip.ready { background: #F2A007; color: #fff; }
+.shell.fs .chip.delivery, .modal .chip.delivery { background: #0060FE; color: #fff; }
+.shell.fs .chip.issue, .modal .chip.issue { background: #E5383B; color: #fff; }
+.shell.fs .chip.preparing, .modal .chip.preparing { background: #7C4DFF; color: #fff; }
+.shell.fs .chip.neutral, .shell.fs .chip.inactive, .shell.fs .chip.unassigned, .modal .chip.neutral, .modal .chip.inactive, .modal .chip.unassigned { background: #6B7486; color: #fff; }
+.shell.fs .chip .dot, .shell.fs .chip > i { background: #fff !important; }
+
+/* Popups: centred footer with the round X next to the actions. */
+.modal-f, .modal-f.center { justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; }
+.modal .round-x { width: 42px; height: 42px; flex: none; border-radius: 999px; display: grid; place-items: center; background: rgba(255, 255, 255, .9); color: #1c2433; box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .14), 0 4px 12px -6px rgba(8, 30, 80, .3); transition: transform 200ms cubic-bezier(.2, .8, .2, 1), background-color 160ms ease; }
+.modal .round-x:hover { background: #fff; transform: rotate(90deg); }
+.modal .round-x svg.i { width: 18px; height: 18px; }
+.modal-f .link-btn.rd-deactivate { flex-basis: 100%; text-align: center; order: 9; }
+.modal-h { padding-right: 24px; }
+/* Popup backdrop: deep blue blur, never flat grey. */
+.modal-root { background: radial-gradient(900px 600px at 50% 20%, rgba(30, 80, 190, .35), transparent 70%), rgba(6, 18, 44, .45); -webkit-backdrop-filter: blur(14px) saturate(120%); backdrop-filter: blur(14px) saturate(120%); animation: mroot-in 260ms ease both; }
+.modal { animation: modal-in 520ms cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes mroot-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(26px) scale(.965); } to { opacity: 1; transform: none; } }
+
+/* Heavy, smooth card entrance: one staggered reveal per page. */
+@keyframes card-rise { from { opacity: 0; transform: translateY(22px) scale(.985); } to { opacity: 1; transform: none; } }
+.shell.fs .content > *, .shell.fs .dash > *, .shell.fs .dash-2 > *, .shell.fs .dash-3 > *, .shell.fs .settings-page > *, .shell.fs .sfx-main, .shell.fs .split > * { animation: card-rise 700ms cubic-bezier(.16, 1, .3, 1) both; }
+.shell.fs .dash > :nth-child(2), .shell.fs .content > :nth-child(2), .shell.fs .settings-page > :nth-child(2) { animation-delay: 70ms; }
+.shell.fs .dash > :nth-child(3), .shell.fs .content > :nth-child(3), .shell.fs .settings-page > :nth-child(3) { animation-delay: 140ms; }
+.shell.fs .dash > :nth-child(4), .shell.fs .content > :nth-child(4), .shell.fs .settings-page > :nth-child(4) { animation-delay: 210ms; }
+.shell.fs .dash > :nth-child(5), .shell.fs .settings-page > :nth-child(5) { animation-delay: 280ms; }
+.shell.fs .dash-2 > :nth-child(2), .shell.fs .dash-3 > :nth-child(2) { animation-delay: 90ms; }
+.shell.fs .dash-3 > :nth-child(3) { animation-delay: 180ms; }
+.shell.fs .dc { transition: transform 420ms cubic-bezier(.16, 1, .3, 1), box-shadow 420ms ease; }
+.shell.fs .dc:hover { transform: translateY(-3px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 0 0 1px rgba(255, 255, 255, .6), 0 28px 50px -24px rgba(8, 30, 80, .55); }
+.shell.fs .btn, .shell.fs .sfx-btn { transition: transform 220ms cubic-bezier(.16, 1, .3, 1), background-color 180ms ease, box-shadow 220ms ease; }
+.shell.fs .btn:active, .shell.fs .sfx-btn:active, .modal .btn:active { transform: scale(.96); }
+.shell.fs .nav a, .shell.fs .sb-item { transition: background-color 220ms ease, color 180ms ease, transform 220ms cubic-bezier(.16, 1, .3, 1); }
+.shell.fs .nav a:active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) { .shell.fs *, .modal, .modal-root { animation: none !important; transition: none !important; } }
+/* Notification rows: small plain icon at the far left, text takes the width. */
+.menu .np-open { display: flex; gap: 10px; align-items: flex-start; justify-content: flex-start; text-align: left; }
+.menu .np-open > .np-ico { flex: 0 0 18px !important; width: 18px; height: 18px; margin-top: 2px; background: none !important; border-radius: 0; color: #0060FE; }
+.menu .np-open > .np-ico svg.i { width: 17px; height: 17px; }
+.menu .np-open > .np-txt { flex: 1 1 auto; min-width: 0; }
+.np-item.urgent .np-ico { background: none !important; color: #E5383B; }
+/* Audit fixes: white blocks left in settings, tabs on the blue backdrop,
+   quiet "No pin" tag. */
+.shell.fs .settings-page .int-list, .shell.fs .settings-page .int-md > *, .shell.fs .settings-page .flow, .shell.fs .settings-page .int-how, .shell.fs .settings-page > div > .card { background: rgba(236, 240, 245, .86) !important; border: 0 !important; border-radius: 22px !important; -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 0 0 1px rgba(255, 255, 255, .6), 0 18px 40px -22px rgba(8, 30, 80, .5) !important; overflow: hidden; }
+.shell.fs .settings-page > .tabs, .shell.fs .settings-page > div > .tabs:first-child { border-bottom-color: rgba(255, 255, 255, .25); }
+.shell.fs .settings-page > .tabs button, .shell.fs .settings-page > div > .tabs:first-child button { color: rgba(255, 255, 255, .75); }
+.shell.fs .settings-page > .tabs button.on, .shell.fs .settings-page > div > .tabs:first-child button.on { color: #fff; }
+.shell.fs .settings-page > .tabs button.on::after { background: #FFC93C; }
+.shell.fs .settings-page > h2, .shell.fs .settings-page > div > h2, .shell.fs .settings-page .sp-head h2 { color: #fff; }
+.shell.fs .settings-page > p.lead, .shell.fs .settings-page > div > p.lead { color: rgba(255, 255, 255, .8); }
+.shell.fs .chip.nopin { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .25); font-weight: 500; height: 20px; padding: 0 8px; font-size: 11px; }
+/* Call / WhatsApp: round, larger, only in the header and only on Overview. */
+.modal .round-btn, .shell.fs .round-btn { width: 44px !important; height: 44px !important; border-radius: 999px !important; display: inline-grid; place-items: center; background: #fff; color: #0060FE; border: 0; box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .12), 0 6px 16px -8px rgba(8, 30, 80, .35); transition: transform 220ms cubic-bezier(.16, 1, .3, 1), background-color 160ms ease; }
+.modal .round-btn.wa, .shell.fs .round-btn.wa { color: #17A55B; }
+.modal .round-btn:hover, .shell.fs .round-btn:hover { transform: translateY(-2px); }
+.modal .round-btn svg.i, .shell.fs .round-btn svg.i { width: 20px; height: 20px; }
+.rd-head { gap: 14px; }
+.rd-head .round-btn + .round-btn { margin-left: 8px; }
+.modal.rd-notov .rd-head .round-btn { display: none; }
+/* Brighter glass cards, matching the sidebar (Founder 2026-10-17). */
+:root:not([data-theme="dark"]) .shell.fs .dc, :root:not([data-theme="dark"]) .shell.fs .sfx-main, :root:not([data-theme="dark"]) .shell.fs .sub-card, :root:not([data-theme="dark"]) .shell.fs .settings-nav, :root:not([data-theme="dark"]) .shell.fs .kpis, :root:not([data-theme="dark"]) .shell.fs .main .content > .card:not(.dc), :root:not([data-theme="dark"]) .shell.fs .main .content .split > .card, :root:not([data-theme="dark"]) .bv-card, :root:not([data-theme="dark"]) .cmp-card, :root:not([data-theme="dark"]) .shell.fs .settings-page .int-list, :root:not([data-theme="dark"]) .shell.fs .settings-page .flow, :root:not([data-theme="dark"]) .modal { background: rgba(244, 247, 252, .9) !important; }
+:root:not([data-theme="dark"]) .shell.fs .card table.t tr.row:hover td { background: rgba(255, 255, 255, .7); }

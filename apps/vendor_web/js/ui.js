@@ -128,11 +128,18 @@ export async function busy(btn, action, label = t('c.saving')) {
 // Focused popup over the current page; the page stays visible, softly
 // blurred. Returns { el, close }.
 export function modal({ title, lead = '', body = '', footer = '', center = false, onClose, cls = '', head = '' }) {
+  // One close pattern everywhere (Founder 2026-10-17): no header X and no
+  // Cancel/Close text buttons; a round X sits centred at the bottom beside
+  // the actions.
+  const tmp = document.createElement('div'); tmp.innerHTML = footer;
+  tmp.querySelectorAll('[data-close]').forEach(b => b.remove());
+  footer = `<button class="icon-btn round-x" data-close aria-label="${esc(t('c.close'))}" title="${esc(t('c.close'))}">${icon('x')}</button>${tmp.innerHTML}`;
+  center = true;
   const root = document.createElement('div');
   root.className = 'modal-root';
   root.innerHTML = `<div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
     <div class="modal-h">${head || `<div><h2>${esc(title)}</h2>${lead ? `<p>${esc(lead)}</p>` : ''}</div>`}
-      <button class="icon-btn x" data-close aria-label="${esc(t('c.close'))}">${icon('x')}</button></div>
+</div>
     <div class="modal-b">${body}</div>
     ${footer ? `<div class="modal-f ${center ? 'center' : ''}">${footer}</div>` : ''}</div>`;
   const prev = document.activeElement;

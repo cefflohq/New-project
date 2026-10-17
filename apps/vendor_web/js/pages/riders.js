@@ -119,7 +119,7 @@ export default function riders({ el, params, setHeader }) {
     const owner = ctx.isOwner;
     const footer = r.status === 'pending'
       ? (ctx.canHire ? `<button class="btn" data-reject>${esc(t('riders.reject'))}</button><button class="btn primary" data-approve>${esc(t('riders.approve'))}</button>` : '')
-      : `${owner ? `<button class="link-btn rd-deactivate" data-remove-rider>${esc(t('riders.remove'))}</button>` : ''}${digits ? `<a class="btn" href="tel:${esc(r.phone)}">${icon('phone')}${esc(t('c.call'))}</a><a class="btn" href="${wa}" target="_blank" rel="noopener">${icon('wa')}WhatsApp</a>` : ''}`;
+      : `${owner ? `<button class="link-btn rd-deactivate" data-remove-rider>${esc(t('riders.remove'))}</button>` : ''}`;
     const m = modal({
       title: r.name, head, cls: 'rider-modal', footer,
       body: `<div class="tabs rd-tabs" role="tablist">${[['ov', 'riders.overview'], ['docs', 'riders.documents'], ['earn', 'riders.earnings'], ['hist', 'riders.history']]
@@ -129,7 +129,7 @@ export default function riders({ el, params, setHeader }) {
     });
     m.el.addEventListener('click', async e => {
       const tb = e.target.closest('[data-dt]');
-      if (tb) { m.el.querySelectorAll('[data-dt]').forEach(x => x.classList.toggle('on', x === tb)); m.el.querySelector('[data-dbody]').innerHTML = TABS[tb.dataset.dt]; return; }
+      if (tb) { m.el.querySelectorAll('[data-dt]').forEach(x => x.classList.toggle('on', x === tb)); m.el.querySelector('.modal')?.classList.toggle('rd-notov', tb.dataset.dt !== 'ov'); m.el.querySelector('[data-dbody]').innerHTML = TABS[tb.dataset.dt]; return; }
       const hl = e.target.closest('a.list-row');
       if (hl) { e.preventDefault(); const to = hl.getAttribute('href'); m.close(); location.hash = to; return; }
       const ap = e.target.closest('[data-approve]');
