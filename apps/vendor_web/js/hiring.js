@@ -3,6 +3,7 @@
 // Riders > Pending and the Owner approves as today. Server:
 // save_job_opening / close_job_opening (Owner only, enforced server-side);
 // rider_job_openings is readable by business members.
+import { areaFieldHtml, wireAreaField, stepperHtml, wireSteppers } from './area_field.js';
 import { t, fmtDate } from './i18n.js';
 import { api } from './api.js';
 import { ctx } from './store.js';
@@ -126,28 +127,38 @@ export function mountHiring(host, { onChange } = {}) {
     openPostForm();
   }
 
+  // Hiring form (Founder 2026-10-17): compact and minimal. Area with
+  // suggestions and a map pin; start date beside pickup time; days and
+  // vehicle as one segmented bar each; steppers for pay and drops.
   function openPostForm() {
     let days = new Set([1, 2, 3, 4, 5]), vehicle = 'motorcycle';
-    const chips = (name, items, isOn) => items.map(([v, label]) => `<button type="button" class="chip-btn ${isOn(v) ? 'on' : ''}" data-${name}="${v}">${esc(label)}</button>`).join('');
+    const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    const seg = (name, items, isOn) => items.map(([v, label]) => `<button type="button" class="${isOn(v) ? 'on' : ''}" data-${name}="${v}" aria-pressed="${isOn(v)}">${esc(label)}</button>`).join('');
     const m = modal({
       title: t('hr.title'),
       lead: t('hiring.driverSub'),
-      body: `<form data-form novalidate class="hire-form">
-        <div class="field"><label for="h-area">${esc(t('hire.area'))}</label><input class="input" id="h-area" placeholder="${esc(t('hire.areaHint'))}" maxlength="60"></div>
-        <div class="field"><label>${esc(t('hire.days'))}</label><div class="chips" data-days></div></div>
-        <div class="field"><label for="h-start">${esc(t('hr.pickupTime'))}</label><input class="input" id="h-start" type="time" value="07:00" style="max-width:200px"><small class="hint">${esc(t('hr.pickupHint'))}</small></div>
-        <div class="field"><label>${esc(t('hire.vehicle'))}</label><div class="chips" data-vehicles></div></div>
-        <div class="field"><label for="h-pay">${esc(t('hr.payPerDrop'))}</label><input class="input" id="h-pay" inputmode="decimal" value="3.00" style="max-width:200px"><small class="hint" data-pay-hint>${esc(t('hr.payMin'))}</small></div>
-        <div class="field"><label for="h-drops">${esc(t('hr.dropsPerRun'))}</label><input class="input" id="h-drops" type="number" min="1" max="50" value="10" style="max-width:200px"></div>
-        <div class="row2"><div class="field"><label for="h-need">${esc(t('hire.needed'))}</label><input class="input" id="h-need" type="number" min="1" max="50" value="1"></div>
-          <div class="field"><label for="h-radius" data-radius-label>${esc(t('hr.reachKm', { km: 10 }))}</label><input id="h-radius" type="range" min="1" max="15" step="1" value="10"><small class="hint" data-reach-hint>${esc(t('hr.reachHint', { km: 10 }))}</small></div></div>
+      cls: 'hire-m',
+      body: `<form data-form novalidate class="hire-form hf">
+        <div class="field"><label for="h-area">${esc(t('hire.area'))}</label>${areaFieldHtml('h-area', t('hire.areaHint'))}</div>
+        <div class="hf-2">
+          <div class="field"><label for="h-date">Start date</label><input class="input hf-dt" id="h-date" type="date" min="${today}" value="${today}"></div>
+          <div class="field"><label for="h-start">${esc(t('hr.pickupTime'))}</label><input class="input hf-dt" id="h-start" type="time" value="07:00"></div></div>
+        <div class="field"><label>${esc(t('hire.days'))}</label><div class="hf-seg" data-days></div></div>
+        <div class="field"><label>${esc(t('hire.vehicle'))}</label><div class="hf-seg" data-vehicles></div></div>
+        <div class="hf-3">
+          <div class="field"><label for="h-pay">${esc(t('hr.payPerDrop'))}</label>${stepperHtml('h-pay', '3.00', { min: 3, max: 3000, step: 0.5, prefix: 'RM' })}</div>
+          <div class="field"><label for="h-drops">${esc(t('hr.dropsPerRun'))}</label>${stepperHtml('h-drops', '10', { min: 1, max: 50 })}</div>
+          <div class="field"><label for="h-need">${esc(t('hire.needed'))}</label>${stepperHtml('h-need', '1', { min: 1, max: 50 })}</div></div>
+        <small class="hint" data-pay-hint>${esc(t('hr.payMin'))}</small>
         <div class="err" data-err hidden role="alert"></div></form>`,
-      footer: `<button class="btn" data-close>${esc(t('c.cancel'))}</button><button class="btn primary" data-save>${esc(t('hr.publish'))}</button>`,
+      footer: `<button class="btn primary" data-save>${esc(t('hr.publish'))}</button>`,
     });
     const q = s => m.el.querySelector(s);
+    const area = wireAreaField(m.el, 'h-area');
+    wireSteppers(m.el);
     const repaint = () => {
-      q('[data-days]').innerHTML = chips('day', [1, 2, 3, 4, 5, 6, 7].map(d => [d, t(`hire.d${d}`)]), v => days.has(Number(v)));
-      q('[data-vehicles]').innerHTML = chips('veh', ['motorcycle', 'car', 'van'].map(v => [v, t(`veh.${v}`)]), v => v === vehicle);
+      q('[data-days]').innerHTML = seg('day', [1, 2, 3, 4, 5, 6, 7].map(d => [d, t(`hire.d${d}`)]), v => days.has(Number(v)));
+      q('[data-vehicles]').innerHTML = seg('veh', ['motorcycle', 'car', 'van'].map(v => [v, t(`veh.${v}`)]), v => v === vehicle);
     };
     repaint();
     m.el.addEventListener('click', e => {
@@ -157,19 +168,16 @@ export function mountHiring(host, { onChange } = {}) {
     });
     const payNum = () => Number(q('#h-pay').value.replace(',', '.'));
     q('#h-pay').addEventListener('input', () => { q('[data-pay-hint]').style.color = payNum() >= 3 ? '' : 'var(--danger, #dc2626)'; });
-    q('#h-radius').addEventListener('input', e => {
-      q('[data-radius-label]').textContent = t('hr.reachKm', { km: e.target.value });
-      q('[data-reach-hint]').textContent = t('hr.reachHint', { km: e.target.value });
-    });
     q('[data-save]').addEventListener('click', async e => {
       const err = q('[data-err]'); err.hidden = true;
-      const area = q('#h-area').value.trim(), pickup = q('#h-start').value;
-      const pay = payNum(), need = Number(q('#h-need').value), reach = Number(q('#h-radius').value), drops = Number(q('#h-drops').value);
-      if (area.length < 2 || !days.size || !pickup || !(pay >= 3) || !(need >= 1 && need <= 50) || !(drops >= 1 && drops <= 50)) { err.textContent = t('hr.fix'); err.hidden = false; return; }
+      const label = area.value(), pin = area.pin(), pickup = q('#h-start').value, date = q('#h-date').value;
+      const pay = payNum(), need = Number(q('#h-need').value), drops = Number(q('#h-drops').value);
+      if (label.length < 2 || !days.size || !pickup || !(pay >= 3) || !(need >= 1 && need <= 50) || !(drops >= 1 && drops <= 50)) { err.textContent = t('hr.fix'); err.hidden = false; return; }
       try {
         await busy(e.target, () => api.rpc('save_job_opening', {
-          p_business_id: ctx.bid, p_area_label: area, p_pickup_time: pickup, p_days: [...days].sort(),
-          p_vehicle_type: vehicle, p_pay_per_drop: pay, p_drivers_needed: need, p_reach_km: reach, p_drops_per_run: drops,
+          p_business_id: ctx.bid, p_area_label: label, p_pickup_time: pickup, p_days: [...days].sort(),
+          p_vehicle_type: vehicle, p_pay_per_drop: pay, p_drivers_needed: need, p_drops_per_run: drops,
+          p_start_date: date || null, p_latitude: pin?.lat ?? null, p_longitude: pin?.lng ?? null,
         }));
         m.close(); toast(t('hire.posted')); load();
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }

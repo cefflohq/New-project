@@ -1527,3 +1527,52 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 .shell.fs .sfx-foot small { flex-basis: 100%; text-align: center; }
 .shell.fs .row-end { justify-content: center !important; flex-wrap: wrap; }
 .shell.fs .row-end .hint { flex-basis: 100%; text-align: center; }
+
+/* Area field with suggestions and pin button. */
+.af { position: relative; }
+.af .af-in { padding-right: 52px; }
+.af-pin { position: absolute; right: 5px; top: 50%; translate: 0 -50%; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 999px; background: #EEF2FF; color: #0060FE; cursor: pointer; transition: background-color 160ms ease, color 160ms ease; }
+.af-pin:hover { background: #0060FE; color: #fff; }
+.af.has-pin .af-pin { background: var(--yg, #FFC93C); color: #2a1f00; }
+.af-pin svg.i { width: 18px; height: 18px; }
+.af-sug { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 20; padding: 6px; border-radius: 16px; background: #fff; box-shadow: 0 18px 40px -14px rgba(8, 30, 80, .4); display: grid; max-height: 260px; overflow: auto; }
+.af-sug button { display: flex; gap: 10px; align-items: center; padding: 9px 10px; border: 0; border-radius: 10px; background: none; text-align: left; cursor: pointer; }
+.af-sug button:hover { background: rgba(0, 96, 254, .07); }
+.af-sug svg.i { width: 16px; height: 16px; color: #0060FE; flex: none; }
+.af-sug b { display: block; font-size: 13.5px; font-weight: 500; }
+.af-sug small { font-size: 12px; color: var(--muted); }
+.af-modal { width: min(640px, 100%); }
+.af-map { height: 380px; border-radius: 18px; overflow: hidden; position: relative; }
+/* Steppers. */
+.stp { display: flex; align-items: center; height: 46px; padding: 4px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .12); }
+.stp button { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 999px; background: rgba(60, 72, 96, .07); color: var(--ink); cursor: pointer; transition: background-color 140ms ease, transform 140ms ease; }
+.stp button:hover { background: rgba(255, 201, 60, .5); }
+.stp button:active { transform: scale(.92); }
+.stp button svg.i { width: 16px; height: 16px; }
+.stp-v { flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: center; gap: 3px; }
+.stp-v i { font-style: normal; font-size: 12px; color: var(--muted); }
+.stp-v input { width: 100%; min-width: 0; max-width: 72px; border: 0; background: none; text-align: center; font: 600 17px/1 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ink); outline: none; }
+/* Hiring form layout. */
+.hire-m { width: min(620px, 100%); }
+.hf { display: grid; gap: 16px; }
+.hf .field { margin: 0; gap: 7px; }
+.hf-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.hf-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.hf-dt { height: 46px; font: 600 16px/1 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: .02em; text-align: center; }
+.hf-seg { display: flex; width: 100%; gap: 3px; padding: 4px; border-radius: 999px; background: rgba(60, 72, 96, .07); box-shadow: inset 0 0 0 1px rgba(60, 72, 96, .1); }
+.hf-seg button { flex: 1; height: 38px; border: 0; border-radius: 999px; background: none; color: var(--ink-2); font: 500 13.5px/1 Inter, system-ui, sans-serif; cursor: pointer; transition: background 180ms ease, color 160ms ease; }
+.hf-seg button:hover:not(.on) { background: rgba(255, 255, 255, .7); }
+.hf-seg button.on { background: var(--yg, linear-gradient(180deg, #FFD866, #FFBA14)); color: #2a1f00; font-weight: 600; box-shadow: var(--yg-glow, 0 8px 18px -8px rgba(214, 150, 0, .7)); }
+@media (max-width: 560px) { .hf-2, .hf-3 { grid-template-columns: 1fr; } }
+/* Dark mode: every card is dark glass like the sidebar. */
+:root[data-theme="dark"] .shell.fs .main .card, :root[data-theme="dark"] .shell.fs .main .split > *, :root[data-theme="dark"] .shell.fs .settings-page .int-list, :root[data-theme="dark"] .shell.fs .settings-page .flow { background: rgba(22, 28, 42, .82) !important; color: #E8ECF4 !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), inset 0 0 0 1px rgba(255, 255, 255, .06), 0 20px 50px -24px rgba(0, 0, 0, .7) !important; }
+:root[data-theme="dark"] .shell.fs table.t td, :root[data-theme="dark"] .shell.fs table.t td b, :root[data-theme="dark"] .shell.fs .list-row b { color: #E8ECF4; }
+:root[data-theme="dark"] .shell.fs table.t th, :root[data-theme="dark"] .shell.fs table.t td .sub, :root[data-theme="dark"] .shell.fs .card .hint, :root[data-theme="dark"] .shell.fs .card small { color: #9AA4B8 !important; }
+:root[data-theme="dark"] .shell.fs .card .tabs { background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+:root[data-theme="dark"] .shell.fs .card .tabs button:not(.on) { color: #C5CCDA; }
+/* Rows: hover and selected are Cefflo blue. */
+.shell.fs table.t tr.row:hover td, .shell.fs .list-row:hover { background: rgba(0, 96, 254, .1) !important; }
+.shell.fs table.t tr.sel td { background: rgba(0, 96, 254, .16) !important; }
+:root[data-theme="dark"] .shell.fs table.t tr.row:hover td, :root[data-theme="dark"] .shell.fs .list-row:hover { background: rgba(47, 123, 255, .22) !important; }
+:root[data-theme="dark"] .shell.fs table.t tr.sel td { background: rgba(47, 123, 255, .32) !important; }
+.shell.fs .tabs button.on .badge, .shell.fs .tabs button.on .count, .shell.fs .tabs button.on span { background: rgba(42, 31, 0, .15) !important; color: #2a1f00 !important; }
