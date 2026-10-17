@@ -1576,3 +1576,13 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 :root[data-theme="dark"] .shell.fs table.t tr.row:hover td, :root[data-theme="dark"] .shell.fs .list-row:hover { background: rgba(47, 123, 255, .22) !important; }
 :root[data-theme="dark"] .shell.fs table.t tr.sel td { background: rgba(47, 123, 255, .32) !important; }
 .shell.fs .tabs button.on .badge, .shell.fs .tabs button.on .count, .shell.fs .tabs button.on span { background: rgba(42, 31, 0, .15) !important; color: #2a1f00 !important; }
+/* Keep the sidebar open while one of its menus is open, and show the
+   account menu above the account row. */
+@media (min-width: 1024px) {
+  .shell.fs:has(.sidebar .menu) { grid-template-columns: calc(var(--fs-open) + 16px) minmax(0, 1fr); }
+  .shell.fs .sidebar:has(.menu) .lbl, .shell.fs .sidebar:has(.menu) .ws, .shell.fs .sidebar:has(.menu) kbd, .shell.fs .sidebar:has(.menu) .sb-sw { opacity: 1; }
+}
+.shell.fs .acct .menu { left: 0 !important; right: auto !important; bottom: calc(100% + 8px) !important; top: auto !important; width: 220px; }
+.shell.fs .acct .menu .menu-head { padding: 8px 10px 10px; border-bottom: 1px solid rgba(60, 72, 96, .1); margin-bottom: 4px; display: grid; gap: 2px; }
+.shell.fs .acct .menu [data-signout], .shell.fs .acct .menu [data-signout] * { color: #E5383B !important; }
+.modal .btn.danger-soft { background: #E5383B !important; color: #fff !important; border-color: transparent !important; box-shadow: 0 10px 22px -10px rgba(229, 56, 59, .7) !important; }

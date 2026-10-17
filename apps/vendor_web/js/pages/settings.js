@@ -37,7 +37,7 @@ export default function settings({ el, params, setHeader }) {
       ${item('m:appearance', 'palette', 'set.appearance')}
       <h4>${esc(t('set.business'))}</h4>${ctx.isOwner ? item('business', 'building', 'set.businessProfile') + item('verification', 'check', 'bv.title') : ''}${item('complaints', 'alert', 'cmp.title')}${item('go:storefront', 'store', 'set.storefront')}${item('go:products', 'pkg', 'set.products')}${item('integrations', 'link', 'set.integrations')}${ctx.isOwner ? item('team', 'users', 'set.team') + item('subscription', 'card', 'sub.title') : ''}${!ctx.isOwner && ctx.canHire ? item('hiring', 'users', 'hiring.title') : ''}
       <h4>${esc(t('set.support'))}</h4>${item('help', 'help', 'set.help')}${item('about', 'info', 'set.about')}
-      <button class="signout" data-signout>${icon('logout')}<span>${esc(t('set.signOut'))}</span></button>
+      
     </nav>
     <div class="settings-page" data-page>${loadingRows(4)}</div></div>`;
   const page = el.querySelector('[data-page]');
