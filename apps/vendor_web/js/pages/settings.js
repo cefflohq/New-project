@@ -209,7 +209,7 @@ async function business(page) {
       <div class="sub-card" data-hours><h3>${esc(t('hours.title'))}</h3><p class="desc">${esc(t('hours.lead'))}</p>
         ${[1, 2, 3, 4, 5, 6, 7].map(d => { const h = hours.find(x => x.weekday === d) || {}; return `<div class="g4" data-day="${d}" style="align-items:center;margin-bottom:6px">
           <b style="font-weight:500">${esc(t(`hours.d${d}`))}</b>
-          <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-open ${h.is_open ? 'checked' : ''}>${esc(t('hours.open'))}</label>
+          <label class="sw-label"><input type="checkbox" class="sw-check" data-open ${h.is_open ? 'checked' : ''}>${esc(t('hours.open'))}</label>
           <input class="input" type="time" data-from value="${esc((h.opens_at || '09:00').slice(0, 5))}" aria-label="${esc(t('hours.from'))}">
           <input class="input" type="time" data-to value="${esc((h.closes_at || '18:00').slice(0, 5))}" aria-label="${esc(t('hours.to'))}"></div>`; }).join('')}
         <div class="err" data-herr hidden></div>
@@ -597,10 +597,11 @@ async function subscription(page) {
         <b>${esc(n0(used))}${cap != null ? ` / ${esc(n0(cap))}` : ''}</b> <small>${esc(t('sub.completedDeliveries'))}</small>
         ${cap ? `<div style="height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden"><div style="height:100%;width:${Math.min(100, used / cap * 100)}%;background:${sub.over_allowance ? 'var(--danger)' : 'var(--primary)'}"></div></div>` : ''}</div>
       <div class="sub-card"><h3 style="margin:0">${esc(t('sub.choose'))}</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px">${plans.map(p => `<button class="opt ${pick === p.key ? 'on' : ''}" data-plan="${esc(p.key)}" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:2px;text-align:left;height:100%;min-width:0">
-          <b>${esc(p.name)}</b>${p.most_popular ? ` <span class="chip active">${esc(t('sub.popular'))}</span>` : ''}${cur?.key === p.key ? ` <span class="chip neutral">${esc(t('sub.currentShort'))}</span>` : ''}
-          ${price(p)}
-          <ul style="margin:0;padding-left:18px">${features(p).map(f => `<li><small>${esc(f)}</small></li>`).join('')}</ul></button>`).join('')}</div>
+        <div class="plans">${plans.filter(p => p.key !== 'enterprise').map(p => `<button class="plan ${pick === p.key ? 'on' : ''}${p.most_popular ? ' pop' : ''}" data-plan="${esc(p.key)}" aria-pressed="${pick === p.key}">
+          <span class="plan-top"><b>${esc(p.name)}</b>${p.most_popular ? `<span class="plan-tag">${esc(t('sub.popular'))}</span>` : ''}${cur?.key === p.key ? `<span class="plan-tag cur">${esc(t('sub.currentShort'))}</span>` : ''}</span>
+          <span class="plan-price">${price(p)}</span>
+          <ul>${features(p).map(f => `<li>${icon('check')}<span>${esc(f)}</span></li>`).join('')}</ul></button>`).join('')}</div>
+        ${plans.some(p => p.key === 'enterprise') ? `<p class="plan-custom">${esc(t('p.fEnterprise'))} <button type="button" class="link" data-plan="enterprise">${esc(t('sub.contactSales'))}</button></p>` : ''}
         ${gatedNote(t('sub.paymentHold'))}
         <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn primary" data-request ${pick && pick !== cur?.key ? '' : 'disabled'}>${icon('mail')}${esc(t(pick === 'enterprise' ? 'sub.contactSales' : 'sub.request'))}</button></div></div>
       <div class="sub-card"><h3>${esc(t('sub.billing'))}</h3>${emptyState(t('sub.noInvoices'))}</div>`;

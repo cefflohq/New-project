@@ -165,7 +165,7 @@ async function loadComplaints() {
 }
 
 export async function complaints(page, openId) {
-  page.innerHTML = `<h2>${esc(t('cmp.title'))}</h2><p class="lead">${esc(t('cmp.lead'))}</p><div data-body>${loadingRows(3)}</div>`;
+  page.innerHTML = `<h2>${esc(t('cmp.title'))}</h2><p class="lead">${esc(t('cmp.lead'))}</p><div data-body class="cmp-card">${loadingRows(3)}</div>`;
   const body = page.querySelector('[data-body]');
   let all;
   try { all = await loadComplaints(); } catch (e) { body.innerHTML = errorState(e); return; }

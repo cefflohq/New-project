@@ -1270,3 +1270,55 @@ select.sfx-in { appearance: none; padding-right: 36px; background-image: url("da
 .bv-card form > div { display: flex; justify-content: center; width: 100%; }
 .shell.fs .settings-page > h2 + .lead + .bv-card { margin-top: 18px; }
 .shell.fs [data-verify] > .card, .shell.fs [data-verify] > a.card { background: rgba(236, 240, 245, .86); border: 0; border-radius: 20px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .6), 0 12px 30px -18px rgba(8, 30, 80, .5); }
+/* Switch-style checkbox (same switch as the Vendor App). */
+.sw-label { display: inline-flex; gap: 10px; align-items: center; cursor: pointer; font-weight: 500; }
+input.sw-check { appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 46px; height: 28px; margin: 0; border-radius: 999px; background: rgba(60, 72, 96, .22); cursor: pointer; transition: background-color 180ms ease; }
+input.sw-check::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform 220ms cubic-bezier(.3, 1.3, .5, 1); }
+input.sw-check:checked { background: #0060FE; }
+input.sw-check:checked::after { transform: translateX(18px); }
+input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; }
+/* Complaints in a glass card like verification. */
+.cmp-card { margin-top: 18px; padding: 20px 24px; border-radius: 24px; background: rgba(236, 240, 245, .86); -webkit-backdrop-filter: blur(24px) saturate(130%); backdrop-filter: blur(24px) saturate(130%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 0 0 1px rgba(255, 255, 255, .6), 0 18px 40px -22px rgba(8, 30, 80, .5); color: var(--ink); }
+.cmp-card .tabs { border-bottom-color: rgba(60, 72, 96, .12); padding-left: 0; }
+.cmp-card .tabs button { color: var(--muted); }
+/* Notification list: compact round icon, items not stretched as menu buttons. */
+.shell.fs .sidebar .menu .np-open, .shell.fs .sidebar .menu .np-dot { min-height: 0; padding: 10px 8px; border-radius: 14px; }
+.shell.fs .sidebar .menu .np-dot { width: 32px; flex: none; padding: 10px 0; }
+.np-ico { width: 32px; height: 32px; border-radius: 50%; background: #EEF2FF; color: #3D63F5; }
+.np-item { gap: 4px; border-radius: 14px; }
+.np-txt { flex: 1; }
+/* Plan picker (Founder 2026-10-17): rounded cards with motion; the chosen
+   plan fills with Cefflo blue. Enterprise is a line under the cards. */
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 14px; }
+.plan { position: relative; display: grid; align-content: start; gap: 12px; padding: 20px; border: 0; border-radius: 22px; background: #fff; color: var(--ink); text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 10px 28px -18px rgba(8, 30, 80, .35); transition: transform 260ms cubic-bezier(.2, .8, .2, 1), box-shadow 260ms ease, background 260ms ease, color 200ms ease; }
+.plan:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(0, 0, 0, .04), 0 20px 40px -20px rgba(8, 30, 80, .45); }
+.plan:active { transform: translateY(-1px) scale(.985); }
+.plan:focus-visible { outline: 2px solid #0060FE; outline-offset: 3px; }
+.plan.pop { box-shadow: inset 0 0 0 2px rgba(0, 96, 254, .35), 0 10px 28px -18px rgba(8, 30, 80, .35); }
+.plan-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.plan-top b { font-size: 16px; font-weight: 600; }
+.plan-tag { padding: 3px 10px; border-radius: 999px; background: #EEF2FF; color: #0057E8; font-size: 11.5px; font-weight: 600; }
+.plan-tag.cur { background: #FFF3CC; color: #7a5600; }
+.plan-price { font-size: 13px; color: var(--muted); }
+.plan-price b, .plan-price strong { font-size: 30px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.plan ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.plan li { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.plan li svg.i { flex: none; width: 16px; height: 16px; margin-top: 1px; padding: 2px; border-radius: 50%; background: #EEF2FF; color: #0060FE; box-sizing: border-box; }
+.plan.on { background: linear-gradient(160deg, #3B86FF 0%, #0060FE 55%, #0047C7 100%); color: #fff; transform: translateY(-4px) scale(1.02); box-shadow: 0 24px 48px -20px rgba(0, 87, 232, .7), inset 0 1px 0 rgba(255, 255, 255, .35); animation: plan-pop 420ms cubic-bezier(.2, 1.4, .4, 1); }
+.plan.on .plan-price, .plan.on .plan-price b, .plan.on .plan-price strong, .plan.on li { color: #fff; }
+.plan.on .plan-price { color: rgba(255, 255, 255, .8); }
+.plan.on li svg.i { background: rgba(255, 255, 255, .22); color: #fff; }
+.plan.on .plan-tag { background: rgba(255, 255, 255, .22); color: #fff; }
+.plan.on .plan-tag.cur { background: #FFC93C; color: #2a2100; }
+@keyframes plan-pop { 0% { transform: translateY(-2px) scale(.97); } 60% { transform: translateY(-5px) scale(1.035); } 100% { transform: translateY(-4px) scale(1.02); } }
+.plan-custom { margin: 16px 0 0; font-size: 13.5px; color: var(--ink-2); }
+.plan-custom .link { border: 0; background: none; padding: 0; color: #0060FE; font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .plan, .plan.on { transition: none; animation: none; } }
+.plan-price > div { font-size: 30px !important; font-weight: 700 !important; letter-spacing: -.02em; margin: 0 !important; color: var(--ink); }
+.plan-price > div small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.plan.on .plan-price > div, .plan.on .plan-price > div small { color: #fff; }
+.plans { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.plan { padding: 18px 16px; }
+.plan-price > div { font-size: 26px !important; }
+@media (max-width: 1280px) { .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .plans { grid-template-columns: minmax(0, 1fr); } }
