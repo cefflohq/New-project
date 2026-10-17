@@ -20,7 +20,7 @@ export default function zones({ el, params, setHeader }) {
         <a class="btn sm" href="#/runs">${icon('route')}${esc(t('nav.runs'))}</a>
         <div class="search" style="margin-left:auto">${icon('search')}<input data-q placeholder="${esc(t('zones.search'))}" aria-label="${esc(t('c.search'))}"></div>
       </div>
-      <div style="padding:0 16px 12px"><div data-zmap></div></div>
+      <div class="map-inset"><div data-zmap></div></div>
       <div data-list>${loadingRows(8, t('ld.zones'))}</div>
     </div>
     ${selected ? `<div class="card panel" data-detail>${loadingRows(6, t('ld.zones'))}</div>` : ''}
