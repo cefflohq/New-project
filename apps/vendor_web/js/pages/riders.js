@@ -99,18 +99,16 @@ export default function riders({ el, params, setHeader }) {
           <div class="hint">${esc(r.phone)}</div><div class="hint">${esc([r.vehicle_plate, vehicle(r)].filter(Boolean).join(' · '))}</div></div>
         ${digits ? `<a class="round-btn" href="tel:${esc(r.phone)}" aria-label="${esc(t('c.call'))}">${icon('phone')}</a><a class="round-btn wa" href="${wa}" target="_blank" rel="noopener" aria-label="WhatsApp">${icon('wa')}</a>` : ''}
       </div>`;
+    // Overview (Founder 2026-10-17): two headline numbers, then the details
+    // as a compact grid instead of one field per row.
+    const cell = (ic, k, v) => `<div class="kv">${icon(ic)}<div><small>${esc(t(k))}</small><b>${esc(v)}</b></div></div>`;
     const overview = `
       <div class="boxed stats"><div class="stat"><b class="c-blue">${s.total}</b><span>${esc(t('riders.totalOrders'))}</span></div>
-        <div class="stat"><b class="c-green">${s.completed}</b><span>${esc(t('riders.completed'))}</span></div>
-        <div class="stat"><b class="c-amber">${s.ongoing}</b><span>${esc(t('riders.ongoing'))}</span></div>
-        <div class="stat"><b class="c-red">${s.issues}</b><span>${esc(t('riders.issues'))}</span></div></div>
-      <div>
-        <div class="kv">${icon('user')}<div><small>${esc(t('riders.name'))}</small><b>${esc(r.name)}</b></div></div>
-        <div class="kv">${icon('phone')}<div><small>${esc(t('riders.phone'))}</small><b>${esc(r.phone)}</b></div></div>
-        <div class="kv">${icon('bike')}<div><small>${esc(t('riders.vehicleNumber'))}</small><b>${esc(r.vehicle_plate || t('c.none'))}</b></div></div>
-        <div class="kv">${icon('bike')}<div><small>${esc(t('riders.vehicleType'))}</small><b>${esc(vehicle(r) || t('c.none'))}</b></div></div>
-        <div class="kv">${icon('clock')}<div><small>${esc(t('riders.joined'))}</small><b>${esc(fmtDate(r.created_at))}</b></div></div>
-        <div class="kv">${icon('star')}<div><small>${esc(t('riders.rating'))}</small><b>${s.rating ? esc(s.rating) : '-'}</b></div></div>
+        <div class="stat"><b class="c-amber">${s.rating ? esc(s.rating) : '-'}</b><span>${esc(t('riders.rating'))}</span></div></div>
+      <div class="kv-grid">
+        ${cell('user', 'riders.name', r.name)}${cell('phone', 'riders.phone', r.phone)}
+        ${cell('bike', 'riders.vehicleNumber', r.vehicle_plate || t('c.none'))}${cell('bike', 'riders.vehicleType', vehicle(r) || t('c.none'))}
+        ${cell('clock', 'riders.joined', fmtDate(r.created_at))}
       </div>`;
     const history = s.mine.length ? `<div>${s.mine.slice(0, 30).map(o => `<a class="list-row" href="#/orders/${esc(o.id)}" style="color:inherit;text-decoration:none"><div class="grow"><b>${esc(orderNo(o))}</b><small>${esc(o.customer_name)} · ${esc(fmtDate(o.created_at))} ${esc(fmtTime(o.created_at))}</small></div>${chip(orderStatus(o))}</a>`).join('')}</div>` : emptyState(t('riders.noHistory'));
     const TABS = { ov: overview, docs: gatedNote(t('riders.docsGated')), earn: gatedNote(t('riders.earningsGated')), hist: history };

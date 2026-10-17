@@ -1458,3 +1458,7 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 .shell.fs .sidebar { outline: 0; }
 .shell.fs .nav a:focus, .shell.fs .sb-item:focus { outline: 0; }
 .shell.fs .nav a:focus-visible, .shell.fs .sb-item:focus-visible { outline: 2px solid #FFC93C; outline-offset: 2px; }
+.modal .kv-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+.modal .kv-grid .kv { border-bottom: 1px solid rgba(60, 72, 96, .1) !important; }
+.modal .kv-grid .kv:last-child { border-bottom: 0 !important; }
+@media (max-width: 520px) { .modal .kv-grid { grid-template-columns: minmax(0, 1fr); } }
