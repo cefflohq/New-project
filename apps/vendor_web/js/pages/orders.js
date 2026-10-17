@@ -158,20 +158,19 @@ export async function renderDetail(box, id, onChange) {
       const lines = itemsLines(o.items);
       const digits = phoneDigits(o.customer_phone);
       box.innerHTML = `
-        <div class="panel-h"><h2>${esc(orderNo(o))}</h2>${chip(s)}<button class="icon-btn" style="margin-left:auto" data-close-detail aria-label="${esc(t('c.close'))}">${icon('x')}</button></div>
+        <div class="panel-h"><h2>${esc(orderNo(o))}</h2>${chip(s)}${(o.delivery_status === 'created' && !o.assigned_rider_id) || ISSUE_FROM.includes(o.delivery_status) ? `<div class="od-more"><button class="icon-btn" data-odmore aria-haspopup="menu" aria-label="More">${icon('dots')}</button><div class="od-menu" hidden>${o.delivery_status === 'created' && !o.assigned_rider_id ? `<button data-edit>${icon('file')}<span>${esc(t('edit.action'))}</span></button>` : ''}${ISSUE_FROM.includes(o.delivery_status) ? `<button class="danger" data-report-issue>${icon('alert')}<span>${esc(t('issue.report'))}</span></button>` : ''}</div></div>` : ''}<button class="icon-btn" data-close-detail aria-label="${esc(t('c.close'))}">${icon('x')}</button></div>
         <div class="sec" style="display:flex;align-items:center;gap:10px">
           <div style="flex:1"><b style="font-size:15px">${esc(o.customer_name)}</b><div class="hint">${esc(o.customer_phone)}</div></div>
           ${digits ? `<a class="round-btn" href="tel:${esc(o.customer_phone)}" aria-label="${esc(t('c.call'))}">${icon('phone')}</a><a class="round-btn wa" href="https://wa.me/${esc(digits.replace(/^0/, '60'))}" target="_blank" rel="noopener" aria-label="WhatsApp">${icon('wa')}</a>` : ''}
         </div>
         <div class="sec kv" style="border-bottom:0"><span style="color:var(--primary)">${icon('pin')}</span><div style="flex:1"><b style="margin:0">${esc(o.delivery_address)}</b></div></div>
         ${hasPin(o) ? `<div class="sec"><div data-pinmap></div>
-          <a class="btn sm" style="margin-top:10px" href="${esc(mapsLink(`${o.latitude},${o.longitude}`))}" target="_blank" rel="noopener">${icon('map')}${esc(t('pin.open'))}</a></div>`
+          <a class="btn sm od-maps" href="${esc(mapsLink(`${o.latitude},${o.longitude}`))}" target="_blank" rel="noopener">${icon('map')}${esc(t('pin.open'))}</a></div>`
           : `<div class="sec kv" style="border-bottom:0"><span class="chip nopin">${esc(t('pin.none'))}</span><div class="hint" style="flex:1">${esc(t('pin.noneBody'))}</div></div>
-          <div class="sec" style="padding-top:0"><a class="btn sm" href="${esc(mapsLink(o.delivery_address))}" target="_blank" rel="noopener">${icon('map')}${esc(t('pin.open'))}</a></div>`}
+          <div class="sec" style="padding-top:0"><a class="btn sm od-maps" href="${esc(mapsLink(o.delivery_address))}" target="_blank" rel="noopener">${icon('map')}${esc(t('pin.open'))}</a></div>`}
         <div class="sec kv" style="border-bottom:0"><span style="color:var(--primary)">${icon('map')}</span><div style="flex:1"><b style="margin:0">${esc(t('cov.title'))}</b></div><span class="chip ${COV_ATTN.includes(cov) ? 'issue' : cov === 'covered' ? 'active' : 'neutral'}">${esc(t(`cov.${COV_KEYS.includes(cov) ? cov : 'unknown'}`))}</span></div>
-        ${o.delivery_status === 'created' && !o.assigned_rider_id ? `<div class="sec" style="display:flex;gap:10px"><button class="btn sm" data-edit>${esc(t('edit.action'))}</button>${!o.approved_at ? `<button class="btn primary sm" data-approve>${esc(t('orders.approve'))}</button>` : ''}</div>` : ''}
-        ${ISSUE_FROM.includes(o.delivery_status) || recoverable(o) ? `<div class="sec" style="display:flex;gap:10px;flex-wrap:wrap">
-          ${ISSUE_FROM.includes(o.delivery_status) ? `<button class="btn sm" data-report-issue>${icon('alert')}${esc(t('issue.report'))}</button>` : ''}
+        ${o.delivery_status === 'created' && !o.assigned_rider_id ? `${!o.approved_at ? `<div class="sec od-cta"><button class="btn primary" data-approve>${esc(t('orders.approve'))}</button></div>` : ''}` : ''}
+        ${recoverable(o) ? `<div class="sec od-cta">
           ${recoverable(o) ? `<button class="btn sm" data-recover>${esc(t('recover.action'))}</button>` : ''}</div>` : ''}
         <div class="sec"><h3>${esc(t('orders.liveStatus'))}</h3><div class="timeline">
           ${steps.map(([k, label], i) => {
@@ -193,6 +192,9 @@ export async function renderDetail(box, id, onChange) {
     } catch (e) { box.innerHTML = errorState(e); }
   };
   box.addEventListener('click', async e => {
+    const mb = e.target.closest('[data-odmore]');
+    if (mb) { const mn = mb.nextElementSibling; mn.hidden = !mn.hidden; return; }
+    if (!e.target.closest('.od-menu')) el.querySelectorAll('.od-menu').forEach(x => { x.hidden = true; });
     if (e.target.closest('[data-close-detail]')) { location.hash = '#/orders'; return; }
     const ap = e.target.closest('[data-approve]');
     if (ap) {

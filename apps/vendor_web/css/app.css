@@ -1462,3 +1462,29 @@ input.sw-check:focus-visible { outline: 2px solid #0060FE; outline-offset: 2px; 
 .modal .kv-grid .kv { border-bottom: 1px solid rgba(60, 72, 96, .1) !important; }
 .modal .kv-grid .kv:last-child { border-bottom: 0 !important; }
 @media (max-width: 520px) { .modal .kv-grid { grid-template-columns: minmax(0, 1fr); } }
+/* Order detail tidy-up: centred map link, ⋮ menu for edit / report issue. */
+.panel-h { display: flex; align-items: center; gap: 8px; }
+.panel-h .od-more { margin-left: auto; position: relative; }
+.panel-h .od-more + .icon-btn, .panel-h .od-more ~ [data-close-detail] { margin-left: 0; }
+.panel-h > [data-close-detail]:not(.od-more ~ *) { margin-left: auto; }
+.panel-h .icon-btn { width: 36px; height: 36px; border-radius: 999px; }
+.od-menu { right: 0; left: auto; top: calc(100% + 6px); min-width: 190px; border-radius: 16px; padding: 6px; border: 0; background: #fff; box-shadow: 0 18px 40px -14px rgba(8, 30, 80, .4); }
+.od-menu button { min-height: 40px; border-radius: 10px; color: var(--ink); }
+.od-menu button.danger { color: #E5383B; }
+.od-maps { display: flex !important; width: max-content; margin: 12px auto 0 !important; }
+.od-cta { display: flex; justify-content: center; gap: 10px; }
+.timeline { margin-top: 10px; padding: 14px 16px; border-radius: 16px; background: rgba(255, 255, 255, .6); }
+
+.od-menu { position: absolute; z-index: 30; display: grid; }
+.od-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 12px; border: 0; background: none; font: 500 13.5px/1 Inter, system-ui, sans-serif; cursor: pointer; text-align: left; }
+.od-menu button:hover { background: rgba(0, 96, 254, .08); }
+.od-menu svg.i { width: 16px; height: 16px; }
+/* Detail panel / zone panel header: breathing room from the top edge. */
+.panel-h { padding-top: 10px; }
+.split > .card:last-child .card-h, .zone-detail .card-h { padding-top: 14px; }
+/* All in-page menus share the ⋮ menu look. */
+.shell.fs .main .menu { border: 0; border-radius: 16px; padding: 6px; background: #fff; box-shadow: 0 18px 40px -14px rgba(8, 30, 80, .4); min-width: 190px; }
+.shell.fs .main .menu button { min-height: 40px; border-radius: 10px; padding: 8px 12px; font-size: 13.5px; font-weight: 500; }
+.shell.fs .main .menu button:hover { background: rgba(0, 96, 254, .08); }
+.shell.fs table.t tr.sel td:first-child { padding-left: 12px; }
+.shell.fs .card-h .icon-btn, .shell.fs .split .icon-btn { border-radius: 999px; width: 36px; height: 36px; }
